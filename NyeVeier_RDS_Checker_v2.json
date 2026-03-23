@@ -1,0 +1,7 @@
+{
+  "title": "Kum BIK-visning",
+  "icon": "https://trekasb.github.io/TCGGxt_2/MultiPropertyLabel.png",
+  "url": "https://trekasb.github.io/TCGGxt_2/MultiPropertyLabel.html",
+  "description": "Viser valgte egenskapsdata i 3d vinduet.",
+  "enabled": true
+}
