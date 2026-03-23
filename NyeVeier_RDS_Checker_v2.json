@@ -1,7 +1,7 @@
 {
   "title": "Kum BIK-visning",
-  "icon": "https://trekasb.github.io/TCGGxt_2/MultiPropertyLabel.png",
-  "url": "https://trekasb.github.io/TCGGxt_2/MultiPropertyLabel.html",
+  "icon": "https://trekasb.github.io/NVRDS/NyeVeier_RDS_Checker_v2.png",
+  "url": "https://trekasb.github.io/NVRDS/NyeVeier_RDS_Checker_v2.html",
   "description": "Viser valgte egenskapsdata i 3d vinduet.",
   "enabled": true
 }
