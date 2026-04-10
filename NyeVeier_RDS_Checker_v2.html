@@ -262,7 +262,7 @@ async function loadAvailableModels(){
         || candidateNames[0]
         || `Modell ${index + 1}`;
 
-      resolvedName = resolvedName.split('/').pop().split('\\').pop();
+      resolvedName = resolvedName.split('/').pop().split('\').pop();
 
       return { modelId, name: resolvedName, objectCount, raw: m };
     }).filter(x => x.modelId);
