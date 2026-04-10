@@ -88,7 +88,7 @@
     <button id="compareButton" class="btn-primary" disabled>2. Sammenlign</button>
     <button id="colorizeButton" class="btn-dup" disabled>3. Fargelegg ny IFC</button>
     <button id="exportCompareButton" class="btn-warn" disabled>Eksporter duplikater</button>
-    <button id="exportGuidCompareButton" class="btn-primary" disabled>Eksporter GUID-sammenligning</button>
+    <button id="exportGuidCompareButton" class="btn-primary" disabled>Eksporter alle GUID + RDS</button>
     <button id="resetButton" class="btn-neutral" disabled>Tilbakestill farger</button>
   </div>
 </header>
@@ -138,14 +138,16 @@
 
   <section class="panel">
     <h3>GUID-sammenligning mellom gammel og ny IFC</h3>
-    <div class="muted">Viser objekter koblet sammen på <b>IfcGlobalId</b>. Grønn betyr lik RDS-tag i begge modeller. Rød betyr at RDS-tag er ulik eller mangler i en av modellene.</div>
+    <div class="muted">Viser objekter koblet sammen på <b>IfcGlobalId</b>. Grønn betyr lik RDS-tag i begge modeller. Rød betyr at RDS-tag er ulik eller mangler i en av modellene. CSV-eksporten tar med alle objekter og stiller gammel og ny modell side om side på samme rad når GUID er lik.</div>
     <div style="overflow:auto;max-height:420px;margin-top:12px">
       <table class="results-table">
         <thead>
           <tr>
             <th>Status</th>
             <th>IfcGlobalId</th>
+            <th>Navn gammel IFC</th>
             <th>RDS-tag gammel IFC</th>
+            <th>Navn ny IFC</th>
             <th>RDS-tag ny IFC</th>
           </tr>
         </thead>
@@ -432,15 +434,45 @@ function getDuplicateGroupMap(rows){
 function buildGuidComparisonRows(){
   const oldByGuid = new Map();
   const newByGuid = new Map();
+  const noGuidRows = [];
 
   for (const row of oldRows) {
     const guid = norm(row.ifcGlobalId);
-    if (!guid) continue;
+    if (!guid) {
+      noGuidRows.push({
+        ifcGlobalId: '',
+        oldModelName: norm(row.modelName),
+        oldName: norm(row.name),
+        oldRds: norm(row.rdsTag),
+        newModelName: '',
+        newName: '',
+        newRds: '',
+        status: 'ULIK',
+        color: 'RØD',
+        note: 'Mangler GUID i gammel IFC'
+      });
+      continue;
+    }
     oldByGuid.set(guid, row);
   }
+
   for (const row of newRows) {
     const guid = norm(row.ifcGlobalId);
-    if (!guid) continue;
+    if (!guid) {
+      noGuidRows.push({
+        ifcGlobalId: '',
+        oldModelName: '',
+        oldName: '',
+        oldRds: '',
+        newModelName: norm(row.modelName),
+        newName: norm(row.name),
+        newRds: norm(row.rdsTag),
+        status: 'ULIK',
+        color: 'RØD',
+        note: 'Mangler GUID i ny IFC'
+      });
+      continue;
+    }
     newByGuid.set(guid, row);
   }
 
@@ -452,11 +484,30 @@ function buildGuidComparisonRows(){
     const newRow = newByGuid.get(guid);
     const oldRds = norm(oldRow?.rdsTag);
     const newRds = norm(newRow?.rdsTag);
-    const status = oldRds && newRds && oldRds === newRds ? 'LIK' : 'ULIK';
-    out.push({ ifcGlobalId: guid, oldRds, newRds, status });
+    const same = !!oldRds && !!newRds && oldRds === newRds;
+
+    let note = '';
+    if (!oldRow) note = 'GUID finnes bare i ny IFC';
+    else if (!newRow) note = 'GUID finnes bare i gammel IFC';
+    else if (same) note = 'GUID og RDS-tag er lik i begge modeller';
+    else if (!oldRds || !newRds) note = 'Samme GUID, men RDS-tag mangler i en av modellene';
+    else note = 'Samme GUID, men ulik RDS-tag';
+
+    out.push({
+      ifcGlobalId: guid,
+      oldModelName: norm(oldRow?.modelName),
+      oldName: norm(oldRow?.name),
+      oldRds,
+      newModelName: norm(newRow?.modelName),
+      newName: norm(newRow?.name),
+      newRds,
+      status: same ? 'LIK' : 'ULIK',
+      color: same ? 'GRØNN' : 'RØD',
+      note
+    });
   }
 
-  return out;
+  return out.concat(noGuidRows);
 }
 
 async function compareModels(){
@@ -548,7 +599,7 @@ function renderCompareTable(){
 function renderGuidCompareTable(){
   const rows = buildGuidComparisonRows();
   if (!rows.length) {
-    els.guidCompareBody.innerHTML = '<tr><td colspan="4" class="muted">Ingen GUID-er å sammenligne.</td></tr>';
+    els.guidCompareBody.innerHTML = '<tr><td colspan="6" class="muted">Ingen GUID-er å sammenligne.</td></tr>';
     return;
   }
 
@@ -556,7 +607,9 @@ function renderGuidCompareTable(){
     <tr>
       <td><span class="status-pill ${r.status === 'LIK' ? 's-LIK' : 's-ULIK'}">${r.status}</span></td>
       <td class="mono">${escapeHtml(r.ifcGlobalId)}</td>
+      <td>${escapeHtml(r.oldName)}</td>
       <td class="mono">${escapeHtml(r.oldRds)}</td>
+      <td>${escapeHtml(r.newName)}</td>
       <td class="mono">${escapeHtml(r.newRds)}</td>
     </tr>
   `).join('');
@@ -642,21 +695,37 @@ async function resetColors(){
 
 function exportGuidCompareCsv(){
   const rows = buildGuidComparisonRows();
-  const header = ['Status','IfcGlobalId','RDS-tag gammel IFC','RDS-tag ny IFC','Farge'];
+  const header = [
+    'Status',
+    'Farge',
+    'IfcGlobalId',
+    'Modell gammel IFC',
+    'Objektnavn gammel IFC',
+    'RDS-tag gammel IFC',
+    'Modell ny IFC',
+    'Objektnavn ny IFC',
+    'RDS-tag ny IFC',
+    'Kommentar'
+  ];
   const lines = [header.join(',')];
 
   for (const row of rows) {
-    const color = row.status === 'LIK' ? 'GRØNN' : 'RØD';
     lines.push([
       csvEscape(row.status),
+      csvEscape(row.color),
       csvEscape(row.ifcGlobalId),
+      csvEscape(row.oldModelName),
+      csvEscape(row.oldName),
       csvEscape(row.oldRds),
+      csvEscape(row.newModelName),
+      csvEscape(row.newName),
       csvEscape(row.newRds),
-      csvEscape(color)
+      csvEscape(row.note)
     ].join(','));
   }
 
-  downloadCsv(lines.join('\n'), 'guid_rds_sammenligning.csv');
+  downloadCsv(lines.join('
+'), 'alle_guid_rds_sammenligning.csv');
 }
 
 function exportCompareCsv(){
