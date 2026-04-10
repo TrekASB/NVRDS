@@ -241,36 +241,29 @@ function getPropertyValue(obj, psetName, propName){
   return '';
 }
 
-function collectStringValues(value, out = [], seen = new Set(), depth = 0){
-  if (depth > 4 || value == null) return out;
+function collectStringsDeep(value, out, depth){
+  if (depth > 4 || value == null) return;
   if (typeof value === 'string') {
-    const v = norm(value);
-    if (v) out.push(v);
-    return out;
+    const s = norm(value);
+    if (s) out.push(s);
+    return;
   }
-  if (typeof value !== 'object') return out;
-  if (seen.has(value)) return out;
-  seen.add(value);
-
+  if (typeof value !== 'object') return;
   if (Array.isArray(value)) {
-    for (const item of value) collectStringValues(item, out, seen, depth + 1);
-    return out;
+    for (const item of value) collectStringsDeep(item, out, depth + 1);
+    return;
   }
-
-  for (const [key, val] of Object.entries(value)) {
-    const k = norm(key);
-    if (k) out.push(k);
-    collectStringValues(val, out, seen, depth + 1);
+  for (const val of Object.values(value)) {
+    collectStringsDeep(val, out, depth + 1);
   }
-  return out;
 }
 
-function stripPathParts(v){
+function lastPathPart(v){
   return norm(v).split('/').pop().split('\\').pop();
 }
 
 function getCandidateModelName(m, index){
-  const directCandidates = [
+  const direct = [
     m.name,
     m.modelName,
     m.filename,
@@ -283,34 +276,26 @@ function getCandidateModelName(m, index){
     m.url,
     m.sourceFileName,
     m.originalFileName,
-    m.file?.name,
-    m.model?.name,
-    m.data?.name,
-    m.data?.filename,
-    m.metadata?.name,
-    m.metadata?.filename
-  ].map(v => norm(v)).filter(Boolean);
+    m.file && m.file.name,
+    m.model && m.model.name,
+    m.data && m.data.name,
+    m.data && m.data.filename,
+    m.metadata && m.metadata.name,
+    m.metadata && m.metadata.filename
+  ].map(norm).filter(Boolean);
 
-  const deepCandidates = collectStringValues(m)
-    .map(v => norm(v))
-    .filter(Boolean);
+  const deep = [];
+  collectStringsDeep(m, deep, 0);
+  const candidates = Array.from(new Set(direct.concat(deep))).map(lastPathPart).filter(Boolean);
 
-  const allCandidates = [...new Set([...directCandidates, ...deepCandidates])];
+  const ifcNames = candidates.filter(v => /\.ifc(\.zip)?$/i.test(v));
+  if (ifcNames.length) return ifcNames.sort((a, b) => a.length - b.length)[0];
 
-  const ifcLike = allCandidates
-    .map(v => stripPathParts(v))
-    .filter(v => /\.ifc(\.zip)?$/i.test(v));
+  const likely = candidates.filter(v => /ifc/i.test(v));
+  if (likely.length) return likely.sort((a, b) => a.length - b.length)[0];
 
-  const nameLike = allCandidates
-    .map(v => stripPathParts(v))
-    .filter(v => /ifc/i.test(v) || /\.zip$/i.test(v));
-
-  const best = ifcLike.sort((a, b) => a.length - b.length)[0]
-    || nameLike.sort((a, b) => a.length - b.length)[0]
-    || stripPathParts(directCandidates[0] || '')
-    || `Modell ${index + 1}`;
-
-  return best;
+  if (direct.length) return lastPathPart(direct[0]);
+  return `Modell ${index + 1}`;
 }
 
 async function getIfcGlobalId(modelId, runtimeId){
@@ -324,11 +309,14 @@ async function getIfcGlobalId(modelId, runtimeId){
 
 async function connect(){
   try {
+    if (!window.TrimbleConnectWorkspace || !window.TrimbleConnectWorkspace.connect) {
+      throw new Error('Trimble Connect Workspace API ble ikke lastet.');
+    }
     API = await TrimbleConnectWorkspace.connect(window.parent, () => {}, 30000);
     els.loadModelsButton.disabled = false;
     setStatus('✅ Tilkoblet Trimble Connect. Åpne begge IFC-modellene og trykk «Hent IFC-modeller».');
   } catch (e) {
-    showError('Kunne ikke koble til Trimble Connect: ' + (e?.message || e));
+    showError('Kunne ikke koble til Trimble Connect: ' + (e && e.message ? e.message : e));
     setStatus('❌ Feil ved tilkobling.');
   }
 }
@@ -342,19 +330,18 @@ async function loadAvailableModels(){
     const models = await API.viewer.getObjects();
     availableModels = (models || []).map((m, index) => {
       const modelId = m.modelId || m.modelid || m['model Id'] || '';
-      const objectCount = (m.objects || []).length;
+      const objectCount = Array.isArray(m.objects) ? m.objects.length : 0;
       const name = getCandidateModelName(m, index);
-      return { modelId, name, objectCount, raw: m };
+      return { modelId, name, objectCount };
     }).filter(x => x.modelId);
 
     fillModelSelects();
-    els.oldModelSelect.disabled = !availableModels.length;
-    els.newModelSelect.disabled = !availableModels.length;
+    els.oldModelSelect.disabled = availableModels.length === 0;
+    els.newModelSelect.disabled = availableModels.length === 0;
     updateCompareButtonState();
-
     setStatus(`✅ Fant ${availableModels.length} modeller i visningen. Velg gammel og ny IFC.`);
   } catch (e) {
-    showError('Feil ved henting av modeller: ' + (e?.message || e));
+    showError('Feil ved henting av modeller: ' + (e && e.message ? e.message : e));
     setStatus('❌ Kunne ikke lese modeller.');
   }
 }
@@ -362,10 +349,9 @@ async function loadAvailableModels(){
 function fillModelSelects(){
   const oldVal = els.oldModelSelect.value;
   const newVal = els.newModelSelect.value;
-
-  const options = ['<option value="">Velg modell</option>'].concat(
-    availableModels.map(m => `<option value="${escapeHtml(m.modelId)}">${escapeHtml(`${m.name} (${m.objectCount} objekter)`)}</option>`)
-  ).join('');
+  const options = ['<option value="">Velg modell</option>']
+    .concat(availableModels.map(m => `<option value="${escapeHtml(m.modelId)}">${escapeHtml(m.name)} (${m.objectCount} objekter)</option>`))
+    .join('');
 
   els.oldModelSelect.innerHTML = options;
   els.newModelSelect.innerHTML = options;
@@ -383,11 +369,9 @@ async function readSingleModel(modelId){
   const modelEntry = availableModels.find(m => m.modelId === modelId);
   const objectsInfo = await API.viewer.getObjects();
   const rawModel = (objectsInfo || []).find(m => (m.modelId || m.modelid || m['model Id']) === modelId);
-  if (!rawModel) return [];
+  if (!rawModel || !Array.isArray(rawModel.objects) || rawModel.objects.length === 0) return [];
 
-  const runtimeIds = (rawModel.objects || []).map(o => o.id);
-  if (!runtimeIds.length) return [];
-
+  const runtimeIds = rawModel.objects.map(o => o.id).filter(v => v != null);
   const objProps = await API.viewer.getObjectProperties(modelId, runtimeIds);
   const rows = [];
 
@@ -434,12 +418,12 @@ function getDuplicateGroupMap(rows){
 function buildGuidComparisonRows(){
   const oldByGuid = new Map();
   const newByGuid = new Map();
-  const noGuidRows = [];
+  const rowsWithoutGuid = [];
 
   for (const row of oldRows) {
     const guid = norm(row.ifcGlobalId);
     if (!guid) {
-      noGuidRows.push({
+      rowsWithoutGuid.push({
         ifcGlobalId: '',
         oldModelName: norm(row.modelName),
         oldName: norm(row.name),
@@ -459,7 +443,7 @@ function buildGuidComparisonRows(){
   for (const row of newRows) {
     const guid = norm(row.ifcGlobalId);
     if (!guid) {
-      noGuidRows.push({
+      rowsWithoutGuid.push({
         ifcGlobalId: '',
         oldModelName: '',
         oldName: '',
@@ -476,14 +460,14 @@ function buildGuidComparisonRows(){
     newByGuid.set(guid, row);
   }
 
-  const guidSet = new Set([...oldByGuid.keys(), ...newByGuid.keys()]);
+  const guidSet = new Set([].concat(Array.from(oldByGuid.keys()), Array.from(newByGuid.keys())));
   const out = [];
 
   for (const guid of Array.from(guidSet).sort()) {
     const oldRow = oldByGuid.get(guid);
     const newRow = newByGuid.get(guid);
-    const oldRds = norm(oldRow?.rdsTag);
-    const newRds = norm(newRow?.rdsTag);
+    const oldRds = norm(oldRow ? oldRow.rdsTag : '');
+    const newRds = norm(newRow ? newRow.rdsTag : '');
     const same = !!oldRds && !!newRds && oldRds === newRds;
 
     let note = '';
@@ -495,11 +479,11 @@ function buildGuidComparisonRows(){
 
     out.push({
       ifcGlobalId: guid,
-      oldModelName: norm(oldRow?.modelName),
-      oldName: norm(oldRow?.name),
+      oldModelName: norm(oldRow ? oldRow.modelName : ''),
+      oldName: norm(oldRow ? oldRow.name : ''),
       oldRds,
-      newModelName: norm(newRow?.modelName),
-      newName: norm(newRow?.name),
+      newModelName: norm(newRow ? newRow.modelName : ''),
+      newName: norm(newRow ? newRow.name : ''),
       newRds,
       status: same ? 'LIK' : 'ULIK',
       color: same ? 'GRØNN' : 'RØD',
@@ -507,7 +491,7 @@ function buildGuidComparisonRows(){
     });
   }
 
-  return out.concat(noGuidRows);
+  return out.concat(rowsWithoutGuid);
 }
 
 async function compareModels(){
@@ -526,10 +510,10 @@ async function compareModels(){
     oldRows = await readSingleModel(oldModelId);
     newRows = await readSingleModel(newModelId);
 
-    els.colorizeButton.disabled = !newRows.length;
-    els.exportCompareButton.disabled = !newRows.length;
-    els.exportGuidCompareButton.disabled = !newRows.length;
-    els.resetButton.disabled = !newRows.length;
+    els.colorizeButton.disabled = newRows.length === 0;
+    els.exportCompareButton.disabled = newRows.length === 0;
+    els.exportGuidCompareButton.disabled = newRows.length === 0;
+    els.resetButton.disabled = newRows.length === 0;
 
     renderSummary();
     renderCompareTable();
@@ -540,15 +524,15 @@ async function compareModels(){
     const newDupGroups = getDuplicateGroupMap(newRows).size;
     setStatus(`✅ Sammenligning ferdig. Gammel IFC har ${oldDupGroups} duplikatgrupper. Ny IFC har ${newDupGroups} duplikatgrupper.`);
   } catch (e) {
-    showError('Feil under sammenligning: ' + (e?.message || e));
+    showError('Feil under sammenligning: ' + (e && e.message ? e.message : e));
     setStatus('❌ Sammenligning feilet.');
   }
 }
 
 function renderSummary(){
-  const oldDupGroups = getDuplicateGroupMap(oldRows).size;
-  const newDupGroups = getDuplicateGroupMap(newRows).size;
-  const sameDupCount = Array.from(getDuplicateGroupMap(newRows).keys()).filter(rds => getDuplicateGroupMap(oldRows).has(rds)).length;
+  const oldDupMap = getDuplicateGroupMap(oldRows);
+  const newDupMap = getDuplicateGroupMap(newRows);
+  const sameDupCount = Array.from(newDupMap.keys()).filter(rds => oldDupMap.has(rds)).length;
   const newMissing = newRows.filter(r => r.status === 'Mangler').length;
   const guidSummary = buildGuidComparisonRows();
   const sameGuidRds = guidSummary.filter(r => r.status === 'LIK').length;
@@ -557,8 +541,8 @@ function renderSummary(){
   els.summaryGrid.innerHTML = `
     <div class="card"><div class="muted">Objekter gammel IFC</div><div class="metric">${oldRows.length}</div></div>
     <div class="card"><div class="muted">Objekter ny IFC</div><div class="metric">${newRows.length}</div></div>
-    <div class="card"><div class="muted">Duplikatgrupper gammel</div><div class="metric dup">${oldDupGroups}</div></div>
-    <div class="card"><div class="muted">Duplikatgrupper ny</div><div class="metric dup">${newDupGroups}</div></div>
+    <div class="card"><div class="muted">Duplikatgrupper gammel</div><div class="metric dup">${oldDupMap.size}</div></div>
+    <div class="card"><div class="muted">Duplikatgrupper ny</div><div class="metric dup">${newDupMap.size}</div></div>
     <div class="card"><div class="muted">Like duplikater i begge</div><div class="metric warn">${sameDupCount}</div></div>
     <div class="card"><div class="muted">Manglende RDS i ny IFC</div><div class="metric warn">${newMissing}</div></div>
     <div class="card"><div class="muted">GUID med lik RDS</div><div class="metric ok">${sameGuidRds}</div></div>
@@ -569,7 +553,7 @@ function renderSummary(){
 function renderCompareTable(){
   const oldGroups = getDuplicateGroupMap(oldRows);
   const newGroups = getDuplicateGroupMap(newRows);
-  const rows = Array.from(newGroups.entries()).sort((a,b) => b[1].length - a[1].length);
+  const rows = Array.from(newGroups.entries()).sort((a, b) => b[1].length - a[1].length);
 
   if (!rows.length) {
     els.compareBody.innerHTML = '<tr><td colspan="5" class="muted">Ingen duplikater i ny IFC.</td></tr>';
@@ -578,11 +562,7 @@ function renderCompareTable(){
 
   els.compareBody.innerHTML = rows.map(([rds, newItems]) => {
     const oldItems = oldGroups.get(rds) || [];
-    const statusText = oldItems.length > 1
-      ? 'Duplikat i begge IFC-er'
-      : oldItems.length === 1
-        ? 'Fantes én gang i gammel IFC'
-        : 'Ny duplikat i ny IFC';
+    const statusText = oldItems.length > 1 ? 'Duplikat i begge IFC-er' : oldItems.length === 1 ? 'Fantes én gang i gammel IFC' : 'Ny duplikat i ny IFC';
     const cls = oldItems.length > 1 ? 's-Begge' : oldItems.length === 1 ? 's-Gammel' : 's-Ny';
     return `
       <tr>
@@ -679,7 +659,7 @@ async function colorizeNewModel(){
 
     setStatus('🎨 Ny IFC er fargelagt. Lilla = duplikat, gul = mangler RDS.');
   } catch (e) {
-    showError('Feil ved fargelegging: ' + (e?.message || e));
+    showError('Feil ved fargelegging: ' + (e && e.message ? e.message : e));
   }
 }
 
@@ -689,7 +669,7 @@ async function resetColors(){
     await API.viewer.setObjectState(undefined, { color:'reset' });
     setStatus('♻️ Modellfarger er tilbakestilt.');
   } catch (e) {
-    showError('Feil ved tilbakestilling: ' + (e?.message || e));
+    showError('Feil ved tilbakestilling: ' + (e && e.message ? e.message : e));
   }
 }
 
@@ -724,8 +704,7 @@ function exportGuidCompareCsv(){
     ].join(','));
   }
 
-  downloadCsv(lines.join('
-'), 'alle_guid_rds_sammenligning.csv');
+  downloadCsv(lines.join('\n'), 'alle_guid_rds_sammenligning.csv');
 }
 
 function exportCompareCsv(){
@@ -734,7 +713,7 @@ function exportCompareCsv(){
   const header = ['RDS-kode','Antall i gammel IFC','Antall i ny IFC','Status'];
   const lines = [header.join(',')];
 
-  for (const [rds, newItems] of Array.from(newGroups.entries()).sort((a,b) => b[1].length - a[1].length)) {
+  for (const [rds, newItems] of Array.from(newGroups.entries()).sort((a, b) => b[1].length - a[1].length)) {
     const oldItems = oldGroups.get(rds) || [];
     const status = oldItems.length > 1 ? 'Duplikat i begge IFC-er' : oldItems.length === 1 ? 'Fantes én gang i gammel IFC' : 'Ny duplikat i ny IFC';
     lines.push([
@@ -765,31 +744,28 @@ function csvEscape(v){
 function runSelfTests(){
   const failures = [];
 
-  if (getCandidateModelName({ fileName:'C:/tmp/test_model.ifc' }, 0) !== 'test_model.ifc') {
-    failures.push('Modelnavn fra Windows-sti feilet');
-  }
-  if (getCandidateModelName({ path:'/folder/a/b/model.ifc' }, 0) !== 'model.ifc') {
-    failures.push('Modelnavn fra UNIX-sti feilet');
-  }
+  if (lastPathPart('C:/tmp/a.ifc') !== 'a.ifc') failures.push('lastPathPart forward slash');
+  if (lastPathPart('C:\\tmp\\b.ifc') !== 'b.ifc') failures.push('lastPathPart backslash');
+  if (getCandidateModelName({ fileName:'C:/tmp/test_model.ifc' }, 0) !== 'test_model.ifc') failures.push('getCandidateModelName fileName');
 
   oldRows = [
-    { ifcGlobalId:'GUID1', rdsTag:'RDS-A', status:'OK' },
-    { ifcGlobalId:'GUID2', rdsTag:'RDS-B', status:'OK' }
+    { ifcGlobalId:'GUID1', modelName:'old.ifc', name:'Obj A', rdsTag:'RDS-A', status:'OK' },
+    { ifcGlobalId:'GUID2', modelName:'old.ifc', name:'Obj B', rdsTag:'RDS-B', status:'OK' }
   ];
   newRows = [
-    { ifcGlobalId:'GUID1', rdsTag:'RDS-A', status:'OK' },
-    { ifcGlobalId:'GUID2', rdsTag:'RDS-C', status:'OK' },
-    { ifcGlobalId:'GUID3', rdsTag:'', status:'Mangler' }
+    { ifcGlobalId:'GUID1', modelName:'new.ifc', name:'Obj A2', rdsTag:'RDS-A', status:'OK' },
+    { ifcGlobalId:'GUID2', modelName:'new.ifc', name:'Obj B2', rdsTag:'RDS-C', status:'OK' },
+    { ifcGlobalId:'', modelName:'new.ifc', name:'Obj X', rdsTag:'', status:'Mangler' }
   ];
 
   const guidRows = buildGuidComparisonRows();
   const row1 = guidRows.find(r => r.ifcGlobalId === 'GUID1');
   const row2 = guidRows.find(r => r.ifcGlobalId === 'GUID2');
-  const row3 = guidRows.find(r => r.ifcGlobalId === 'GUID3');
+  const row3 = guidRows.find(r => r.note === 'Mangler GUID i ny IFC');
 
-  if (!row1 || row1.status !== 'LIK') failures.push('GUID1 skulle vært LIK');
-  if (!row2 || row2.status !== 'ULIK') failures.push('GUID2 skulle vært ULIK');
-  if (!row3 || row3.status !== 'ULIK') failures.push('GUID3 skulle vært ULIK');
+  if (!row1 || row1.status !== 'LIK') failures.push('GUID1 should be LIK');
+  if (!row2 || row2.status !== 'ULIK') failures.push('GUID2 should be ULIK');
+  if (!row3 || row3.color !== 'RØD') failures.push('Missing GUID row should be red');
 
   oldRows = [];
   newRows = [];
@@ -798,6 +774,11 @@ function runSelfTests(){
     console.error('Self tests failed:', failures);
   }
 }
+
+window.addEventListener('error', function(e){
+  showError('JavaScript-feil: ' + e.message);
+  setStatus('❌ Scriptfeil.');
+});
 
 els.loadModelsButton.addEventListener('click', loadAvailableModels);
 els.compareButton.addEventListener('click', compareModels);
