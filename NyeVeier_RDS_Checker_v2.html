@@ -239,8 +239,36 @@ function getPropertyValue(obj, psetName, propName){
   return '';
 }
 
+function collectStringValues(value, out = [], seen = new Set(), depth = 0){
+  if (depth > 4 || value == null) return out;
+  if (typeof value === 'string') {
+    const v = norm(value);
+    if (v) out.push(v);
+    return out;
+  }
+  if (typeof value !== 'object') return out;
+  if (seen.has(value)) return out;
+  seen.add(value);
+
+  if (Array.isArray(value)) {
+    for (const item of value) collectStringValues(item, out, seen, depth + 1);
+    return out;
+  }
+
+  for (const [key, val] of Object.entries(value)) {
+    const k = norm(key);
+    if (k) out.push(k);
+    collectStringValues(val, out, seen, depth + 1);
+  }
+  return out;
+}
+
+function stripPathParts(v){
+  return norm(v).split('/').pop().split('\\').pop();
+}
+
 function getCandidateModelName(m, index){
-  const candidateNames = [
+  const directCandidates = [
     m.name,
     m.modelName,
     m.filename,
@@ -250,16 +278,37 @@ function getCandidateModelName(m, index){
     m.label,
     m.path,
     m.uri,
-    m.url
+    m.url,
+    m.sourceFileName,
+    m.originalFileName,
+    m.file?.name,
+    m.model?.name,
+    m.data?.name,
+    m.data?.filename,
+    m.metadata?.name,
+    m.metadata?.filename
   ].map(v => norm(v)).filter(Boolean);
 
-  let resolvedName = candidateNames.find(v => /\.ifc(\.zip)?$/i.test(v))
-    || candidateNames.find(v => /ifc/i.test(v))
-    || candidateNames[0]
+  const deepCandidates = collectStringValues(m)
+    .map(v => norm(v))
+    .filter(Boolean);
+
+  const allCandidates = [...new Set([...directCandidates, ...deepCandidates])];
+
+  const ifcLike = allCandidates
+    .map(v => stripPathParts(v))
+    .filter(v => /\.ifc(\.zip)?$/i.test(v));
+
+  const nameLike = allCandidates
+    .map(v => stripPathParts(v))
+    .filter(v => /ifc/i.test(v) || /\.zip$/i.test(v));
+
+  const best = ifcLike.sort((a, b) => a.length - b.length)[0]
+    || nameLike.sort((a, b) => a.length - b.length)[0]
+    || stripPathParts(directCandidates[0] || '')
     || `Modell ${index + 1}`;
 
-  resolvedName = resolvedName.split('/').pop().split('\\').pop();
-  return resolvedName;
+  return best;
 }
 
 async function getIfcGlobalId(modelId, runtimeId){
