@@ -2,32 +2,39 @@
 <html lang="nb">
 <head>
   <meta charset="UTF-8" />
-  <title>Nye Veier RDS Checker</title>
+  <title>RDS IFC Compare</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <script src="https://components.connect.trimble.com/trimble-connect-workspace-api/index.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
   <style>
     :root{
-      --primary:#0b5ed7; --ok:#198754; --warn:#ffc107; --bad:#dc3545; --muted:#6c757d;
-      --bg1:#f4f7fb; --bg2:#e7eef7; --card:#ffffff; --border:#d9e2ec; --ink:#213547;
+      --primary:#0b5ed7;
+      --ok:#198754;
+      --warn:#f0ad4e;
+      --dup:#8e44ad;
+      --muted:#6c757d;
+      --bg1:#f4f7fb;
+      --bg2:#e7eef7;
+      --card:#ffffff;
+      --border:#d9e2ec;
+      --ink:#213547;
     }
     *{box-sizing:border-box}
-    body{margin:0;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;color:var(--ink);background:linear-gradient(135deg,var(--bg1),var(--bg2));height:100vh;display:flex;flex-direction:column;overflow:hidden}
-    header{background:rgba(255,255,255,.96);backdrop-filter:blur(8px);border-bottom:1px solid var(--border);padding:16px 22px;display:flex;flex-wrap:wrap;gap:14px;align-items:center;box-shadow:0 4px 14px rgba(0,0,0,.07)}
-    .title-wrap{display:flex;gap:14px;align-items:center;min-width:320px;flex:1}
+    body{margin:0;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;color:var(--ink);background:linear-gradient(135deg,var(--bg1),var(--bg2));min-height:100vh;display:flex;flex-direction:column;overflow:hidden}
+    header{background:rgba(255,255,255,.96);border-bottom:1px solid var(--border);padding:16px 22px;display:flex;flex-wrap:wrap;gap:14px;align-items:center;box-shadow:0 4px 14px rgba(0,0,0,.07)}
+    .title-wrap{display:flex;gap:14px;align-items:center;min-width:340px;flex:1}
     .logo{width:72px;height:72px;background:#fff;border-radius:12px;object-fit:contain;padding:6px;box-shadow:0 2px 8px rgba(0,0,0,.08)}
     h1{margin:0;font-size:24px;color:var(--primary)}
     .meta{font-size:13px;color:var(--muted)}
     .group{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
     .chip{padding:8px 12px;border-radius:999px;background:#eef4ff;border:1px solid #d7e5ff;font-size:13px;font-weight:700}
-    button, select, textarea{font:inherit;border-radius:10px;border:1px solid var(--border)}
+    button,select{font:inherit;border-radius:10px;border:1px solid var(--border)}
     button{padding:10px 14px;border:none;color:#fff;font-weight:700;cursor:pointer}
     button:disabled{opacity:.55;cursor:not-allowed}
+    select{padding:10px 12px;background:#fff;min-width:260px}
     .btn-primary{background:var(--primary)}
     .btn-ok{background:var(--ok)}
     .btn-warn{background:#c08a00}
-    .btn-bad{background:var(--bad)}
+    .btn-dup{background:var(--dup)}
     .btn-neutral{background:#6c757d}
     main{flex:1;overflow:auto;padding:18px;display:grid;gap:16px}
     .panel{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:16px;box-shadow:0 6px 18px rgba(0,0,0,.05)}
@@ -35,26 +42,26 @@
     .muted{color:var(--muted);font-size:13px}
     #status{padding:12px 14px;background:#eef4ff;border:1px solid #d9e6ff;border-radius:12px;font-weight:700}
     #error{display:none;padding:12px 14px;background:#fff2f2;border:1px solid #ffd0d0;border-radius:12px;color:#8b1e1e;font-weight:600}
-    .hidden{display:none!important}
-    .grid-2{display:grid;grid-template-columns:1.1fr .9fr;gap:16px}
-    .summary-grid{display:grid;grid-template-columns:repeat(4,minmax(120px,1fr));gap:12px}
+    .toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+    .summary-grid{display:grid;grid-template-columns:repeat(6,minmax(120px,1fr));gap:12px}
     .card{background:#fff;border:1px solid var(--border);border-radius:14px;padding:14px}
     .metric{font-size:26px;font-weight:800}
-    .metric.ok{color:var(--ok)} .metric.warn{color:#c08a00} .metric.bad{color:var(--bad)}
-    .rules-table,.results-table{width:100%;border-collapse:collapse;font-size:13px}
-    .rules-table th,.rules-table td,.results-table th,.results-table td{padding:8px 10px;border-bottom:1px solid #ebeff3;text-align:left;vertical-align:top}
-    .rules-table th,.results-table th{background:#f6f9fc;position:sticky;top:0;z-index:1}
-    .rules-table code{background:#f2f4f7;padding:2px 6px;border-radius:6px}
-    textarea{width:100%;min-height:220px;padding:12px;background:#fbfdff}
-    .charts{display:grid;grid-template-columns:repeat(2,minmax(260px,1fr));gap:16px}
-    .chart-box{background:#fff;border:1px solid var(--border);border-radius:14px;padding:12px;min-height:320px}
-    .toolbar{display:flex;gap:10px;flex-wrap:wrap}
+    .metric.ok{color:var(--ok)}
+    .metric.warn{color:#c08a00}
+    .metric.dup{color:var(--dup)}
+    .results-table{width:100%;border-collapse:collapse;font-size:13px}
+    .results-table th,.results-table td{padding:8px 10px;border-bottom:1px solid #ebeff3;text-align:left;vertical-align:top}
+    .results-table th{background:#f6f9fc;position:sticky;top:0;z-index:1}
+    .status-pill{display:inline-block;padding:3px 8px;border-radius:999px;font-size:12px;font-weight:700}
+    .s-Begge{background:#f1e7fa;color:#6c2a91}
+    .s-Ny{background:#fdecec;color:#9c1f2c}
+    .s-Gammel{background:#fff7db;color:#8a6400}
     .row-link{cursor:pointer}
     .row-link:hover td{background:#eef6ff}
-    .status-pill{display:inline-block;padding:3px 8px;border-radius:999px;font-size:12px;font-weight:700}
-    .s-Gyldig{background:#eaf7ef;color:#166b41}.s-Advarsel{background:#fff7db;color:#8a6400}.s-Ugyldig{background:#fdecec;color:#9c1f2c}
-    .reason-list{margin:0;padding-left:18px}
-    @media(max-width:1100px){.grid-2,.charts{grid-template-columns:1fr}.summary-grid{grid-template-columns:repeat(2,minmax(120px,1fr))}}
+    .mono{font-family:Consolas,Monaco,monospace}
+    .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+    .small{font-size:12px}
+    @media(max-width:1200px){.summary-grid{grid-template-columns:repeat(2,minmax(120px,1fr))}.grid-2{grid-template-columns:1fr}}
   </style>
 </head>
 <body>
@@ -62,27 +69,24 @@
   <div class="title-wrap">
     <img src="norconsult-logo-black.png" alt="Norconsult logo" class="logo">
     <div>
-      <h1>Nye Veier RDS Checker</h1>
-      <div class="meta">Tilpasset kontroll av property set <b>2_RDS</b> i Trimble Connect</div>
-      <div class="meta">Bygget videre på MultiProperty Checker-strukturen</div>
+      <h1>RDS IFC Compare</h1>
+      <div class="meta">Sammenligning av eldre og nyere IFC direkte i Trimble Connect</div>
+      <div class="meta">Leser kun <b>2_RDS → 01. RDS-tag</b> og finner dubletter mellom to modellversjoner</div>
     </div>
   </div>
 
   <div class="group">
     <div class="chip">Property set: 2_RDS</div>
-    <div class="chip">RDS-tag: 01_RDS-tag</div>
-    <div class="chip">Objektklasse: 12_FFFnnn navn</div>
-    <div class="chip">Objekttype: 16_HHHnnnnn navn</div>
+    <div class="chip">Property: 01. RDS-tag</div>
+    <div class="chip">IFC mot IFC</div>
   </div>
 
   <div class="group">
-    <button id="scanButton" class="btn-ok" disabled>🔄 Oppdater liste</button>
-    <button id="runButton" class="btn-primary" disabled>✅ Kjør kontroll</button>
-    <button id="colorizeButton" class="btn-warn" disabled>🎨 Fargelegg</button>
-    <button id="resetButton" class="btn-neutral" disabled>♻️ Tilbakestill</button>
-    <button id="exportCsvButton" class="btn-primary" disabled>📄 Eksporter CSV</button>
-    <button id="toggleRulesButton" class="btn-neutral">📋 Vis/skjul kriterier</button>
-    <button id="toggleMappingsButton" class="btn-neutral">🧩 Vis/skjul objektregler</button>
+    <button id="loadModelsButton" class="btn-ok" disabled>1. Hent IFC-modeller</button>
+    <button id="compareButton" class="btn-primary" disabled>2. Sammenlign</button>
+    <button id="colorizeButton" class="btn-dup" disabled>3. Fargelegg ny IFC</button>
+    <button id="exportCompareButton" class="btn-warn" disabled>Eksporter sammenstilling</button>
+    <button id="resetButton" class="btn-neutral" disabled>Tilbakestill farger</button>
   </div>
 </header>
 
@@ -90,365 +94,57 @@
   <div id="status">Kobler til Trimble Connect…</div>
   <div id="error"></div>
 
-  <section class="panel" id="rulesPanel">
-    <h3>Kontrollkriterier for 2_RDS</h3>
-    <div class="muted">Kriteriene under er satt opp tilsvarende skjermbildet fra ANKER. Manglende C- og D-ledd er speilet etter samme logikk. I tillegg sjekkes at objektklasse/objekttype finnes i regelsettet du la ved.</div>
-    <div style="margin-top:12px;overflow:auto;max-height:320px">
-      <table class="rules-table">
+  <section class="panel">
+    <h3>Hvordan bruke denne</h3>
+    <div class="muted">Åpne både eldre og nyere IFC i samme Trimble Connect-visning. Velg deretter hvilken modell som er eldre leveranse og hvilken som er nyere leveranse. Skriptet sammenligner RDS-koder direkte mellom modellene uten CSV.</div>
+    <div class="grid-2" style="margin-top:12px">
+      <div>
+        <label for="oldModelSelect"><b>Eldre IFC</b></label><br>
+        <select id="oldModelSelect" disabled><option value="">Velg eldre IFC</option></select>
+      </div>
+      <div>
+        <label for="newModelSelect"><b>Nyere IFC</b></label><br>
+        <select id="newModelSelect" disabled><option value="">Velg nyere IFC</option></select>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h3>Oppsummering</h3>
+    <div class="summary-grid" id="summaryGrid"></div>
+  </section>
+
+  <section class="panel">
+    <h3>Sammenstilling av duplikate RDS-koder</h3>
+    <div class="muted">Viser RDS-koder som er duplikater i den nye IFC-en, og om de også var duplikater i den gamle IFC-en.</div>
+    <div style="overflow:auto;max-height:520px;margin-top:12px">
+      <table class="results-table">
         <thead>
-          <tr><th>Property</th><th>Kriterium</th><th>Kommentar</th></tr>
+          <tr>
+            <th>Status</th>
+            <th>RDS-kode</th>
+            <th>Antall i gammel IFC</th>
+            <th>Antall i ny IFC</th>
+            <th>Kommentar</th>
+          </tr>
         </thead>
-        <tbody id="rulesBody"></tbody>
+        <tbody id="compareBody"></tbody>
       </table>
     </div>
   </section>
 
-  <section class="panel hidden" id="mappingPanel">
-    <h3>Gyldige objektklasser og objekttyper</h3>
-    <div class="muted">Format: <code>Objektklasse[TAB]Objekttype</code>. Denne listen brukes mot <b>12_FFFnnn navn</b> og <b>16_HHHnnnnn navn</b>. Dersom 16-feltet er tomt brukes <b>14_GGGnnn navn</b> som fallback.</div>
-    <textarea id="mappingTextarea">Støyskjerm	Støyskjerm, Dim 2000,200,140000
-Veibomfundament	Spesialfundament_MCS 51_58_61_utvidet
-Veibomfundament	9717554
-Stengebom	Heve-/senkebom
-Ledebom	Heve-/senkebom
-Skiltplate	Slutt på motorveg
-Skiltplate	Kjøring til eiendommene tillatt
-Skiltplate	Høydegrense
-Skiltfundament	9720094 skiltfundament BGL med plastkilelås
-Skiltportalfundament	K137_B_2
-Skiltportalfundament	K115_Telia
-Skiltportalfundament	9721432_K130_B
-Skiltportalfundament	9717749_K115_F
-Skiltportalfundament	9717749_K115_B
-Skiltplate	Stedsnavskilt: Tunnelnavnskilt
-Skiltplate	Stedsnavskilt: Kommune- og fylkeskommunegrenseskilt
-Skiltplate	Sammenfletting
-Skiltplate	Samleskilt for vegvisning
-Skiltplate	Nødstasjon
-Skiltplate	Avkjøringstavle: 500 m-tavle
-Skiltplate	Avkjøringstavle: 1000 m-tavle
-Skiltmast	Lattix Large - 4425 (250mm)
-Skiltfundament	9720548_Lattix 4425
-Signalhode	Kjørefeltsignal
-Stake-/Spylekum	ST DV_630
-VariabeltSkilt	Mekanisk
-VariabeltSkilt	Fullgrafisk
-Skiltportalfundament	K137_F
-Skiltportalfundament	K137_B
-Skiltportalfundament	K135_B
-Skiltportalfundament	9717752_K117_B
-Skiltportal	Halvportal
-Skiltportal	Helportal
-Skiltportal	Gittermast (520mm)
-Skiltplate	Avkjøringsvegviser
-Skiltplate	Avkjøringsmarkering
-Skiltplate	Påkjøring fortsetter i eget kjørefelt
-Skiltplate	Felt for fartsøkning
-Skiltplate	Feil kjøreretning
-Skiltplate	STOPP ved rødt blink Vegen stengt
-Skiltplate	Kjørefelt begynner
-Skiltplate	Havarilomme
-Skiltplate	Avstandsskilt
-Skiltplate	Vegruteskilt: Vegnummer for europaveg
-Skiltplate	Innkjøring forbudt
-Skiltplate	Bomstasjon: Taksttavle
-Skiltplate	Vanlig vegviser
-Skiltplate	Gang- og sykkelveg
-Skiltplate	Motorveg
-Skiltplate	Parkering
-Skiltplate	Underskilt (Symbol): Forflytningshemmede med parkeringstillatelse
-Skiltmast	Traftech SafeHit SH2 NE mast (145mm)
-Skiltmast	Traftech SafeHit SH4 NE mast (165mm)
-Skiltmast	Traftech SafeHit SH3 NE mast (155mm)
-Skiltmast	Traftech SafeHit SH1 NE mast (90mm)
-Skiltmast	Skiltstolpe ø89mm
-Skiltmast	Skiltstolpe ø60mm
-Skiltfundament	9720978 Fundament SH2
-Skiltfundament	9720977 Fundament SH2 trekkerør cc175x175 M20
-Skiltfundament	9720981 Fundament SH1
-Skiltfundament	9720977 Fundament SH2 T
-Skiltfundament	Fundament SH1 H=800mm
-Skiltfundament	9720973 Fundament SH4 T
-Skiltfundament	9720974 Fundament SH4
-Skiltfundament	9720093 Skiltfundament BGS med skruelås
-Skiltfundament	9720975 Fundament SH3 T
-Skiltfundament	9720979 Fundament SH1 T
-Skiltfundament	9720981 Fundament SH1 cc120x120 M20
-Skiltfundament	99720093 Ø89_skiltfundament BGS 50kg med skruelås
-Skiltfundament	9720094 skiltfundament BGL 25kg mplastkilelås
-Skilt	Skiltpunkt
-Signalhode	Gult blinksignal
-Signalhode	Rødt stoppblinksignal
-Stake-/Spylekum	ST_200_PP
-Vannledning	VL_280_PE100 RC
-Trekkerør	110_PVC
-Varerør	VR_406_ST
-Vannledning	Kombikryss_200/300_m-Spindelforlenger
-Hydrant	Brannhydrant_H4_m-DropDown
-Vannkum	VK_650_BTG
-Overvannsledning	OV_160_PVC
-Rekkverksende	Støtputer
-Rekkverksende	Støtpute
-Rekkverksende	Nedføring
-OppmerkingTvers	Kjøreretning (1034.1R)
-OppmerkingTvers	Vikelinje
-OppmerkingLangs	Skillelinje
-OppmerkingLangs	ReferenceLine
-OppmerkingLangs	Heltrukken kantlinje (Motorveg kl. A)
-OppmerkingForsterket	Annet
-OppmerkingForsterket	Nedfrest sinusriller
-Terrengforming	Tilsåing
-Støttekonstruksjon	Tørrsteinsmur
-Gjerde	Sikringsgjerde
-Rekkverk	Natursteinsblokk
-Overvannsledning	OV_250_PVC-iso
-Stake-/Spylekum	ST DV_200
-Sandfang	SFR_1000
-Overvannsledning	OV_300_DV-O ID
-Overvannsledning	OV_225_PVC-iso
-Overvannsledning	OV_225_PVC
-Overvannsledning	OV_200_PVC-iso
-Drensledning	VK_1600_BTG
-OppmerkingLangs	Kjørefeltlinje
-OppmerkingForsterket	Sinusriller
-Nøkkelskap for slokkevann	Vannledning
-Grøft	GrøftÅpen
-Spillvannsledning	SP_160_PVC
-Spillvannsledning	SP_250_PVC
-Overvannskum	OK_1400_BTG
-Overvannskum	OK_630_PP
-Bekkeinntak	Bekkeinntak, Type Type 3, DN 1400
-Bekkeinntak	Bekkeinntak, Type Bekkeinntak_600_BET
-Bekkeinntak	Bekkeinntak, Type Bekkeinntak_1600_BET
-Bekkeinntak	Bekkeinntak, Type Bekkeinntak_1200_BET
-Overvannsledning	OV_200_DV-O ID
-Overvannsledning	OV_150_DV-O ID
-Vannledning	VL_250_PE100 ISO
-Overvannsledning	OV_800_BTG
-Overvannsledning	OV_600_DV-O ID
-Overvannsledning	OV_500_DV-O ID
-Overvannsledning	OV_400_DV-O ID
-Overvannsledning	OV_300_DV-D ID
-Overvannsledning	OV_200_DV-O OD
-Overvannsledning	OV_250_DV-O ID
-Overvannsledning	OV_1600_BTG
-Overvannskum	OK_2000_BTG
-Nedføringsrenne	Nedføringsrenne_Plassbygd
-Stengeventil	Stengeventil(brannvannsledninger)
-Isolasjon	ISO_Leca
-Brannvannsuttak	Brannvannsledning(-uttak)
-Armering	div løpende posnr
-Veioppmerking	Linjer/symboler
-Vegetasjon	Tre
-Terrengforming	Voll
-Rekkverk	Nedføring
-Rekkverk	Ettergivende rekkverksende
-Rekkverk	Overgangsrekkverk
-Rekkverk	Rekkverksskinne
-Rekkverk	Konfliktvolum
-Rekkverk	Rekkverksstolpe
-Bærelag	Bærelag, Fk 0/32
-Bærelag	Nedre bærelag, Ag22
-Bærelag	Øvre bærelag, Ag22
-Bærelag	Øvre bærelag, Ag16
-Terrengforming	Plastring bekk
-Filterlag	Filterlag
-Grasdekke	Grasdekke
-Rekkverksstolpe	Rekkverksstolpe
-Terrengforming	Steinmaterialer
-Kantstein	Naturkantstein
-Terrengforming	Grasdekker
-Batterier	12V batteri
-Trafikkdeler	Trafikkdeler
-Stikningsobjekt	Stikningsobjekt
-Voll	Voll
-Overvannsledning	OV_1400_BTG
-Overvannsledning	OV_1200_BTG
-Overvannsledning	OV_1000_BTG
-Metadataobjekt	Metadataobjekt
-Fallpil	Fallpil
-Rekkverksstolpe	Rekkverksstolpe, Styrkeklasse Ettergivende rekkverksende
-Vannventil	Vannventil, Type Baio Combi-T 150/150, PN10
-Spuntpute	Spuntpute, Type S355
-Sprøytebetong	Sprøytebetong, Type Fiberarmert sprøytebetong, tykkelse min 6 cm
-Rørspunt	Rørspunt, Type S355
-Forankringsstag	Forankringsstag, Type Ischebeck titan 73/45
-Sikringsbolt spesial	Sikringsbolt spesial, Type R38/19
-Stake-/Spylekum	ST_400_PP
-Stake-/Spylekum	ST_400
-Stake-/Spylekum	ST DV_400_PP
-Stake-/Spylekum	ST DV_400
-Spillvannskum	SK_1400_BTG
-Hjelpesluk	HS_650_BTG
-Hjelpesluk	HS_650
-Støyskjerm	Støyskjerm, Dim 1000,200,8000
-Støyskjerm	Støyskjerm, Dim 1000,200,150000
-Vannkum	VK_2400_BTG
-Vannkum	VK_2000_BTG
-Vannkum	VK_1600_BTG
-Overvannskum	OK_650_BTG
-Overvannskum	OK_400_PP
-Overvannskum	OK_1600_BTG
-Overvannskum	OK_1200_BTG
-Overvannskum	OK_1000_BTG
-Sandfang	SFR_1000_BTG
-Sandfang	SFK_1000_BTG
-Sandfang	SFK_1000
-Sandfang	SFG_1000_BTG
-Sandfang	SFG_1000
-Hydrant	HY_100_PP
-Graveflate	Graveflate
-Spillvannsledning	SP_315_PVC
-Vaskevannsledning	VS_200_DV-O ID
-Vaskevannsledning	VS_200_DVO
-Vannledning	VL_315_PE100 RC
-Vannledning	VL_280_PE100 RC PP
-Vannledning	VL_250_SJK
-Vannledning	VL_200_PE 100
-Vannledning	VL_160_PE 100
-Vannledning	VL_110_PVC
-Vannledning	VL_110_PE 100
-Drensledning	DR_32_PE100
-Drensledning	DR_200_DV-D ID
-Drensledning	DR_150_DVD
-Drensledning	DR_150_DV-D ID
-Drensledning	DR_110_DVD
-Drensledning	DR_100_DV-D ID
-Bekkeinntak	Bekkeinntak
-Nedføring	Nedføring, Styrkeklasse N2
-Overgangsrekkverk	Overgangsrekkverk, Styrkeklasse Overgangsrekkverk N2 stålskinne til L2 stålskinne
-Overgangsrekkverk	Overgangsrekkverk, Styrkeklasse Overgangsrekkverk N2 stålskinne til L2 betong
-Overgangsrekkverk	Overgangsrekkverk, Styrkeklasse Overgangsrekkverk N2 stålskinne til H2 stålskinne
-Overgangsrekkverk	Overgangsrekkverk, Styrkeklasse Overgangsrekkverk H1 stålskinne til L2 stålskinne
-Nedføring	Nedføring, Styrkeklasse: N2
-Rekkverksstolpe	Rekkverksstolper, Styrkeklasse Overgangsrekkverk N2 stålskinne til H2 Stålskinne
-Rekkverksstolpe	Rekkverksstolper, Styrkeklasse N2
-Rekkverksstolpe	Rekkverksstolper, Styrkeklasse H2
-Rekkverksstolpe	Rekkverksstolpe, Styrkeklasse P2
-Rekkverksstolpe	Rekkverksstolpe, Styrkeklasse Overgangsrekkverk N2 stålskinne til L2 stålskinne
-Rekkverksstolpe	Rekkverksstolpe, Styrkeklasse Overgangsrekkverk N2 stålskinne til L2 betong
-Rekkverksstolpe	Rekkverksstolpe, Styrkeklasse Overgangsrekkverk N2 stålskinne til H2 stålskinne
-Rekkverksstolpe	Rekkverksstolpe, Styrkeklasse Overgangsrekkverk H1 stålskinne til ettergivende rekkverksende
-Rekkverksstolpe	Rekkverksstolpe, Styrkeklasse Overgangsrekkverk H1 stålskinne til L2 stålskinne
-Rekkverksstolpe	Rekkverksstolpe, Styrkeklasse N2
-Rekkverksstolpe	Rekkverksstolpe, Styrkeklasse L2
-Rekkverksstolpe	Rekkverksstolpe, Styrkeklasse H2
-Rekkverksstolpe	Rekkverksstolpe, Styrkeklasse H1
-Rekkverksstolpe	Rekkverksstolpe, Stålstolpe
-Rekkverksskinne	Rekkverksskinne, Styrkeklasse Overgangsrekkverk H1 stålskinne til ettergivende rekkverksende
-Rekkverksskinne	Rekkverksskinne, Styrkeklasse N2
-Rekkverksskinne	Rekkverksskinne, Styrkeklasse L2
-Rekkverksskinne	Rekkverksskinne, Styrkeklasse H2
-Rekkverksskinne	Rekkverksskinne, Styrkeklasse H1
-Rekkverksende	Ettergivende rekkverksende
-Rekkverksstolpe	Rekkverksstolpe, Sikkerhetsklasse 110 km/t
-Konfliktvolum	Konfliktvolum
-Skiltholder	Skiltholder, Skiltholder rett for 512-514, ø60 - MS
-Skiltplate	Vikeplikt
-Skiltplate	Underskilt: gjelder ikke anleggstrafikk
-Skiltplate	Underskilt: Avstand
-Skiltplate	Trafikkforbud: Forbudt for motorvogn
-Skiltplate	Forbudt for alle traktorer og for motorredskap konstruert for fart mindre enn 40 km/t
-Skiltplate	Tabellvegviser
-Skiltplate	Slutt på særskilt fartsgrense: 60km/t
-Skiltplate	Retningsmarkering
-Skiltplate	Påbudt rundkjøring
-Skiltplate	Påbudt kjørerefelt: Høyre
-Skiltplate	Møtende trafikk
-Skiltplate	Motortrafikkveg
-Skiltplate	Holdeplass for buss
-Skiltplate	Hindermarkering
-Skiltplate	Gjelder ikke buss
-Skiltplate	Forkjørsveg
-Skiltplate	Forbudt for gående og syklende på motorveg og motrotrafikkveg
-Skiltplate	Fartsgrense: 90km/t
-Skiltplate	Fartsgrense: 70km/t
-Skiltplate	Fartsgrense: 60km/t
-Skiltplate	Fartsgrense: 50km/t
-Skiltplate	Farlig sving til venstre
-Skiltmast	Skiltmast, Skiltstolpe ø89mm
-Skiltmast	Skiltmast, Skiltstolpe ø60mm
-Skiltmast	Skiltmast, Norsafe NM89-7.5 (89mm)
-Skiltmast	Skiltmast, Norsafe NM120-15 (120mm)
-Skiltfundament	Norsafe F-NM120 15L H700mm
-Skiltfundament	Norsafe F-NM89-7.5L H700mm
-Skiltfundament	Standard betongfundament H=650mm
-Skiltfundament	Standard betongfundament H=500mm
-OppmerkingTvers	ReferenceLine
-OppmerkingLangs	Sperreområde
-OppmerkingLangs	Stiplet kantlinje
-OppmerkingLangs	Heltrukken kantlinje
-OppmerkingLangs	Dobbel sperrelinje
-OppmerkingLangs	Sperrelinje
-OppmerkingLangs	Varsellinje
-Gjerde	Viltgjerde
-Matjord	Matjord, Type 1
-Revegetering	Stedegen jord med frøbank
-Revegetering	Undergrunnsjord
-Planum	Planum
-Isolasjon	ISO_XPS
-Deponi	Deponi
-Terrengforming	Revegetering
-Fyllingsskråning	Fyllingsskråning
-Slitelag	Slitelag
-GrøftÅpen	GrøftÅpen
-Utsparing	Utsparing
-LavesteGravenivå	LavesteGravenivå
-Fylling	Tilbakefylling
-Fylling	Oppfylling
-Fylling	Jordpåslag
-Planum	PlanumFylling
-Planum	PlanumJord
-Planum	PlanumBerg
-Slitelag	Slitelag, Ab11
-Bindlag	Bindlag, Agb11
-Slitelag	Slitelag, Agb11
-Slitelag	Slitelag, Ska16
-Bindlag	Bindlag, Ab11
-Frostsikringslag	Frostsikringslag, Knust berg
-Gjerde	Gjerdeport
-Bolt	Sikringsbolt spesial
-Skjæring	SkjæringBerg
-Skjæring	SkjæringJord
-Bærelag	Bærelag, Fk 0/11
-Slitelag	Slitelag, Fk 0/11
-Overvannsledning	OV_100_DV-O ID
-Forsterkningslag	Forsterkningslag, Fk 22/125</textarea>
-  </section>
-
-  <section class="grid-2">
-    <div class="panel">
-      <h3>Oppsummering</h3>
-      <div class="summary-grid" id="summaryGrid"></div>
-    </div>
-    <div class="panel">
-      <h3>Informasjon</h3>
-      <div class="muted">Det sjekkes både syntaks, obligatoriske felter og at objektklasse/objekttype finnes i regelsettet. IFC-rotnoder filtreres bort.</div>
-      <div class="muted" style="margin-top:10px">Statuslogikk: <b>Ugyldig</b> brukes ved feil i format/regler. <b>Advarsel</b> brukes ved manglende felt eller avvik som bør gjennomgås. <b>Gyldig</b> betyr at alle sjekker passerte.</div>
-    </div>
-  </section>
-
-  <section class="charts">
-    <div class="chart-box"><canvas id="statusChart"></canvas></div>
-    <div class="chart-box"><canvas id="reasonChart"></canvas></div>
-  </section>
-
   <section class="panel">
-    <div class="toolbar" style="margin-bottom:10px">
-      <button id="showInvalidOnlyButton" class="btn-bad" disabled>Vis bare avvik</button>
-      <button id="showAllButton" class="btn-neutral" disabled>Vis alle</button>
-    </div>
-    <div style="overflow:auto;max-height:520px">
+    <h3>Detaljliste for ny IFC</h3>
+    <div class="muted">Klikk på en rad for å zoome til objektet i ny IFC.</div>
+    <div style="overflow:auto;max-height:560px;margin-top:12px">
       <table class="results-table">
         <thead>
           <tr>
             <th>Status</th>
             <th>Navn</th>
             <th>IfcGlobalId</th>
-            <th>01_RDS-tag</th>
-            <th>12_FFFnnn navn</th>
-            <th>16_HHHnnnnn navn / 14_GGGnnn navn</th>
-            <th>Avvik</th>
+            <th>RDS-kode</th>
+            <th>Antall med samme kode i ny IFC</th>
           </tr>
         </thead>
         <tbody id="resultsBody"></tbody>
@@ -459,98 +155,38 @@ Forsterkningslag	Forsterkningslag, Fk 22/125</textarea>
 
 <script>
 let API = null;
-let allResults = [];
-let ifcIdCache = new Map();
-let showInvalidOnly = true;
-let statusChart = null;
-let reasonChart = null;
-
+let availableModels = [];
+let oldRows = [];
+let newRows = [];
 const FIXED_PSET = '2_RDS';
-const RDS_RULES = [
-  { prop:'01_RDS-tag', kind:'startsWith', value:'<E6SØ>', note:'Samme prinsipp som ANKER-skjermbildet' },
-  { prop:'02_AAAAAA', kind:'equalsOneOf', value:['<E6SØ>'], note:'Topnode / prosjektkode' },
-  { prop:'03_Bnn', kind:'regex', value:/^[A-Za-z0-9]{2}$/, note:'Eks. D1' },
-  { prop:'04_Bnn navn', kind:'exists', note:'Må være utfylt' },
-  { prop:'05_Cnn', kind:'regex', value:/^[A-Za-z0-9]{2}$/, note:'Speilet fra samme logikk som Bnn/Dnn' },
-  { prop:'06_Cnn navn', kind:'exists', note:'Må være utfylt' },
-  { prop:'07_Dnn', kind:'regex', value:/^[A-Za-z0-9]{2}$/, note:'Eks. K1' },
-  { prop:'08_Dnn navn', kind:'exists', note:'Må være utfylt' },
-  { prop:'09_EEnnn', kind:'regex', value:/^[A-Za-z0-9]{3}$/, note:'Eks. HH1' },
-  { prop:'10_EEnnn navn', kind:'exists', note:'Må være utfylt' },
-  { prop:'11_FFFnnn', kind:'regex', value:/^[A-Za-z]{3}\d{1,4}$/i, note:'Kodeledd for objektklasse' },
-  { prop:'12_FFFnnn navn', kind:'exists', note:'Brukes som objektklasse' },
-  { prop:'13_GGGnnn', kind:'regex', value:/^[A-Za-z]{3}\d{1,4}$/i, note:'Kodeledd for mellomnivå' },
-  { prop:'14_GGGnnn navn', kind:'exists', note:'Fallback som objekttype hvis 16 er tomt' },
-  { prop:'15_HHHnnnnn', kind:'exists', note:'Eksisterer i ANKER-skjermbildet' },
-  { prop:'16_HHHnnnnn navn', kind:'exists', note:'Primær objekttype' },
-  { prop:'17_Informasjon om RDS i …', kind:'contains', value:'Plan for bruk av RDS', note:'Valgfritt informasjonsfelt – sjekkes hvis det finnes' }
-];
+const FIXED_PROP = '01. RDS-tag';
 const IGNORE_TYPES = new Set(['IFCPROJECT','IFCSITE','IFCBUILDING','IFCBUILDINGSTOREY']);
 
 const els = {
   status: document.getElementById('status'),
   error: document.getElementById('error'),
-  scanButton: document.getElementById('scanButton'),
-  runButton: document.getElementById('runButton'),
+  loadModelsButton: document.getElementById('loadModelsButton'),
+  compareButton: document.getElementById('compareButton'),
   colorizeButton: document.getElementById('colorizeButton'),
+  exportCompareButton: document.getElementById('exportCompareButton'),
   resetButton: document.getElementById('resetButton'),
-  exportCsvButton: document.getElementById('exportCsvButton'),
-  showInvalidOnlyButton: document.getElementById('showInvalidOnlyButton'),
-  showAllButton: document.getElementById('showAllButton'),
-  toggleRulesButton: document.getElementById('toggleRulesButton'),
-  toggleMappingsButton: document.getElementById('toggleMappingsButton'),
-  rulesPanel: document.getElementById('rulesPanel'),
-  mappingPanel: document.getElementById('mappingPanel'),
-  mappingTextarea: document.getElementById('mappingTextarea'),
-  rulesBody: document.getElementById('rulesBody'),
+  oldModelSelect: document.getElementById('oldModelSelect'),
+  newModelSelect: document.getElementById('newModelSelect'),
   summaryGrid: document.getElementById('summaryGrid'),
-  resultsBody: document.getElementById('resultsBody'),
-  statusChartCanvas: document.getElementById('statusChart'),
-  reasonChartCanvas: document.getElementById('reasonChart')
+  compareBody: document.getElementById('compareBody'),
+  resultsBody: document.getElementById('resultsBody')
 };
 
-if (window.ChartDataLabels) Chart.register(ChartDataLabels);
-
-function showError(msg){
-  els.error.textContent = msg || '';
-  els.error.style.display = msg ? 'block' : 'none';
-}
 function norm(v){ return (v ?? '').toString().trim(); }
 function escapeHtml(v){ return norm(v).replace(/[&<>\"]/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[s])); }
-function setBusy(on){ [els.scanButton,els.runButton,els.colorizeButton,els.resetButton,els.exportCsvButton,els.showInvalidOnlyButton,els.showAllButton].forEach(b => { if (b) b.disabled = on || b.disabled; }); }
-
-function renderRules(){
-  els.rulesBody.innerHTML = RDS_RULES.map(r => {
-    let k = '';
-    if (r.kind === 'startsWith') k = `starter med <code>${escapeHtml(r.value)}</code>`;
-    if (r.kind === 'equalsOneOf') k = `er en av <code>${escapeHtml(r.value.join(', '))}</code>`;
-    if (r.kind === 'regex') k = `matcher <code>${escapeHtml(r.value.toString())}</code>`;
-    if (r.kind === 'exists') k = 'må finnes / være utfylt';
-    if (r.kind === 'contains') k = `inneholder <code>${escapeHtml(r.value)}</code>`;
-    return `<tr><td><b>${escapeHtml(r.prop)}</b></td><td>${k}</td><td>${escapeHtml(r.note || '')}</td></tr>`;
-  }).join('');
-}
-
-function parseMappings(){
-  const map = new Map();
-  for (const rawLine of els.mappingTextarea.value.split(/\r?\n/)) {
-    const line = rawLine.trim();
-    if (!line) continue;
-    const parts = line.split('\t');
-    if (parts.length < 2) continue;
-    const cls = norm(parts[0]);
-    const typ = norm(parts.slice(1).join('\t'));
-    if (!cls || !typ) continue;
-    if (!map.has(cls)) map.set(cls, new Set());
-    map.get(cls).add(typ);
-  }
-  return map;
-}
+function showError(msg){ els.error.textContent = msg || ''; els.error.style.display = msg ? 'block' : 'none'; }
+function setStatus(msg){ els.status.textContent = msg; }
 
 function looksLikeIfcEntityName(v){
   const s = norm(v).toUpperCase();
   return /^IFC[A-Z0-9_]+$/.test(s) ? s : '';
 }
+
 function getIfcEntityTypeFromObjectProps(obj){
   const direct = looksLikeIfcEntityName(obj.ifcType || obj.ifcEntity || obj.entityType || obj.type || obj.objectType || obj.className || obj.class);
   if (direct) return direct;
@@ -562,9 +198,8 @@ function getIfcEntityTypeFromObjectProps(obj){
   }
   return '';
 }
-function isIgnoredIfcEntity(obj){
-  return IGNORE_TYPES.has(getIfcEntityTypeFromObjectProps(obj));
-}
+
+function isIgnoredIfcEntity(obj){ return IGNORE_TYPES.has(getIfcEntityTypeFromObjectProps(obj)); }
 
 function getPropertyValue(obj, psetName, propName){
   const psetTarget = norm(psetName).toLowerCase();
@@ -578,306 +213,310 @@ function getPropertyValue(obj, psetName, propName){
   return '';
 }
 
+async function getIfcGlobalId(modelId, runtimeId){
+  try {
+    const ids = await API.viewer.convertToObjectIds(modelId, [Number(runtimeId)]);
+    return ids && ids[0] ? String(ids[0]) : '';
+  } catch {
+    return '';
+  }
+}
+
 async function connect(){
   try {
     API = await TrimbleConnectWorkspace.connect(window.parent, () => {}, 30000);
-    els.status.textContent = '✅ Tilkoblet – trykk «Oppdater liste» for å kontrollere at 2_RDS finnes i modellen.';
-    els.scanButton.disabled = false;
+    els.loadModelsButton.disabled = false;
+    setStatus('✅ Tilkoblet Trimble Connect. Åpne begge IFC-modellene og trykk «Hent IFC-modeller».');
   } catch (e) {
     showError('Kunne ikke koble til Trimble Connect: ' + (e?.message || e));
-    els.status.textContent = '❌ Feil ved tilkobling.';
+    setStatus('❌ Feil ved tilkobling.');
   }
 }
 
-async function scanProperties(){
+async function loadAvailableModels(){
   if (!API) return;
   showError('');
-  els.status.textContent = '🔍 Skanner modell for property set 2_RDS…';
+  setStatus('⏳ Leser tilgjengelige modeller i visningen…');
+
   try {
     const models = await API.viewer.getObjects();
-    let found = false;
-    let foundProps = new Set();
-    for (const m of (models || [])) {
-      const modelId = m.modelId || m.modelid || m['model Id'];
-      const runtimeIds = (m.objects || []).map(o => o.id);
-      if (!modelId || !runtimeIds.length) continue;
-      const objProps = await API.viewer.getObjectProperties(modelId, runtimeIds);
-      for (const obj of (objProps || [])) {
-        if (isIgnoredIfcEntity(obj)) continue;
-        for (const ps of (obj.properties || [])) {
-          if (norm(ps.name).toLowerCase() !== FIXED_PSET.toLowerCase()) continue;
-          found = true;
-          for (const p of (ps.properties || [])) foundProps.add(norm(p.name));
-        }
-      }
-    }
-    if (!found) {
-      els.status.textContent = '⚠️ Fant ikke property set 2_RDS på objektene i modellen.';
-      els.runButton.disabled = true;
-      return;
-    }
-    const missingRules = RDS_RULES.map(r => r.prop).filter(p => !Array.from(foundProps).some(fp => fp.toLowerCase().startsWith(p.toLowerCase().replace('…',''))));
-    els.status.textContent = missingRules.length
-      ? `⚠️ Fant 2_RDS, men noen forventede property-felt mangler i modellen (${missingRules.length} stk.). Du kan likevel kjøre kontroll.`
-      : '✅ Fant 2_RDS og forventede property-felt. Klar for kontroll.';
-    els.runButton.disabled = false;
+    availableModels = (models || []).map((m, index) => {
+      const modelId = m.modelId || m.modelid || m['model Id'] || '';
+      const objectCount = (m.objects || []).length;
+      const name = norm(m.name || m.modelName || m.filename || m.fileName || `Modell ${index + 1}`);
+      return { modelId, name, objectCount };
+    }).filter(x => x.modelId);
+
+    fillModelSelects();
+    els.oldModelSelect.disabled = !availableModels.length;
+    els.newModelSelect.disabled = !availableModels.length;
+    updateCompareButtonState();
+
+    setStatus(`✅ Fant ${availableModels.length} modeller i visningen. Velg gammel og ny IFC.`);
   } catch (e) {
-    showError('Feil under skanning: ' + (e?.message || e));
-    els.status.textContent = '❌ Skanning feilet.';
+    showError('Feil ved henting av modeller: ' + (e?.message || e));
+    setStatus('❌ Kunne ikke lese modeller.');
   }
 }
 
-async function getIfcGlobalIdCached(modelId, runtimeId){
-  const key = `${modelId}:${runtimeId}`;
-  if (ifcIdCache.has(key)) return ifcIdCache.get(key);
-  let v = '';
+function fillModelSelects(){
+  const oldVal = els.oldModelSelect.value;
+  const newVal = els.newModelSelect.value;
+  const options = ['<option value="">Velg modell</option>'].concat(
+    availableModels.map(m => `<option value="${escapeHtml(m.modelId)}">${escapeHtml(m.name)} (${m.objectCount} objekter)</option>`)
+  ).join('');
+  els.oldModelSelect.innerHTML = options;
+  els.newModelSelect.innerHTML = options;
+  if (availableModels.some(m => m.modelId === oldVal)) els.oldModelSelect.value = oldVal;
+  if (availableModels.some(m => m.modelId === newVal)) els.newModelSelect.value = newVal;
+}
+
+function updateCompareButtonState(){
+  const canCompare = !!els.oldModelSelect.value && !!els.newModelSelect.value && els.oldModelSelect.value !== els.newModelSelect.value;
+  els.compareButton.disabled = !canCompare;
+}
+
+async function readSingleModel(modelId){
+  const modelEntry = availableModels.find(m => m.modelId === modelId);
+  const objectsInfo = await API.viewer.getObjects();
+  const rawModel = (objectsInfo || []).find(m => (m.modelId || m.modelid || m['model Id']) === modelId);
+  if (!rawModel) return [];
+
+  const runtimeIds = (rawModel.objects || []).map(o => o.id);
+  if (!runtimeIds.length) return [];
+
+  const objProps = await API.viewer.getObjectProperties(modelId, runtimeIds);
+  const rows = [];
+
+  for (const obj of (objProps || [])) {
+    if (isIgnoredIfcEntity(obj)) continue;
+    const rdsTag = norm(getPropertyValue(obj, FIXED_PSET, FIXED_PROP));
+    const ifcGlobalId = await getIfcGlobalId(modelId, obj.id);
+    rows.push({
+      modelId,
+      modelName: modelEntry ? modelEntry.name : modelId,
+      runtimeId: obj.id,
+      name: norm(obj.name || obj.objectName || ''),
+      ifcGlobalId,
+      rdsTag,
+      duplicateCount: 0,
+      status: rdsTag ? 'OK' : 'Mangler'
+    });
+  }
+
+  const counts = new Map();
+  for (const row of rows) {
+    if (!row.rdsTag) continue;
+    counts.set(row.rdsTag, (counts.get(row.rdsTag) || 0) + 1);
+  }
+  for (const row of rows) {
+    if (!row.rdsTag) continue;
+    row.duplicateCount = counts.get(row.rdsTag) || 0;
+    if (row.duplicateCount > 1) row.status = 'Duplikat';
+  }
+
+  return rows;
+}
+
+function getDuplicateGroupMap(rows){
+  const map = new Map();
+  for (const row of rows) {
+    if (row.status !== 'Duplikat' || !row.rdsTag) continue;
+    if (!map.has(row.rdsTag)) map.set(row.rdsTag, []);
+    map.get(row.rdsTag).push(row);
+  }
+  return map;
+}
+
+async function compareModels(){
+  const oldModelId = els.oldModelSelect.value;
+  const newModelId = els.newModelSelect.value;
+  if (!oldModelId || !newModelId || oldModelId === newModelId) {
+    showError('Velg to ulike modeller.');
+    return;
+  }
+
+  showError('');
+  setStatus('⏳ Leser gammel og ny IFC og sammenligner RDS-koder…');
+
   try {
-    const ids = await API.viewer.convertToObjectIds(modelId, [Number(runtimeId)]);
-    v = (ids && ids[0]) ? String(ids[0]) : '';
-  } catch {}
-  ifcIdCache.set(key, v);
-  return v;
-}
+    oldRows = await readSingleModel(oldModelId);
+    newRows = await readSingleModel(newModelId);
 
-function applySingleRule(value, rule){
-  const v = norm(value);
-  if (rule.kind === 'exists') return !!v;
-  if (rule.kind === 'startsWith') return v.startsWith(rule.value);
-  if (rule.kind === 'equalsOneOf') return rule.value.includes(v);
-  if (rule.kind === 'regex') return rule.value.test(v);
-  if (rule.kind === 'contains') return !v || v.includes(rule.value);
-  return true;
-}
+    els.colorizeButton.disabled = !newRows.length;
+    els.exportCompareButton.disabled = !newRows.length;
+    els.resetButton.disabled = !newRows.length;
 
-function buildRdsFromSegments(seg){
-  const top = norm(seg['02_AAAAAA']);
-  const B = norm(seg['03_Bnn']);
-  const C = norm(seg['05_Cnn']);
-  const D = norm(seg['07_Dnn']);
-  const E = norm(seg['09_EEnnn']);
-  const F = norm(seg['11_FFFnnn']);
-  const G = norm(seg['13_GGGnnn']);
-  const H = norm(seg['15_HHHnnnnn']);
-  if (!top || !B || !C || !D || !E || !F || !G || !H) return '';
-  return `${top}-${B}.${C}.${D}.${E}.${F}.${G}.${H}`;
-}
+    renderSummary();
+    renderCompareTable();
+    renderResultsTable();
 
-function summarize(results){
-  const out = { total:results.length, Gyldig:0, Advarsel:0, Ugyldig:0, reasonCounts:new Map() };
-  for (const r of results){
-    out[r.status]++;
-    for (const reason of r.reasons){
-      out.reasonCounts.set(reason, (out.reasonCounts.get(reason) || 0) + 1);
-    }
+    const oldDupGroups = getDuplicateGroupMap(oldRows).size;
+    const newDupGroups = getDuplicateGroupMap(newRows).size;
+    setStatus(`✅ Sammenligning ferdig. Gammel IFC har ${oldDupGroups} duplikatgrupper. Ny IFC har ${newDupGroups} duplikatgrupper.`);
+  } catch (e) {
+    showError('Feil under sammenligning: ' + (e?.message || e));
+    setStatus('❌ Sammenligning feilet.');
   }
-  return out;
 }
 
-function renderSummary(summary){
+function renderSummary(){
+  const oldDupGroups = getDuplicateGroupMap(oldRows).size;
+  const newDupGroups = getDuplicateGroupMap(newRows).size;
+  const oldDupObjects = oldRows.filter(r => r.status === 'Duplikat').length;
+  const newDupObjects = newRows.filter(r => r.status === 'Duplikat').length;
+  const newMissing = newRows.filter(r => r.status === 'Mangler').length;
+  const sameDupCount = Array.from(getDuplicateGroupMap(newRows).keys()).filter(rds => getDuplicateGroupMap(oldRows).has(rds)).length;
+
   els.summaryGrid.innerHTML = `
-    <div class="card"><div class="muted">Kontrollerte objekter</div><div class="metric">${summary.total}</div></div>
-    <div class="card"><div class="muted">Gyldig</div><div class="metric ok">${summary.Gyldig}</div></div>
-    <div class="card"><div class="muted">Advarsel</div><div class="metric warn">${summary.Advarsel}</div></div>
-    <div class="card"><div class="muted">Ugyldig</div><div class="metric bad">${summary.Ugyldig}</div></div>`;
+    <div class="card"><div class="muted">Objekter gammel IFC</div><div class="metric">${oldRows.length}</div></div>
+    <div class="card"><div class="muted">Objekter ny IFC</div><div class="metric">${newRows.length}</div></div>
+    <div class="card"><div class="muted">Duplikatgrupper gammel</div><div class="metric dup">${oldDupGroups}</div></div>
+    <div class="card"><div class="muted">Duplikatgrupper ny</div><div class="metric dup">${newDupGroups}</div></div>
+    <div class="card"><div class="muted">Like duplikater i begge</div><div class="metric warn">${sameDupCount}</div></div>
+    <div class="card"><div class="muted">Manglende RDS i ny IFC</div><div class="metric warn">${newMissing}</div></div>
+  `;
 }
 
-function destroyCharts(){
-  if (statusChart) statusChart.destroy();
-  if (reasonChart) reasonChart.destroy();
+function renderCompareTable(){
+  const oldGroups = getDuplicateGroupMap(oldRows);
+  const newGroups = getDuplicateGroupMap(newRows);
+  const rows = Array.from(newGroups.entries()).sort((a,b) => b[1].length - a[1].length);
+
+  if (!rows.length) {
+    els.compareBody.innerHTML = '<tr><td colspan="5" class="muted">Ingen duplikater i ny IFC.</td></tr>';
+    return;
+  }
+
+  els.compareBody.innerHTML = rows.map(([rds, newItems]) => {
+    const oldItems = oldGroups.get(rds) || [];
+    const status = oldItems.length > 1 ? 'Begge' : oldItems.length === 1 ? 'Fantes i gammel' : 'Ny';
+    const statusText = oldItems.length > 1 ? 'Duplikat i begge IFC-er' : oldItems.length === 1 ? 'Fantes én gang i gammel IFC' : 'Ny duplikat i ny IFC';
+    const cls = oldItems.length > 1 ? 's-Begge' : oldItems.length === 1 ? 's-Gammel' : 's-Ny';
+    return `
+      <tr>
+        <td><span class="status-pill ${cls}">${statusText}</span></td>
+        <td class="mono">${escapeHtml(rds)}</td>
+        <td>${oldItems.length}</td>
+        <td>${newItems.length}</td>
+        <td>${statusText}</td>
+      </tr>
+    `;
+  }).join('');
 }
-function createCharts(summary){
-  destroyCharts();
-  statusChart = new Chart(els.statusChartCanvas, {
-    type:'doughnut',
-    data:{ labels:['Gyldig','Advarsel','Ugyldig'], datasets:[{ data:[summary.Gyldig,summary.Advarsel,summary.Ugyldig], backgroundColor:['rgb(25,135,84)','rgb(255,193,7)','rgb(220,53,69)'] }] },
-    options:{ plugins:{ legend:{ position:'bottom' }, datalabels:{ color:'#fff', font:{weight:'700'}, formatter:(v)=>v||'' } } }
-  });
-  const reasonEntries = Array.from(summary.reasonCounts.entries()).sort((a,b)=>b[1]-a[1]).slice(0,10);
-  reasonChart = new Chart(els.reasonChartCanvas, {
-    type:'bar',
-    data:{ labels:reasonEntries.map(x=>x[0]), datasets:[{ label:'Antall avvik', data:reasonEntries.map(x=>x[1]), backgroundColor:'rgb(11,94,215)' }] },
-    options:{ indexAxis:'y', plugins:{ legend:{ display:false }, datalabels:{ anchor:'end', align:'right', color:'#213547', formatter:(v)=>v||'' } }, scales:{ x:{ beginAtZero:true } } }
+
+function getDisplayRowsForNewModel(){
+  return newRows.filter(r => r.status === 'Duplikat' || r.status === 'Mangler');
+}
+
+function renderResultsTable(){
+  const rows = getDisplayRowsForNewModel();
+  if (!rows.length) {
+    els.resultsBody.innerHTML = '<tr><td colspan="5" class="muted">Ingen avvik i ny IFC.</td></tr>';
+    return;
+  }
+
+  els.resultsBody.innerHTML = rows.map((r, idx) => `
+    <tr class="row-link" data-idx="${idx}">
+      <td><span class="status-pill ${r.status === 'Duplikat' ? 's-Begge' : 's-Gammel'}">${r.status}</span></td>
+      <td>${escapeHtml(r.name)}</td>
+      <td class="mono">${escapeHtml(r.ifcGlobalId)}</td>
+      <td class="mono">${escapeHtml(r.rdsTag)}</td>
+      <td>${r.duplicateCount || ''}</td>
+    </tr>
+  `).join('');
+
+  Array.from(els.resultsBody.querySelectorAll('tr[data-idx]')).forEach((tr, i) => {
+    tr.addEventListener('click', async () => {
+      const row = getDisplayRowsForNewModel()[i];
+      await zoomToObject(row.modelId, row.runtimeId);
+    });
   });
 }
 
 async function zoomToObject(modelId, runtimeId){
   const selector = { modelObjectIds:[{ modelId, objectRuntimeIds:[Number(runtimeId)] }] };
   try { await API.viewer.setSelection(selector, 'set'); } catch {}
-  try { await API.viewer.setCamera(selector, { animationTime:650 }); } catch {}
+  try { await API.viewer.setCamera(selector, { animationTime:700 }); } catch {}
 }
 
-function renderTable(){
-  const rows = showInvalidOnly ? allResults.filter(r => r.status !== 'Gyldig') : allResults;
-  if (!rows.length){
-    els.resultsBody.innerHTML = `<tr><td colspan="7" class="muted">Ingen rader å vise.</td></tr>`;
-    return;
+async function colorizeNewModel(){
+  if (!API || !newRows.length) return;
+  try {
+    await API.viewer.setObjectState(undefined, { color:'reset' });
+
+    const duplicateMap = new Map();
+    const missingMap = new Map();
+
+    for (const row of newRows.filter(r => r.status === 'Duplikat')) {
+      if (!duplicateMap.has(row.modelId)) duplicateMap.set(row.modelId, []);
+      duplicateMap.get(row.modelId).push(Number(row.runtimeId));
+    }
+    for (const row of newRows.filter(r => r.status === 'Mangler')) {
+      if (!missingMap.has(row.modelId)) missingMap.set(row.modelId, []);
+      missingMap.get(row.modelId).push(Number(row.runtimeId));
+    }
+
+    const duplicateSelector = Array.from(duplicateMap.entries()).map(([modelId, objectRuntimeIds]) => ({ modelId, objectRuntimeIds }));
+    const missingSelector = Array.from(missingMap.entries()).map(([modelId, objectRuntimeIds]) => ({ modelId, objectRuntimeIds }));
+
+    if (duplicateSelector.length) await API.viewer.setObjectState({ modelObjectIds: duplicateSelector }, { color: { r:142,g:68,b:173,a:255 } });
+    if (missingSelector.length) await API.viewer.setObjectState({ modelObjectIds: missingSelector }, { color: { r:240,g:173,b:78,a:255 } });
+
+    setStatus('🎨 Ny IFC er fargelagt. Lilla = duplikat, gul = mangler RDS.');
+  } catch (e) {
+    showError('Feil ved fargelegging: ' + (e?.message || e));
   }
-  els.resultsBody.innerHTML = rows.map((r, idx) => `
-    <tr class="row-link" data-idx="${idx}">
-      <td><span class="status-pill s-${r.status}">${r.status}</span></td>
-      <td>${escapeHtml(r.name)}</td>
-      <td>${escapeHtml(r.ifcGlobalId)}</td>
-      <td>${escapeHtml(r.rdsTag)}</td>
-      <td>${escapeHtml(r.objectClassName)}</td>
-      <td>${escapeHtml(r.objectTypeName)}</td>
-      <td>${r.reasons.length ? `<ul class="reason-list">${r.reasons.map(x=>`<li>${escapeHtml(x)}</li>`).join('')}</ul>` : ''}</td>
-    </tr>`).join('');
-  Array.from(els.resultsBody.querySelectorAll('tr[data-idx]')).forEach((tr, i) => {
-    tr.addEventListener('click', async () => {
-      const row = rows[i];
-      await zoomToObject(row.modelId, row.runtimeId);
-    });
-  });
+}
+
+async function resetColors(){
+  if (!API) return;
+  try {
+    await API.viewer.setObjectState(undefined, { color:'reset' });
+    setStatus('♻️ Modellfarger er tilbakestilt.');
+  } catch (e) {
+    showError('Feil ved tilbakestilling: ' + (e?.message || e));
+  }
+}
+
+function exportCompareCsv(){
+  const oldGroups = getDuplicateGroupMap(oldRows);
+  const newGroups = getDuplicateGroupMap(newRows);
+  const header = ['RDS-kode','Antall i gammel IFC','Antall i ny IFC','Status'];
+  const lines = [header.join(',')];
+
+  for (const [rds, newItems] of Array.from(newGroups.entries()).sort((a,b) => b[1].length - a[1].length)) {
+    const oldItems = oldGroups.get(rds) || [];
+    const status = oldItems.length > 1 ? 'Duplikat i begge IFC-er' : oldItems.length === 1 ? 'Fantes én gang i gammel IFC' : 'Ny duplikat i ny IFC';
+    lines.push([
+      csvEscape(rds),
+      csvEscape(oldItems.length),
+      csvEscape(newItems.length),
+      csvEscape(status)
+    ].join(','));
+  }
+
+  const blob = new Blob([lines.join('\n')], { type:'text/csv;charset=utf-8;' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'rds_ifc_sammenstilling.csv';
+  a.click();
+  URL.revokeObjectURL(a.href);
 }
 
 function csvEscape(v){
   const s = norm(v).replace(/"/g, '""');
   return /[",\n]/.test(s) ? `"${s}"` : s;
 }
-function exportCsv(){
-  const lines = [
-    ['Status','Navn','IfcGlobalId','01_RDS-tag','12_FFFnnn navn','Objekttype','Avvik'].join(',')
-  ];
-  for (const r of allResults){
-    lines.push([
-      r.status, r.name, r.ifcGlobalId, r.rdsTag, r.objectClassName, r.objectTypeName, r.reasons.join(' | ')
-    ].map(csvEscape).join(','));
-  }
-  const blob = new Blob([lines.join('\n')], { type:'text/csv;charset=utf-8;' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = 'nyeveier_rds_kontroll.csv';
-  a.click();
-  URL.revokeObjectURL(a.href);
-}
 
-async function runCheck(){
-  if (!API) return;
-  const mapping = parseMappings();
-  if (!mapping.size) {
-    showError('Regelsettet for objektklasse/objekttype er tomt eller ugyldig.');
-    return;
-  }
-  showError('');
-  els.status.textContent = '⏳ Kjører RDS-kontroll for 2_RDS…';
-  allResults = [];
-  try {
-    const models = await API.viewer.getObjects();
-    for (const m of (models || [])) {
-      const modelId = m.modelId || m.modelid || m['model Id'];
-      const runtimeIds = (m.objects || []).map(o => o.id);
-      if (!modelId || !runtimeIds.length) continue;
-      const objProps = await API.viewer.getObjectProperties(modelId, runtimeIds);
-      for (const obj of (objProps || [])) {
-        if (isIgnoredIfcEntity(obj)) continue;
-        const psetValues = {};
-        for (const rule of RDS_RULES) psetValues[rule.prop] = getPropertyValue(obj, FIXED_PSET, rule.prop);
+els.loadModelsButton.addEventListener('click', loadAvailableModels);
+els.compareButton.addEventListener('click', compareModels);
+els.colorizeButton.addEventListener('click', colorizeNewModel);
+els.exportCompareButton.addEventListener('click', exportCompareCsv);
+els.resetButton.addEventListener('click', resetColors);
+els.oldModelSelect.addEventListener('change', updateCompareButtonState);
+els.newModelSelect.addEventListener('change', updateCompareButtonState);
 
-        const reasons = [];
-        for (const rule of RDS_RULES) {
-          const value = psetValues[rule.prop];
-          const ok = applySingleRule(value, rule);
-          if (!ok) {
-            if (rule.kind === 'exists') reasons.push(`${rule.prop} mangler`);
-            else reasons.push(`${rule.prop} bryter kriteriet`);
-          }
-        }
-
-        const builtRds = buildRdsFromSegments(psetValues);
-        const rdsTag = norm(psetValues['01_RDS-tag']);
-        if (builtRds && rdsTag && builtRds !== rdsTag) reasons.push('01_RDS-tag stemmer ikke med sammensatte delledd');
-
-        const objectClassName = norm(psetValues['12_FFFnnn navn']);
-        const objectTypeName = norm(psetValues['16_HHHnnnnn navn']) || norm(psetValues['14_GGGnnn navn']);
-        if (!objectClassName) reasons.push('Objektklasse mangler i 12_FFFnnn navn');
-        if (!objectTypeName) reasons.push('Objekttype mangler i 16_HHHnnnnn navn / 14_GGGnnn navn');
-        if (objectClassName) {
-          if (!mapping.has(objectClassName)) reasons.push('Objektklasse finnes ikke i regelsettet');
-          else if (objectTypeName && !mapping.get(objectClassName).has(objectTypeName)) reasons.push('Objekttype er ikke gyldig for objektklassen');
-        }
-
-        const ifcGlobalId = await getIfcGlobalIdCached(modelId, obj.id);
-        if (!ifcGlobalId) reasons.push('IfcGlobalId mangler');
-
-        let status = 'Gyldig';
-        if (reasons.some(r => r.includes('bryter kriteriet') || r.includes('stemmer ikke') || r.includes('finnes ikke i regelsettet') || r.includes('ikke gyldig'))) status = 'Ugyldig';
-        else if (reasons.length) status = 'Advarsel';
-
-        allResults.push({
-          status,
-          modelId,
-          runtimeId: obj.id,
-          ifcGlobalId,
-          name: norm(obj.name || obj.objectName),
-          rdsTag,
-          objectClassName,
-          objectTypeName,
-          reasons
-        });
-      }
-    }
-
-    const summary = summarize(allResults);
-    renderSummary(summary);
-    createCharts(summary);
-    renderTable();
-
-    els.colorizeButton.disabled = false;
-    els.resetButton.disabled = false;
-    els.exportCsvButton.disabled = false;
-    els.showInvalidOnlyButton.disabled = false;
-    els.showAllButton.disabled = false;
-    els.status.textContent = `✅ Kontroll ferdig. Kontrollerte ${summary.total} objekter.`;
-  } catch (e) {
-    showError('Feil under kontroll: ' + (e?.message || e));
-    els.status.textContent = '❌ RDS-kontroll feilet.';
-  }
-}
-
-async function colorizeResults(){
-  if (!API || !allResults.length) return;
-  try {
-    await API.viewer.setObjectState(undefined, { color:'reset' });
-    const groups = { Gyldig:[], Advarsel:[], Ugyldig:[] };
-    allResults.forEach(r => groups[r.status].push({ modelId:r.modelId, runtimeId:Number(r.runtimeId) }));
-    for (const [status, arr] of Object.entries(groups)) {
-      const byModel = new Map();
-      arr.forEach(x => {
-        if (!byModel.has(x.modelId)) byModel.set(x.modelId, []);
-        byModel.get(x.modelId).push(x.runtimeId);
-      });
-      const list = Array.from(byModel.entries()).map(([modelId, objectRuntimeIds]) => ({ modelId, objectRuntimeIds }));
-      if (!list.length) continue;
-      const color = status === 'Gyldig' ? { r:25,g:135,b:84,a:255 } : status === 'Advarsel' ? { r:255,g:193,b:7,a:255 } : { r:220,g:53,b:69,a:255 };
-      await API.viewer.setObjectState({ modelObjectIds:list }, { color });
-    }
-    els.status.textContent = '🎨 Resultater er fargelagt i modellen.';
-  } catch (e) {
-    showError('Feil ved fargelegging: ' + (e?.message || e));
-  }
-}
-
-async function resetModel(){
-  if (!API) return;
-  try {
-    await API.viewer.setObjectState(undefined, { color:'reset' });
-    els.status.textContent = '♻️ Modellfarger tilbakestilt.';
-  } catch (e) {
-    showError('Feil ved tilbakestilling: ' + (e?.message || e));
-  }
-}
-
-els.scanButton.addEventListener('click', scanProperties);
-els.runButton.addEventListener('click', runCheck);
-els.colorizeButton.addEventListener('click', colorizeResults);
-els.resetButton.addEventListener('click', resetModel);
-els.exportCsvButton.addEventListener('click', exportCsv);
-els.showInvalidOnlyButton.addEventListener('click', () => { showInvalidOnly = true; renderTable(); });
-els.showAllButton.addEventListener('click', () => { showInvalidOnly = false; renderTable(); });
-els.toggleRulesButton.addEventListener('click', () => els.rulesPanel.classList.toggle('hidden'));
-els.toggleMappingsButton.addEventListener('click', () => els.mappingPanel.classList.toggle('hidden'));
-
-renderRules();
 connect();
 </script>
 </body>
