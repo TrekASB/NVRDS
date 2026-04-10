@@ -243,8 +243,28 @@ async function loadAvailableModels(){
     availableModels = (models || []).map((m, index) => {
       const modelId = m.modelId || m.modelid || m['model Id'] || '';
       const objectCount = (m.objects || []).length;
-      const name = norm(m.name || m.modelName || m.filename || m.fileName || `Modell ${index + 1}`);
-      return { modelId, name, objectCount };
+
+      const candidateNames = [
+        m.name,
+        m.modelName,
+        m.filename,
+        m.fileName,
+        m.displayName,
+        m.title,
+        m.label,
+        m.path,
+        m.uri,
+        m.url
+      ].map(v => norm(v)).filter(Boolean);
+
+      let resolvedName = candidateNames.find(v => /\.ifc(\.zip)?$/i.test(v))
+        || candidateNames.find(v => /ifc/i.test(v))
+        || candidateNames[0]
+        || `Modell ${index + 1}`;
+
+      resolvedName = resolvedName.split('/').pop().split('\\').pop();
+
+      return { modelId, name: resolvedName, objectCount, raw: m };
     }).filter(x => x.modelId);
 
     fillModelSelects();
@@ -262,8 +282,13 @@ async function loadAvailableModels(){
 function fillModelSelects(){
   const oldVal = els.oldModelSelect.value;
   const newVal = els.newModelSelect.value;
+  const buildOptionLabel = (m) => {
+    const cleanName = norm(m.name) || m.modelId;
+    return `${cleanName} (${m.objectCount} objekter)`;
+  };
+
   const options = ['<option value="">Velg modell</option>'].concat(
-    availableModels.map(m => `<option value="${escapeHtml(m.modelId)}">${escapeHtml(m.name)} (${m.objectCount} objekter)</option>`)
+    availableModels.map(m => `<option value="${escapeHtml(m.modelId)}">${escapeHtml(buildOptionLabel(m))}</option>`)
   ).join('');
   els.oldModelSelect.innerHTML = options;
   els.newModelSelect.innerHTML = options;
