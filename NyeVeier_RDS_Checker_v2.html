@@ -10,6 +10,7 @@
       --primary:#0b5ed7;
       --ok:#198754;
       --warn:#f0ad4e;
+      --bad:#dc3545;
       --dup:#8e44ad;
       --muted:#6c757d;
       --bg1:#f4f7fb;
@@ -42,12 +43,12 @@
     .muted{color:var(--muted);font-size:13px}
     #status{padding:12px 14px;background:#eef4ff;border:1px solid #d9e6ff;border-radius:12px;font-weight:700}
     #error{display:none;padding:12px 14px;background:#fff2f2;border:1px solid #ffd0d0;border-radius:12px;color:#8b1e1e;font-weight:600}
-    .toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
-    .summary-grid{display:grid;grid-template-columns:repeat(6,minmax(120px,1fr));gap:12px}
+    .summary-grid{display:grid;grid-template-columns:repeat(8,minmax(120px,1fr));gap:12px}
     .card{background:#fff;border:1px solid var(--border);border-radius:14px;padding:14px}
     .metric{font-size:26px;font-weight:800}
     .metric.ok{color:var(--ok)}
     .metric.warn{color:#c08a00}
+    .metric.bad{color:var(--bad)}
     .metric.dup{color:var(--dup)}
     .results-table{width:100%;border-collapse:collapse;font-size:13px}
     .results-table th,.results-table td{padding:8px 10px;border-bottom:1px solid #ebeff3;text-align:left;vertical-align:top}
@@ -56,11 +57,12 @@
     .s-Begge{background:#f1e7fa;color:#6c2a91}
     .s-Ny{background:#fdecec;color:#9c1f2c}
     .s-Gammel{background:#fff7db;color:#8a6400}
+    .s-LIK{background:#eaf7ef;color:#166b41}
+    .s-ULIK{background:#fdecec;color:#9c1f2c}
     .row-link{cursor:pointer}
     .row-link:hover td{background:#eef6ff}
     .mono{font-family:Consolas,Monaco,monospace}
     .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-    .small{font-size:12px}
     @media(max-width:1200px){.summary-grid{grid-template-columns:repeat(2,minmax(120px,1fr))}.grid-2{grid-template-columns:1fr}}
   </style>
 </head>
@@ -71,7 +73,7 @@
     <div>
       <h1>RDS IFC Compare</h1>
       <div class="meta">Sammenligning av eldre og nyere IFC direkte i Trimble Connect</div>
-      <div class="meta">Leser kun <b>2_RDS → 01. RDS-tag</b> og finner dubletter mellom to modellversjoner</div>
+      <div class="meta">Leser kun <b>2_RDS → 01. RDS-tag</b> og sammenligner både duplikater og GUID-baserte RDS-verdier</div>
     </div>
   </div>
 
@@ -85,7 +87,8 @@
     <button id="loadModelsButton" class="btn-ok" disabled>1. Hent IFC-modeller</button>
     <button id="compareButton" class="btn-primary" disabled>2. Sammenlign</button>
     <button id="colorizeButton" class="btn-dup" disabled>3. Fargelegg ny IFC</button>
-    <button id="exportCompareButton" class="btn-warn" disabled>Eksporter sammenstilling</button>
+    <button id="exportCompareButton" class="btn-warn" disabled>Eksporter duplikater</button>
+    <button id="exportGuidCompareButton" class="btn-primary" disabled>Eksporter GUID-sammenligning</button>
     <button id="resetButton" class="btn-neutral" disabled>Tilbakestill farger</button>
   </div>
 </header>
@@ -134,6 +137,24 @@
   </section>
 
   <section class="panel">
+    <h3>GUID-sammenligning mellom gammel og ny IFC</h3>
+    <div class="muted">Viser objekter koblet sammen på <b>IfcGlobalId</b>. Grønn betyr lik RDS-tag i begge modeller. Rød betyr at RDS-tag er ulik eller mangler i en av modellene.</div>
+    <div style="overflow:auto;max-height:420px;margin-top:12px">
+      <table class="results-table">
+        <thead>
+          <tr>
+            <th>Status</th>
+            <th>IfcGlobalId</th>
+            <th>RDS-tag gammel IFC</th>
+            <th>RDS-tag ny IFC</th>
+          </tr>
+        </thead>
+        <tbody id="guidCompareBody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="panel">
     <h3>Detaljliste for ny IFC</h3>
     <div class="muted">Klikk på en rad for å zoome til objektet i ny IFC.</div>
     <div style="overflow:auto;max-height:560px;margin-top:12px">
@@ -158,6 +179,7 @@ let API = null;
 let availableModels = [];
 let oldRows = [];
 let newRows = [];
+
 const FIXED_PSET = '2_RDS';
 const FIXED_PROP = '01. RDS-tag';
 const IGNORE_TYPES = new Set(['IFCPROJECT','IFCSITE','IFCBUILDING','IFCBUILDINGSTOREY']);
@@ -169,11 +191,13 @@ const els = {
   compareButton: document.getElementById('compareButton'),
   colorizeButton: document.getElementById('colorizeButton'),
   exportCompareButton: document.getElementById('exportCompareButton'),
+  exportGuidCompareButton: document.getElementById('exportGuidCompareButton'),
   resetButton: document.getElementById('resetButton'),
   oldModelSelect: document.getElementById('oldModelSelect'),
   newModelSelect: document.getElementById('newModelSelect'),
   summaryGrid: document.getElementById('summaryGrid'),
   compareBody: document.getElementById('compareBody'),
+  guidCompareBody: document.getElementById('guidCompareBody'),
   resultsBody: document.getElementById('resultsBody')
 };
 
@@ -199,7 +223,9 @@ function getIfcEntityTypeFromObjectProps(obj){
   return '';
 }
 
-function isIgnoredIfcEntity(obj){ return IGNORE_TYPES.has(getIfcEntityTypeFromObjectProps(obj)); }
+function isIgnoredIfcEntity(obj){
+  return IGNORE_TYPES.has(getIfcEntityTypeFromObjectProps(obj));
+}
 
 function getPropertyValue(obj, psetName, propName){
   const psetTarget = norm(psetName).toLowerCase();
@@ -211,6 +237,29 @@ function getPropertyValue(obj, psetName, propName){
     }
   }
   return '';
+}
+
+function getCandidateModelName(m, index){
+  const candidateNames = [
+    m.name,
+    m.modelName,
+    m.filename,
+    m.fileName,
+    m.displayName,
+    m.title,
+    m.label,
+    m.path,
+    m.uri,
+    m.url
+  ].map(v => norm(v)).filter(Boolean);
+
+  let resolvedName = candidateNames.find(v => /\.ifc(\.zip)?$/i.test(v))
+    || candidateNames.find(v => /ifc/i.test(v))
+    || candidateNames[0]
+    || `Modell ${index + 1}`;
+
+  resolvedName = resolvedName.split('/').pop().split('\\').pop();
+  return resolvedName;
 }
 
 async function getIfcGlobalId(modelId, runtimeId){
@@ -243,28 +292,8 @@ async function loadAvailableModels(){
     availableModels = (models || []).map((m, index) => {
       const modelId = m.modelId || m.modelid || m['model Id'] || '';
       const objectCount = (m.objects || []).length;
-
-      const candidateNames = [
-        m.name,
-        m.modelName,
-        m.filename,
-        m.fileName,
-        m.displayName,
-        m.title,
-        m.label,
-        m.path,
-        m.uri,
-        m.url
-      ].map(v => norm(v)).filter(Boolean);
-
-      let resolvedName = candidateNames.find(v => /\.ifc(\.zip)?$/i.test(v))
-        || candidateNames.find(v => /ifc/i.test(v))
-        || candidateNames[0]
-        || `Modell ${index + 1}`;
-
-      resolvedName = resolvedName.split('/').pop().split('\').pop();
-
-      return { modelId, name: resolvedName, objectCount, raw: m };
+      const name = getCandidateModelName(m, index);
+      return { modelId, name, objectCount, raw: m };
     }).filter(x => x.modelId);
 
     fillModelSelects();
@@ -282,16 +311,14 @@ async function loadAvailableModels(){
 function fillModelSelects(){
   const oldVal = els.oldModelSelect.value;
   const newVal = els.newModelSelect.value;
-  const buildOptionLabel = (m) => {
-    const cleanName = norm(m.name) || m.modelId;
-    return `${cleanName} (${m.objectCount} objekter)`;
-  };
 
   const options = ['<option value="">Velg modell</option>'].concat(
-    availableModels.map(m => `<option value="${escapeHtml(m.modelId)}">${escapeHtml(buildOptionLabel(m))}</option>`)
+    availableModels.map(m => `<option value="${escapeHtml(m.modelId)}">${escapeHtml(`${m.name} (${m.objectCount} objekter)`)}</option>`)
   ).join('');
+
   els.oldModelSelect.innerHTML = options;
   els.newModelSelect.innerHTML = options;
+
   if (availableModels.some(m => m.modelId === oldVal)) els.oldModelSelect.value = oldVal;
   if (availableModels.some(m => m.modelId === newVal)) els.newModelSelect.value = newVal;
 }
@@ -353,9 +380,40 @@ function getDuplicateGroupMap(rows){
   return map;
 }
 
+function buildGuidComparisonRows(){
+  const oldByGuid = new Map();
+  const newByGuid = new Map();
+
+  for (const row of oldRows) {
+    const guid = norm(row.ifcGlobalId);
+    if (!guid) continue;
+    oldByGuid.set(guid, row);
+  }
+  for (const row of newRows) {
+    const guid = norm(row.ifcGlobalId);
+    if (!guid) continue;
+    newByGuid.set(guid, row);
+  }
+
+  const guidSet = new Set([...oldByGuid.keys(), ...newByGuid.keys()]);
+  const out = [];
+
+  for (const guid of Array.from(guidSet).sort()) {
+    const oldRow = oldByGuid.get(guid);
+    const newRow = newByGuid.get(guid);
+    const oldRds = norm(oldRow?.rdsTag);
+    const newRds = norm(newRow?.rdsTag);
+    const status = oldRds && newRds && oldRds === newRds ? 'LIK' : 'ULIK';
+    out.push({ ifcGlobalId: guid, oldRds, newRds, status });
+  }
+
+  return out;
+}
+
 async function compareModels(){
   const oldModelId = els.oldModelSelect.value;
   const newModelId = els.newModelSelect.value;
+
   if (!oldModelId || !newModelId || oldModelId === newModelId) {
     showError('Velg to ulike modeller.');
     return;
@@ -370,10 +428,12 @@ async function compareModels(){
 
     els.colorizeButton.disabled = !newRows.length;
     els.exportCompareButton.disabled = !newRows.length;
+    els.exportGuidCompareButton.disabled = !newRows.length;
     els.resetButton.disabled = !newRows.length;
 
     renderSummary();
     renderCompareTable();
+    renderGuidCompareTable();
     renderResultsTable();
 
     const oldDupGroups = getDuplicateGroupMap(oldRows).size;
@@ -388,10 +448,11 @@ async function compareModels(){
 function renderSummary(){
   const oldDupGroups = getDuplicateGroupMap(oldRows).size;
   const newDupGroups = getDuplicateGroupMap(newRows).size;
-  const oldDupObjects = oldRows.filter(r => r.status === 'Duplikat').length;
-  const newDupObjects = newRows.filter(r => r.status === 'Duplikat').length;
-  const newMissing = newRows.filter(r => r.status === 'Mangler').length;
   const sameDupCount = Array.from(getDuplicateGroupMap(newRows).keys()).filter(rds => getDuplicateGroupMap(oldRows).has(rds)).length;
+  const newMissing = newRows.filter(r => r.status === 'Mangler').length;
+  const guidSummary = buildGuidComparisonRows();
+  const sameGuidRds = guidSummary.filter(r => r.status === 'LIK').length;
+  const changedGuidRds = guidSummary.filter(r => r.status === 'ULIK').length;
 
   els.summaryGrid.innerHTML = `
     <div class="card"><div class="muted">Objekter gammel IFC</div><div class="metric">${oldRows.length}</div></div>
@@ -400,6 +461,8 @@ function renderSummary(){
     <div class="card"><div class="muted">Duplikatgrupper ny</div><div class="metric dup">${newDupGroups}</div></div>
     <div class="card"><div class="muted">Like duplikater i begge</div><div class="metric warn">${sameDupCount}</div></div>
     <div class="card"><div class="muted">Manglende RDS i ny IFC</div><div class="metric warn">${newMissing}</div></div>
+    <div class="card"><div class="muted">GUID med lik RDS</div><div class="metric ok">${sameGuidRds}</div></div>
+    <div class="card"><div class="muted">GUID med ulik RDS</div><div class="metric bad">${changedGuidRds}</div></div>
   `;
 }
 
@@ -415,8 +478,11 @@ function renderCompareTable(){
 
   els.compareBody.innerHTML = rows.map(([rds, newItems]) => {
     const oldItems = oldGroups.get(rds) || [];
-    const status = oldItems.length > 1 ? 'Begge' : oldItems.length === 1 ? 'Fantes i gammel' : 'Ny';
-    const statusText = oldItems.length > 1 ? 'Duplikat i begge IFC-er' : oldItems.length === 1 ? 'Fantes én gang i gammel IFC' : 'Ny duplikat i ny IFC';
+    const statusText = oldItems.length > 1
+      ? 'Duplikat i begge IFC-er'
+      : oldItems.length === 1
+        ? 'Fantes én gang i gammel IFC'
+        : 'Ny duplikat i ny IFC';
     const cls = oldItems.length > 1 ? 's-Begge' : oldItems.length === 1 ? 's-Gammel' : 's-Ny';
     return `
       <tr>
@@ -428,6 +494,23 @@ function renderCompareTable(){
       </tr>
     `;
   }).join('');
+}
+
+function renderGuidCompareTable(){
+  const rows = buildGuidComparisonRows();
+  if (!rows.length) {
+    els.guidCompareBody.innerHTML = '<tr><td colspan="4" class="muted">Ingen GUID-er å sammenligne.</td></tr>';
+    return;
+  }
+
+  els.guidCompareBody.innerHTML = rows.map(r => `
+    <tr>
+      <td><span class="status-pill ${r.status === 'LIK' ? 's-LIK' : 's-ULIK'}">${r.status}</span></td>
+      <td class="mono">${escapeHtml(r.ifcGlobalId)}</td>
+      <td class="mono">${escapeHtml(r.oldRds)}</td>
+      <td class="mono">${escapeHtml(r.newRds)}</td>
+    </tr>
+  `).join('');
 }
 
 function getDisplayRowsForNewModel(){
@@ -485,8 +568,12 @@ async function colorizeNewModel(){
     const duplicateSelector = Array.from(duplicateMap.entries()).map(([modelId, objectRuntimeIds]) => ({ modelId, objectRuntimeIds }));
     const missingSelector = Array.from(missingMap.entries()).map(([modelId, objectRuntimeIds]) => ({ modelId, objectRuntimeIds }));
 
-    if (duplicateSelector.length) await API.viewer.setObjectState({ modelObjectIds: duplicateSelector }, { color: { r:142,g:68,b:173,a:255 } });
-    if (missingSelector.length) await API.viewer.setObjectState({ modelObjectIds: missingSelector }, { color: { r:240,g:173,b:78,a:255 } });
+    if (duplicateSelector.length) {
+      await API.viewer.setObjectState({ modelObjectIds: duplicateSelector }, { color: { r:142, g:68, b:173, a:255 } });
+    }
+    if (missingSelector.length) {
+      await API.viewer.setObjectState({ modelObjectIds: missingSelector }, { color: { r:240, g:173, b:78, a:255 } });
+    }
 
     setStatus('🎨 Ny IFC er fargelagt. Lilla = duplikat, gul = mangler RDS.');
   } catch (e) {
@@ -502,6 +589,25 @@ async function resetColors(){
   } catch (e) {
     showError('Feil ved tilbakestilling: ' + (e?.message || e));
   }
+}
+
+function exportGuidCompareCsv(){
+  const rows = buildGuidComparisonRows();
+  const header = ['Status','IfcGlobalId','RDS-tag gammel IFC','RDS-tag ny IFC','Farge'];
+  const lines = [header.join(',')];
+
+  for (const row of rows) {
+    const color = row.status === 'LIK' ? 'GRØNN' : 'RØD';
+    lines.push([
+      csvEscape(row.status),
+      csvEscape(row.ifcGlobalId),
+      csvEscape(row.oldRds),
+      csvEscape(row.newRds),
+      csvEscape(color)
+    ].join(','));
+  }
+
+  downloadCsv(lines.join('\n'), 'guid_rds_sammenligning.csv');
 }
 
 function exportCompareCsv(){
@@ -521,10 +627,14 @@ function exportCompareCsv(){
     ].join(','));
   }
 
-  const blob = new Blob([lines.join('\n')], { type:'text/csv;charset=utf-8;' });
+  downloadCsv(lines.join('\n'), 'rds_ifc_sammenstilling.csv');
+}
+
+function downloadCsv(content, filename){
+  const blob = new Blob([content], { type:'text/csv;charset=utf-8;' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = 'rds_ifc_sammenstilling.csv';
+  a.download = filename;
   a.click();
   URL.revokeObjectURL(a.href);
 }
@@ -534,14 +644,53 @@ function csvEscape(v){
   return /[",\n]/.test(s) ? `"${s}"` : s;
 }
 
+function runSelfTests(){
+  const failures = [];
+
+  if (getCandidateModelName({ fileName:'C:/tmp/test_model.ifc' }, 0) !== 'test_model.ifc') {
+    failures.push('Modelnavn fra Windows-sti feilet');
+  }
+  if (getCandidateModelName({ path:'/folder/a/b/model.ifc' }, 0) !== 'model.ifc') {
+    failures.push('Modelnavn fra UNIX-sti feilet');
+  }
+
+  oldRows = [
+    { ifcGlobalId:'GUID1', rdsTag:'RDS-A', status:'OK' },
+    { ifcGlobalId:'GUID2', rdsTag:'RDS-B', status:'OK' }
+  ];
+  newRows = [
+    { ifcGlobalId:'GUID1', rdsTag:'RDS-A', status:'OK' },
+    { ifcGlobalId:'GUID2', rdsTag:'RDS-C', status:'OK' },
+    { ifcGlobalId:'GUID3', rdsTag:'', status:'Mangler' }
+  ];
+
+  const guidRows = buildGuidComparisonRows();
+  const row1 = guidRows.find(r => r.ifcGlobalId === 'GUID1');
+  const row2 = guidRows.find(r => r.ifcGlobalId === 'GUID2');
+  const row3 = guidRows.find(r => r.ifcGlobalId === 'GUID3');
+
+  if (!row1 || row1.status !== 'LIK') failures.push('GUID1 skulle vært LIK');
+  if (!row2 || row2.status !== 'ULIK') failures.push('GUID2 skulle vært ULIK');
+  if (!row3 || row3.status !== 'ULIK') failures.push('GUID3 skulle vært ULIK');
+
+  oldRows = [];
+  newRows = [];
+
+  if (failures.length) {
+    console.error('Self tests failed:', failures);
+  }
+}
+
 els.loadModelsButton.addEventListener('click', loadAvailableModels);
 els.compareButton.addEventListener('click', compareModels);
 els.colorizeButton.addEventListener('click', colorizeNewModel);
 els.exportCompareButton.addEventListener('click', exportCompareCsv);
+els.exportGuidCompareButton.addEventListener('click', exportGuidCompareCsv);
 els.resetButton.addEventListener('click', resetColors);
 els.oldModelSelect.addEventListener('change', updateCompareButtonState);
 els.newModelSelect.addEventListener('change', updateCompareButtonState);
 
+runSelfTests();
 connect();
 </script>
 </body>
