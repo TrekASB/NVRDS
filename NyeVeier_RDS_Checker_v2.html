@@ -964,12 +964,11 @@ function exportCsv(){
 
   const csvEsc = (v) => {
     const s = (v ?? '').toString().replace(/"/g, '""');
-    return /[",
-
-]/.test(s) ? `"${s}"` : s;
+    return /[",\n]/.test(s) ? `"${s}"` : s;
   };
 
   const lines = [headers.map(csvEsc).join(',')];
+
   for (const r of missingRds) {
     lines.push([
       csvEsc(r.name),
@@ -981,13 +980,15 @@ function exportCsv(){
     ].join(','));
   }
 
-  const bom = '﻿'; // UTF-8 BOM for Excel
-  const blob = new Blob([bom + lines.join('
-')], { type: 'text/csv;charset=utf-8;' });
+  const bom = '\ufeff'; // UTF-8 BOM for Excel
+  const blob = new Blob([bom + lines.join('\n')], { type: 'text/csv;charset=utf-8;' });
+
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
   a.download = 'RDS_mangler_' + new Date().toISOString().slice(0,10) + '.csv';
+  document.body.appendChild(a);
   a.click();
+  document.body.removeChild(a);
   URL.revokeObjectURL(a.href);
 
   setStatus(`⬇ Eksportert ${missingRds.length} objekter uten RDS-tag til CSV.`, 'ok');
