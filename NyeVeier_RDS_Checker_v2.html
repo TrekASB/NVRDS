@@ -351,7 +351,7 @@
 <header>
   <div class="header-title">
     <h1>RDS Validator</h1>
-    <p>PropertySet: 2_RDS · 16 felter</p>
+    <p>PropertySet: 2_RDS · 16 felter · Kun objekter med 0_Element valideres</p>
   </div>
   <span class="badge" id="modelBadge">Ikke tilkoblet</span>
   <button class="btn btn-ghost" id="btnLoad" disabled>Hent modeller</button>
@@ -372,7 +372,7 @@
 <main id="mainContent">
   <div class="empty anim">
     <div class="icon">🔍</div>
-    <div>Velg en modell og trykk <strong>Valider</strong> for å starte.</div>
+    <div>Velg en modell og trykk <strong>Valider</strong> for å starte.<br><span style="font-size:11px;color:var(--muted)">Kun objekter med PropertySet <code>0_Element</code> valideres — romlige beholdere og type-objekter ekskluderes automatisk.</span></div>
   </div>
 </main>
 
@@ -397,7 +397,13 @@ const FIELDS = [
   { key: '16',  label: '16. HHHnnnnn navn'  },
 ];
 
-const IGNORE = new Set(['IFCPROJECT','IFCSITE','IFCBUILDING','IFCBUILDINGSTOREY']);
+// IFC-typer som alltid ignoreres (romlige beholdere, typer og relasjoner uten geometri)
+const IGNORE = new Set([
+  'IFCPROJECT','IFCSITE','IFCBUILDING','IFCBUILDINGSTOREY','IFCSPACE',
+  'IFCZONE','IFCBUILDINGUNIT','IFCSPATIALZONE',
+  'IFCGROUP','IFCSYSTEM','IFCBUILDINGELEMENTPROXYTYPE',
+  'IFCFLOWTERMINALTYPE','IFCFLOWSEGMENTTYPE','IFCDISTRIBUTIONELEMENTTYPE',
+]);
 
 // ── STATE ───────────────────────────────────────────
 let API = null;
@@ -586,12 +592,20 @@ async function validate(){
       const chunk = runtimeIds.slice(i, i + CHUNK);
       const props = await API.viewer.getObjectProperties(modelId, chunk);
       for (const obj of (props || [])) {
+        // 1. Hopp over kjente romlige/strukturelle IFC-typer
         if (IGNORE.has(getIfcType(obj))) continue;
+
+        // 2. HOVDFILTER: objektet MÅ ha PropertySet 0_Element for å være et reelt objekt.
+        //    Spatiale beholdere (IFCBUILDINGSTOREY, IFCBUILDING o.l.) og type-objekter
+        //    mangler dette settet og skal ikke valideres.
+        const elemProps = getPropAny(obj, '0_Element');
+        const has0Element = Object.keys(elemProps).length > 0;
+        if (!has0Element) continue;  // Ikke et reelt fagmodelobjekt — hopp over
+
         const fields = {};
         let missing = 0;
         for (const f of FIELDS) {
           const val = getProp(obj, PSET, f.label.split(' ')[0] + '.');
-          // Prøv også eksakt match
           const val2 = val || getProp(obj, PSET, f.label);
           fields[f.key] = !!(val || val2);
           if (!(val || val2)) missing++;
@@ -602,14 +616,14 @@ async function validate(){
           const ids = await API.viewer.convertToObjectIds(modelId, [Number(obj.id)]);
           guid = ids?.[0] ? String(ids[0]) : '';
         } catch {}
-        // Hent objekttype fra 0_Element PropertySet
-        const elemProps = getPropAny(obj, '0_Element');
-        let elementType = '';
-        for (const [k, v] of Object.entries(elemProps)) {
-          if (/objekttype|object.?type|type/i.test(k) && v) { elementType = v; break; }
+
+        // Hent Objekttype fra 0_Element (allerede hentet over)
+        let elementType = elemProps['Objekttype'] || elemProps['ObjectType'] || elemProps['Object Type'] || '';
+        if (!elementType) {
+          for (const [k, v] of Object.entries(elemProps)) {
+            if (/objekttype|object.?type/i.test(k) && v) { elementType = v; break; }
+          }
         }
-        // Fallback: prøv direkte feltnavn
-        if (!elementType) elementType = elemProps['Objekttype'] || elemProps['ObjectType'] || elemProps['Object Type'] || '';
 
         const rdsTag = getProp(obj, PSET, '01.');
 
@@ -633,7 +647,7 @@ async function validate(){
     btnReset.disabled = false;
     btnColorize.disabled = false;
     btnExport.disabled = false;
-    setStatus(`✅ Validering fullført — ${validationRows.length} objekter analysert.`, 'ok');
+    setStatus(`✅ Validering fullført — ${validationRows.length} fagmodelobjekter med 0_Element analysert (objekter uten 0_Element er ekskludert).`, 'ok');
   } catch(e){
     setStatus('❌ Feil under validering: ' + (e.message || e), 'error');
   }
