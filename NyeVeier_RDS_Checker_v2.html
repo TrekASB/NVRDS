@@ -689,9 +689,59 @@ function validateByRule(obj, modelName){
   const fields = {};
   let reqOk = 0, reqTotal = 0, missingCount = 0, formatErrorCount = 0, naCount = 0;
 
+  const ee = norm(rds['09. EEnnn'] || getProp(obj, PSET, '09. EEnnn')).toUpperCase();
+  const larkNoD = discipline === 'LARK' && ['BA1','CJ1','RA1'].includes(ee);
+  const larkP1  = discipline === 'LARK' && ee === 'CL1';
+  const skoNoD  = (discipline === 'SKO' || discipline === 'SKO_TUNNEL') && ee === 'ME2';
+
   for (const f of FIELDS) {
     const key = f.key;
     const value = norm(rds[f.label] || getProp(obj, PSET, f.label));
+
+    // Conditional exception rules:
+    // 1) SKO / SKO_TUNNEL: when 09. EEnnn = ME2, then 07/08 are not used and must be empty
+    // 2) LARK: when 09. EEnnn = BA1 / CJ1 / RA1, then 07/08 are not used and must be empty
+    // 3) LARK: when 09. EEnnn = CL1, then 07. Dnn must be P1 and 08. Dnn navn is required
+    if (key === '07' || key === '08') {
+      if (skoNoD || larkNoD) {
+        if (!value) {
+          fields[key] = { status: 'na', value };
+          naCount++;
+        } else {
+          fields[key] = { status: 'format', value };
+          formatErrorCount++;
+        }
+        continue;
+      }
+
+      if (larkP1 && key === '07') {
+        reqTotal++;
+        if (!value) {
+          fields[key] = { status: 'missing', value };
+          missingCount++;
+        } else if (value !== 'P1') {
+          fields[key] = { status: 'format', value };
+          formatErrorCount++;
+        } else {
+          fields[key] = { status: 'ok', value };
+          reqOk++;
+        }
+        continue;
+      }
+
+      if (larkP1 && key === '08') {
+        reqTotal++;
+        if (!value) {
+          fields[key] = { status: 'missing', value };
+          missingCount++;
+        } else {
+          fields[key] = { status: 'ok', value };
+          reqOk++;
+        }
+        continue;
+      }
+    }
+
     const isRequired = rules.required.includes(key);
     const isOptional = rules.optional.includes(key);
     const rx = rules.regex[key];
