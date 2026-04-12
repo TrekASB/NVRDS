@@ -277,12 +277,22 @@ function getCandidateModelName(m, index){
     m.sourceFileName,
     m.originalFileName,
     m.file && m.file.name,
+    m.file && m.file.fileName,
     m.model && m.model.name,
+    m.model && m.model.fileName,
     m.data && m.data.name,
     m.data && m.data.filename,
+    m.data && m.data.fileName,
     m.metadata && m.metadata.name,
-    m.metadata && m.metadata.filename
+    m.metadata && m.metadata.filename,
+    m.metadata && m.metadata.fileName,
+    m.info && m.info.name,
+    m.info && m.info.fileName,
   ].map(norm).filter(Boolean);
+
+  // Prioriter IFC-filnavn blant direkte felter
+  const directIfc = direct.map(lastPathPart).filter(v => /\.ifc(\.zip)?$/i.test(v));
+  if (directIfc.length) return directIfc.sort((a, b) => a.length - b.length)[0];
 
   const deep = [];
   collectStringsDeep(m, deep, 0);
@@ -313,6 +323,10 @@ async function connect(){
       throw new Error('Trimble Connect Workspace API ble ikke lastet.');
     }
     API = await TrimbleConnectWorkspace.connect(window.parent, () => {}, 30000);
+    // Debug: logg tilgjengelige API-metoder til konsollen
+    console.log('[RDS] API-objekt:', Object.keys(API));
+    if (API.models) console.log('[RDS] API.models:', Object.keys(API.models));
+    if (API.viewer) console.log('[RDS] API.viewer:', Object.keys(API.viewer));
     els.loadModelsButton.disabled = false;
     setStatus('✅ Tilkoblet Trimble Connect. Åpne begge IFC-modellene og trykk «Hent IFC-modeller».');
   } catch (e) {
@@ -327,13 +341,49 @@ async function loadAvailableModels(){
   setStatus('⏳ Leser tilgjengelige modeller i visningen…');
 
   try {
-    const models = await API.viewer.getObjects();
-    availableModels = (models || []).map((m, index) => {
-      const modelId = m.modelId || m.modelid || m['model Id'] || '';
+    // 1. Bygg et oppslag fra modelId → filnavn ved hjelp av getModels()
+    const modelNameMap = new Map();
+    try {
+      // Prøv ulike steder der Trimble Connect eksponerer modelliste
+      const sources = [
+        () => API.models && typeof API.models.getModels === 'function' ? API.models.getModels() : null,
+        () => API.viewer && typeof API.viewer.getModels === 'function' ? API.viewer.getModels() : null,
+        () => API.project && typeof API.project.getModels === 'function' ? API.project.getModels() : null,
+      ];
+      for (const src of sources) {
+        let result = null;
+        try { result = await src(); } catch {}
+        if (!result) continue;
+        const list = Array.isArray(result) ? result : (result.models || result.items || []);
+        for (const m of list) {
+          const id = norm(m.id || m.modelId || m.modelid || '');
+          if (!id) continue;
+          // Prøv å hente filnavn fra alle kjente felter
+          const fileName = [
+            m.name, m.fileName, m.filename, m.displayName,
+            m.file && m.file.name, m.sourceFileName, m.originalFileName,
+            m.data && m.data.name, m.metadata && m.metadata.name
+          ].map(norm).filter(v => v && /\.ifc/i.test(v))[0]
+          || [m.name, m.fileName, m.filename, m.displayName].map(norm).filter(Boolean)[0];
+          if (fileName) modelNameMap.set(id, lastPathPart(fileName));
+        }
+        if (modelNameMap.size > 0) break; // Fant noe — slutter å prøve
+      }
+    } catch {}
+
+    // 2. Hent objektliste (brukes til å finne modellId-er og antall objekter)
+    const objects = await API.viewer.getObjects();
+    availableModels = (objects || []).map((m, index) => {
+      const modelId = norm(m.modelId || m.modelid || m['model Id'] || '');
+      if (!modelId) return null;
       const objectCount = Array.isArray(m.objects) ? m.objects.length : 0;
-      const name = getCandidateModelName(m, index);
+
+      // Prioriter navn fra modelNameMap, fall tilbake til getCandidateModelName
+      let name = modelNameMap.get(modelId) || '';
+      if (!name) name = getCandidateModelName(m, index);
+
       return { modelId, name, objectCount };
-    }).filter(x => x.modelId);
+    }).filter(Boolean);
 
     fillModelSelects();
     els.oldModelSelect.disabled = availableModels.length === 0;
