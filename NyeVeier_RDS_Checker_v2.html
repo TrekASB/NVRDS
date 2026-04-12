@@ -1,891 +1,851 @@
 <!DOCTYPE html>
 <html lang="nb">
 <head>
-  <meta charset="UTF-8" />
-  <title>RDS IFC Compare</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset="UTF-8"/>
+  <title>RDS Validator</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <script src="https://components.connect.trimble.com/trimble-connect-workspace-api/index.js"></script>
   <style>
-    :root{
-      --primary:#0b5ed7;
-      --ok:#198754;
-      --warn:#f0ad4e;
-      --bad:#dc3545;
-      --dup:#8e44ad;
-      --muted:#6c757d;
-      --bg1:#f4f7fb;
-      --bg2:#e7eef7;
-      --card:#ffffff;
-      --border:#d9e2ec;
-      --ink:#213547;
+    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Syne:wght@400;600;700;800&display=swap');
+
+    :root {
+      --bg:        #0d1117;
+      --surface:   #161b22;
+      --surface2:  #1f2937;
+      --border:    #30363d;
+      --ink:       #e6edf3;
+      --muted:     #7d8590;
+      --green:     #3fb950;
+      --green-dim: #1a3a22;
+      --yellow:    #d29922;
+      --yellow-dim:#2d2205;
+      --red:       #f85149;
+      --red-dim:   #3a1212;
+      --blue:      #58a6ff;
+      --blue-dim:  #0d2044;
+      --accent:    #58a6ff;
+      --mono:      'JetBrains Mono', monospace;
+      --sans:      'Syne', sans-serif;
     }
-    *{box-sizing:border-box}
-    body{margin:0;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;color:var(--ink);background:linear-gradient(135deg,var(--bg1),var(--bg2));min-height:100vh;display:flex;flex-direction:column;overflow:hidden}
-    header{background:rgba(255,255,255,.96);border-bottom:1px solid var(--border);padding:16px 22px;display:flex;flex-wrap:wrap;gap:14px;align-items:center;box-shadow:0 4px 14px rgba(0,0,0,.07)}
-    .title-wrap{display:flex;gap:14px;align-items:center;min-width:340px;flex:1}
-    .logo{width:72px;height:72px;background:#fff;border-radius:12px;object-fit:contain;padding:6px;box-shadow:0 2px 8px rgba(0,0,0,.08)}
-    h1{margin:0;font-size:24px;color:var(--primary)}
-    .meta{font-size:13px;color:var(--muted)}
-    .group{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
-    .chip{padding:8px 12px;border-radius:999px;background:#eef4ff;border:1px solid #d7e5ff;font-size:13px;font-weight:700}
-    button,select{font:inherit;border-radius:10px;border:1px solid var(--border)}
-    button{padding:10px 14px;border:none;color:#fff;font-weight:700;cursor:pointer}
-    button:disabled{opacity:.55;cursor:not-allowed}
-    select{padding:10px 12px;background:#fff;min-width:260px}
-    .btn-primary{background:var(--primary)}
-    .btn-ok{background:var(--ok)}
-    .btn-warn{background:#c08a00}
-    .btn-dup{background:var(--dup)}
-    .btn-neutral{background:#6c757d}
-    main{flex:1;overflow:auto;padding:18px;display:grid;gap:16px}
-    .panel{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:16px;box-shadow:0 6px 18px rgba(0,0,0,.05)}
-    .panel h3{margin:0 0 10px 0}
-    .muted{color:var(--muted);font-size:13px}
-    #status{padding:12px 14px;background:#eef4ff;border:1px solid #d9e6ff;border-radius:12px;font-weight:700}
-    #error{display:none;padding:12px 14px;background:#fff2f2;border:1px solid #ffd0d0;border-radius:12px;color:#8b1e1e;font-weight:600}
-    .summary-grid{display:grid;grid-template-columns:repeat(8,minmax(120px,1fr));gap:12px}
-    .card{background:#fff;border:1px solid var(--border);border-radius:14px;padding:14px}
-    .metric{font-size:26px;font-weight:800}
-    .metric.ok{color:var(--ok)}
-    .metric.warn{color:#c08a00}
-    .metric.bad{color:var(--bad)}
-    .metric.dup{color:var(--dup)}
-    .results-table{width:100%;border-collapse:collapse;font-size:13px}
-    .results-table th,.results-table td{padding:8px 10px;border-bottom:1px solid #ebeff3;text-align:left;vertical-align:top}
-    .results-table th{background:#f6f9fc;position:sticky;top:0;z-index:1}
-    .status-pill{display:inline-block;padding:3px 8px;border-radius:999px;font-size:12px;font-weight:700}
-    .s-Begge{background:#f1e7fa;color:#6c2a91}
-    .s-Ny{background:#fef9e7;color:#9a7d0a}
-    .s-Gammel{background:#f1e7fa;color:#6c2a91}
-    .s-LIK{background:#eaf7ef;color:#166b41}
-    .s-ULIK{background:#fdecea;color:#9c1f2c}
-    .s-Mangler{background:#fde8f3;color:#8b1a5a}
-    .row-link{cursor:pointer}
-    .row-link:hover td{background:#eef6ff}
-    .mono{font-family:Consolas,Monaco,monospace}
-    .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-    @media(max-width:1200px){.summary-grid{grid-template-columns:repeat(2,minmax(120px,1fr))}.grid-2{grid-template-columns:1fr}}
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--ink);
+      font-family: var(--sans);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* ── HEADER ── */
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-shrink: 0;
+    }
+
+    .header-title { flex: 1; }
+    .header-title h1 {
+      font-size: 16px;
+      font-weight: 800;
+      letter-spacing: -.3px;
+      color: var(--ink);
+    }
+    .header-title p {
+      font-size: 11px;
+      color: var(--muted);
+      font-family: var(--mono);
+      margin-top: 1px;
+    }
+
+    .badge {
+      font-family: var(--mono);
+      font-size: 10px;
+      padding: 3px 8px;
+      border-radius: 4px;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    .btn {
+      font-family: var(--sans);
+      font-size: 12px;
+      font-weight: 700;
+      padding: 7px 14px;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+      transition: opacity .15s, transform .1s;
+      white-space: nowrap;
+    }
+    .btn:disabled { opacity: .4; cursor: not-allowed; }
+    .btn:not(:disabled):hover { opacity: .85; }
+    .btn:not(:disabled):active { transform: scale(.97); }
+    .btn-primary { background: var(--blue); color: #000; }
+    .btn-ghost   { background: var(--surface2); color: var(--ink); border: 1px solid var(--border); }
+    .btn-danger  { background: #21262d; color: var(--red); border: 1px solid #3a1c1c; }
+
+    /* ── STATUS BAR ── */
+    #statusBar {
+      font-family: var(--mono);
+      font-size: 11px;
+      padding: 6px 16px;
+      background: var(--blue-dim);
+      color: var(--blue);
+      border-bottom: 1px solid #1a3a5c;
+      flex-shrink: 0;
+    }
+    #statusBar.ok    { background: var(--green-dim); color: var(--green); border-color: #1a3a22; }
+    #statusBar.error { background: var(--red-dim);   color: var(--red);   border-color: #3a1212; }
+
+    /* ── MODEL SELECTOR ── */
+    #modelBar {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 8px 16px;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-shrink: 0;
+    }
+    #modelBar label { font-size: 11px; color: var(--muted); font-family: var(--mono); white-space: nowrap; }
+    select {
+      font-family: var(--mono);
+      font-size: 12px;
+      background: var(--surface2);
+      color: var(--ink);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 6px 10px;
+      flex: 1;
+      min-width: 0;
+    }
+    select:disabled { opacity: .4; }
+
+    /* ── MAIN LAYOUT ── */
+    main {
+      flex: 1;
+      overflow-y: auto;
+      padding: 14px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    /* ── SUMMARY CARDS ── */
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+    }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 14px;
+    }
+    .card .label { font-size: 10px; color: var(--muted); font-family: var(--mono); text-transform: uppercase; letter-spacing: .5px; }
+    .card .value { font-size: 28px; font-weight: 800; line-height: 1.1; margin-top: 4px; }
+    .card .sub   { font-size: 10px; color: var(--muted); font-family: var(--mono); margin-top: 3px; }
+    .card.green  { border-color: #1e4028; }
+    .card.green .value { color: var(--green); }
+    .card.yellow { border-color: #3a2d05; }
+    .card.yellow .value { color: var(--yellow); }
+    .card.red    { border-color: #3a1212; }
+    .card.red .value { color: var(--red); }
+    .card.blue   { border-color: #0d2044; }
+    .card.blue .value { color: var(--blue); }
+
+    /* ── PANEL ── */
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    .panel-header {
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .panel-header h3 {
+      font-size: 13px;
+      font-weight: 700;
+      flex: 1;
+    }
+    .panel-header .hint {
+      font-size: 10px;
+      color: var(--muted);
+      font-family: var(--mono);
+    }
+
+    /* ── FIELD CHART ── */
+    #fieldChart { padding: 14px; display: flex; flex-direction: column; gap: 7px; }
+
+    .field-row { display: flex; align-items: center; gap: 10px; }
+    .field-name {
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--muted);
+      width: 180px;
+      flex-shrink: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .bar-track {
+      flex: 1;
+      height: 16px;
+      background: var(--surface2);
+      border-radius: 4px;
+      overflow: hidden;
+      display: flex;
+    }
+    .bar-fill-ok   { background: var(--green); height: 100%; transition: width .5s cubic-bezier(.4,0,.2,1); }
+    .bar-fill-miss { background: var(--red);   height: 100%; transition: width .5s cubic-bezier(.4,0,.2,1); }
+    .bar-pct {
+      font-family: var(--mono);
+      font-size: 10px;
+      width: 36px;
+      text-align: right;
+      flex-shrink: 0;
+      color: var(--ink);
+    }
+    .bar-count {
+      font-family: var(--mono);
+      font-size: 10px;
+      width: 60px;
+      text-align: right;
+      flex-shrink: 0;
+      color: var(--muted);
+    }
+
+    /* ── TABLE ── */
+    .table-wrap { overflow: auto; max-height: 340px; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 11px;
+    }
+    thead th {
+      background: var(--surface2);
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: .4px;
+      padding: 8px 10px;
+      text-align: left;
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      white-space: nowrap;
+    }
+    tbody tr { border-bottom: 1px solid #1c2128; }
+    tbody tr:hover td { background: #1c2128; }
+    tbody td {
+      padding: 6px 10px;
+      vertical-align: middle;
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--ink);
+    }
+    .obj-name { color: var(--blue); max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .guid     { color: var(--muted); max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; cursor: pointer; }
+    .guid:hover { color: var(--ink); }
+
+    /* Field cells in table */
+    .fc { width: 22px; height: 22px; border-radius: 4px; display: inline-flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 700; }
+    .fc.ok   { background: var(--green-dim); color: var(--green); }
+    .fc.miss { background: var(--red-dim);   color: var(--red); }
+
+    /* ── SCORE PILL ── */
+    .score {
+      display: inline-block;
+      font-family: var(--mono);
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 20px;
+    }
+    .score.s100 { background: var(--green-dim); color: var(--green); }
+    .score.s75  { background: #1a2a10; color: #7ee787; }
+    .score.s50  { background: var(--yellow-dim); color: var(--yellow); }
+    .score.s25  { background: #3a2005; color: #d08030; }
+    .score.s0   { background: var(--red-dim); color: var(--red); }
+
+    /* ── FILTER TABS ── */
+    .tabs { display: flex; gap: 6px; }
+    .tab {
+      font-family: var(--mono);
+      font-size: 10px;
+      padding: 4px 10px;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      transition: all .15s;
+    }
+    .tab.active, .tab:hover { background: var(--surface2); color: var(--ink); border-color: var(--blue); }
+
+    /* ── DONUT ── */
+    #donutWrap { display: flex; align-items: center; gap: 20px; padding: 14px; }
+    #donutSvg  { flex-shrink: 0; }
+    .donut-legend { display: flex; flex-direction: column; gap: 6px; }
+    .legend-item  { display: flex; align-items: center; gap: 8px; font-size: 11px; }
+    .legend-dot   { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+    .legend-text  { color: var(--muted); font-family: var(--mono); font-size: 10px; }
+    .legend-val   { font-weight: 700; color: var(--ink); margin-left: auto; font-family: var(--mono); font-size: 10px; min-width: 28px; text-align: right; }
+
+    /* ── SEARCH ── */
+    #searchInput {
+      font-family: var(--mono);
+      font-size: 11px;
+      background: var(--surface2);
+      color: var(--ink);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 5px 10px;
+      width: 180px;
+    }
+    #searchInput::placeholder { color: var(--muted); }
+
+    /* ── EMPTY STATE ── */
+    .empty {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .empty .icon { font-size: 36px; margin-bottom: 10px; }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+    /* Animate in */
+    @keyframes fadeUp { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:none; } }
+    .anim { animation: fadeUp .3s ease both; }
+
+    .grid-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    @media(max-width: 640px) { .grid-2col { grid-template-columns: 1fr; } .cards { grid-template-columns: repeat(2,1fr); } }
   </style>
 </head>
 <body>
+
 <header>
-  <div class="title-wrap">
-    <img src="norconsult-logo-black.png" alt="Norconsult logo" class="logo">
-    <div>
-      <h1>RDS IFC Compare</h1>
-      <div class="meta">Sammenligning av eldre og nyere IFC direkte i Trimble Connect</div>
-      <div class="meta">Leser kun <b>2_RDS → 01. RDS-tag</b> og sammenligner både duplikater og GUID-baserte RDS-verdier</div>
-    </div>
+  <div class="header-title">
+    <h1>RDS Validator</h1>
+    <p>PropertySet: 2_RDS · 16 felter</p>
   </div>
-
-  <div class="group">
-    <div class="chip" style="background:#eaf7ef;border-color:#b2dfcb;color:#166b41">🟢 Lik RDS i begge</div>
-    <div class="chip" style="background:#fef9e7;border-color:#f9e79f;color:#9a7d0a">🟡 Ny RDS-tag</div>
-    <div class="chip" style="background:#f1e7fa;border-color:#d7bde2;color:#6c2a91">🟣 Gammel RDS-tag</div>
-    <div class="chip" style="background:#fde8f3;border-color:#f9b8de;color:#8b1a5a">🩷 Mangler RDS</div>
-  </div>
-
-  <div class="group">
-    <button id="loadModelsButton" class="btn-ok" disabled>1. Hent IFC-modeller</button>
-    <button id="compareButton" class="btn-primary" disabled>2. Sammenlign</button>
-    <button id="colorizeButton" class="btn-dup" disabled>3. Fargelegg ny IFC</button>
-    <button id="exportCompareButton" class="btn-warn" disabled>Eksporter duplikater</button>
-    <button id="exportGuidCompareButton" class="btn-primary" disabled>Eksporter alle GUID + RDS</button>
-    <button id="resetButton" class="btn-neutral" disabled>Tilbakestill farger</button>
-  </div>
+  <span class="badge" id="modelBadge">Ikke tilkoblet</span>
+  <button class="btn btn-ghost" id="btnLoad" disabled>Hent modeller</button>
+  <button class="btn btn-primary" id="btnValidate" disabled>▶ Valider</button>
+  <button class="btn btn-danger" id="btnReset" disabled>↺ Nullstill</button>
 </header>
 
-<main>
-  <div id="status">Kobler til Trimble Connect…</div>
-  <div id="error"></div>
+<div id="statusBar">Kobler til Trimble Connect…</div>
 
-  <section class="panel">
-    <h3>Hvordan bruke denne</h3>
-    <div class="muted">Åpne både eldre og nyere IFC i samme Trimble Connect-visning. Velg deretter hvilken modell som er eldre leveranse og hvilken som er nyere leveranse. Skriptet sammenligner RDS-koder direkte mellom modellene uten CSV.</div>
-    <div class="muted" style="margin-top:8px">
-      <b>Fargekoding av ny IFC:</b>
-      <span style="color:#166b41">🟢 Grønn</span> = identisk RDS i begge modeller &nbsp;|&nbsp;
-      <span style="color:#9a7d0a">🟡 Gul</span> = ny RDS-tag som ikke fantes i gammel IFC &nbsp;|&nbsp;
-      <span style="color:#6c2a91">🟣 Lilla</span> = RDS-tag som kun fantes i gammel IFC &nbsp;|&nbsp;
-      <span style="color:#8b1a5a">🩷 Rosa</span> = mangler RDS-tag
-    </div>
-    <div class="grid-2" style="margin-top:12px">
-      <div>
-        <label for="oldModelSelect"><b>Eldre IFC</b></label><br>
-        <select id="oldModelSelect" disabled><option value="">Velg eldre IFC</option></select>
-      </div>
-      <div>
-        <label for="newModelSelect"><b>Nyere IFC</b></label><br>
-        <select id="newModelSelect" disabled><option value="">Velg nyere IFC</option></select>
-      </div>
-    </div>
-  </section>
+<div id="modelBar">
+  <label>Modell:</label>
+  <select id="modelSelect" disabled><option value="">– velg modell –</option></select>
+</div>
 
-  <section class="panel">
-    <h3>Oppsummering</h3>
-    <div class="summary-grid" id="summaryGrid"></div>
-  </section>
-
-  <section class="panel">
-    <h3>Sammenstilling av duplikate RDS-koder</h3>
-    <div class="muted">Viser RDS-koder som er duplikater i den nye IFC-en, og om de også var duplikater i den gamle IFC-en.</div>
-    <div style="overflow:auto;max-height:520px;margin-top:12px">
-      <table class="results-table">
-        <thead>
-          <tr>
-            <th>Status</th>
-            <th>RDS-kode</th>
-            <th>Antall i gammel IFC</th>
-            <th>Antall i ny IFC</th>
-            <th>Kommentar</th>
-          </tr>
-        </thead>
-        <tbody id="compareBody"></tbody>
-      </table>
-    </div>
-  </section>
-
-  <section class="panel">
-    <h3>GUID-sammenligning mellom gammel og ny IFC</h3>
-    <div class="muted">Viser objekter koblet sammen på <b>IfcGlobalId</b>. Grønn betyr lik RDS-tag i begge modeller. Rød betyr at RDS-tag er ulik eller mangler i en av modellene. CSV-eksporten tar med alle objekter og stiller gammel og ny modell side om side på samme rad når GUID er lik.</div>
-    <div style="overflow:auto;max-height:420px;margin-top:12px">
-      <table class="results-table">
-        <thead>
-          <tr>
-            <th>Status</th>
-            <th>IfcGlobalId</th>
-            <th>Navn gammel IFC</th>
-            <th>RDS-tag gammel IFC</th>
-            <th>Navn ny IFC</th>
-            <th>RDS-tag ny IFC</th>
-          </tr>
-        </thead>
-        <tbody id="guidCompareBody"></tbody>
-      </table>
-    </div>
-  </section>
-
-  <section class="panel">
-    <h3>Detaljliste for ny IFC</h3>
-    <div class="muted">Klikk på en rad for å zoome til objektet i ny IFC.</div>
-    <div style="overflow:auto;max-height:560px;margin-top:12px">
-      <table class="results-table">
-        <thead>
-          <tr>
-            <th>Status</th>
-            <th>Navn</th>
-            <th>IfcGlobalId</th>
-            <th>RDS-kode</th>
-            <th>Antall med samme kode i ny IFC</th>
-          </tr>
-        </thead>
-        <tbody id="resultsBody"></tbody>
-      </table>
-    </div>
-  </section>
+<main id="mainContent">
+  <div class="empty anim">
+    <div class="icon">🔍</div>
+    <div>Velg en modell og trykk <strong>Valider</strong> for å starte.</div>
+  </div>
 </main>
 
 <script>
+// ── KONFIG ──────────────────────────────────────────
+const PSET = '2_RDS';
+const FIELDS = [
+  { key: '01',  label: '01. RDS-tag'       },
+  { key: '02',  label: '02. AAAAAA'         },
+  { key: '03',  label: '03. Bnn'            },
+  { key: '04',  label: '04. Bnn navn'       },
+  { key: '05',  label: '05. Cnn'            },
+  { key: '06',  label: '06. Cnn navn'       },
+  { key: '08',  label: '08. Dnn navn'       },
+  { key: '09',  label: '09. EEnnn'          },
+  { key: '10',  label: '10. EEnnn navn'     },
+  { key: '11',  label: '11. FFFnnn'         },
+  { key: '12',  label: '12. FFFnnn navn'    },
+  { key: '13',  label: '13. GGGnnn'         },
+  { key: '14',  label: '14. GGGnnn navn'    },
+  { key: '15',  label: '15. HHHnnnnn'       },
+  { key: '16',  label: '16. HHHnnnnn navn'  },
+];
+
+const IGNORE = new Set(['IFCPROJECT','IFCSITE','IFCBUILDING','IFCBUILDINGSTOREY']);
+
+// ── STATE ───────────────────────────────────────────
 let API = null;
-let availableModels = [];
-let oldRows = [];
-let newRows = [];
+let allModels = [];
+let validationRows = [];  // { name, guid, modelId, runtimeId, fields:{key:bool}, score, missingCount }
+let activeFilter = 'all';
+let searchTerm = '';
 
-const FIXED_PSET = '2_RDS';
-const FIXED_PROP = '01. RDS-tag';
-const IGNORE_TYPES = new Set(['IFCPROJECT','IFCSITE','IFCBUILDING','IFCBUILDINGSTOREY']);
+// ── DOM ─────────────────────────────────────────────
+const $ = id => document.getElementById(id);
+const btnLoad     = $('btnLoad');
+const btnValidate = $('btnValidate');
+const btnReset    = $('btnReset');
+const modelSelect = $('modelSelect');
+const statusBar   = $('statusBar');
+const modelBadge  = $('modelBadge');
+const mainContent = $('mainContent');
 
-const els = {
-  status: document.getElementById('status'),
-  error: document.getElementById('error'),
-  loadModelsButton: document.getElementById('loadModelsButton'),
-  compareButton: document.getElementById('compareButton'),
-  colorizeButton: document.getElementById('colorizeButton'),
-  exportCompareButton: document.getElementById('exportCompareButton'),
-  exportGuidCompareButton: document.getElementById('exportGuidCompareButton'),
-  resetButton: document.getElementById('resetButton'),
-  oldModelSelect: document.getElementById('oldModelSelect'),
-  newModelSelect: document.getElementById('newModelSelect'),
-  summaryGrid: document.getElementById('summaryGrid'),
-  compareBody: document.getElementById('compareBody'),
-  guidCompareBody: document.getElementById('guidCompareBody'),
-  resultsBody: document.getElementById('resultsBody')
-};
-
+// ── UTILS ───────────────────────────────────────────
 function norm(v){ return (v ?? '').toString().trim(); }
-function escapeHtml(v){ return norm(v).replace(/[&<>\"]/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[s])); }
-function showError(msg){ els.error.textContent = msg || ''; els.error.style.display = msg ? 'block' : 'none'; }
-function setStatus(msg){ els.status.textContent = msg; }
+function esc(v){ return norm(v).replace(/[&<>"]/g, s=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[s])); }
 
-function looksLikeIfcEntityName(v){
+function setStatus(msg, cls=''){
+  statusBar.textContent = msg;
+  statusBar.className = cls;
+}
+
+function lastPathPart(v){ return norm(v).split('/').pop().split('\\').pop(); }
+
+function getModelName(m, idx){
+  const direct = [
+    m.name, m.modelName, m.fileName, m.filename, m.displayName,
+    m.file?.name, m.model?.name, m.data?.name, m.metadata?.name
+  ].map(norm).filter(Boolean);
+  const ifc = direct.map(lastPathPart).find(v => /\.ifc/i.test(v));
+  if (ifc) return ifc;
+  if (direct.length) return lastPathPart(direct[0]);
+  return `Modell ${idx + 1}`;
+}
+
+function looksLikeIfc(v){
   const s = norm(v).toUpperCase();
   return /^IFC[A-Z0-9_]+$/.test(s) ? s : '';
 }
 
-function getIfcEntityTypeFromObjectProps(obj){
-  const direct = looksLikeIfcEntityName(obj.ifcType || obj.ifcEntity || obj.entityType || obj.type || obj.objectType || obj.className || obj.class);
+function getIfcType(obj){
+  const direct = looksLikeIfc(obj.ifcType || obj.ifcEntity || obj.type || obj.className || '');
   if (direct) return direct;
   for (const ps of (obj.properties || [])) {
     for (const p of (ps.properties || [])) {
-      const candidate = looksLikeIfcEntityName(p.value);
-      if (candidate) return candidate;
+      const c = looksLikeIfc(p.value);
+      if (c) return c;
     }
   }
   return '';
 }
 
-function isIgnoredIfcEntity(obj){
-  return IGNORE_TYPES.has(getIfcEntityTypeFromObjectProps(obj));
-}
-
-function getPropertyValue(obj, psetName, propName){
-  const psetTarget = norm(psetName).toLowerCase();
-  const propTarget = norm(propName).toLowerCase();
+function getProp(obj, pset, propStartsWith){
+  const pt = norm(pset).toLowerCase();
+  const pp = norm(propStartsWith).toLowerCase();
   for (const ps of (obj.properties || [])) {
-    if (norm(ps.name).toLowerCase() !== psetTarget) continue;
+    if (norm(ps.name).toLowerCase() !== pt) continue;
     for (const p of (ps.properties || [])) {
-      if (norm(p.name).toLowerCase() === propTarget) return p.value;
+      if (norm(p.name).toLowerCase().startsWith(pp)) return norm(p.value);
     }
   }
   return '';
 }
 
-function collectStringsDeep(value, out, depth){
-  if (depth > 4 || value == null) return;
-  if (typeof value === 'string') {
-    const s = norm(value);
-    if (s) out.push(s);
-    return;
-  }
-  if (typeof value !== 'object') return;
-  if (Array.isArray(value)) {
-    for (const item of value) collectStringsDeep(item, out, depth + 1);
-    return;
-  }
-  for (const val of Object.values(value)) {
-    collectStringsDeep(val, out, depth + 1);
-  }
+function scoreClass(pct){
+  if (pct === 100) return 's100';
+  if (pct >= 75)   return 's75';
+  if (pct >= 50)   return 's50';
+  if (pct >= 25)   return 's25';
+  return 's0';
 }
 
-function lastPathPart(v){
-  return norm(v).split('/').pop().split('\\').pop();
-}
-
-function getCandidateModelName(m, index){
-  const direct = [
-    m.name,
-    m.modelName,
-    m.filename,
-    m.fileName,
-    m.displayName,
-    m.title,
-    m.label,
-    m.path,
-    m.uri,
-    m.url,
-    m.sourceFileName,
-    m.originalFileName,
-    m.file && m.file.name,
-    m.file && m.file.fileName,
-    m.model && m.model.name,
-    m.model && m.model.fileName,
-    m.data && m.data.name,
-    m.data && m.data.filename,
-    m.data && m.data.fileName,
-    m.metadata && m.metadata.name,
-    m.metadata && m.metadata.filename,
-    m.metadata && m.metadata.fileName,
-    m.info && m.info.name,
-    m.info && m.info.fileName,
-  ].map(norm).filter(Boolean);
-
-  // Prioriter IFC-filnavn blant direkte felter
-  const directIfc = direct.map(lastPathPart).filter(v => /\.ifc(\.zip)?$/i.test(v));
-  if (directIfc.length) return directIfc.sort((a, b) => a.length - b.length)[0];
-
-  const deep = [];
-  collectStringsDeep(m, deep, 0);
-  const candidates = Array.from(new Set(direct.concat(deep))).map(lastPathPart).filter(Boolean);
-
-  const ifcNames = candidates.filter(v => /\.ifc(\.zip)?$/i.test(v));
-  if (ifcNames.length) return ifcNames.sort((a, b) => a.length - b.length)[0];
-
-  const likely = candidates.filter(v => /ifc/i.test(v));
-  if (likely.length) return likely.sort((a, b) => a.length - b.length)[0];
-
-  if (direct.length) return lastPathPart(direct[0]);
-  return `Modell ${index + 1}`;
-}
-
-async function getIfcGlobalId(modelId, runtimeId){
-  try {
-    const ids = await API.viewer.convertToObjectIds(modelId, [Number(runtimeId)]);
-    return ids && ids[0] ? String(ids[0]) : '';
-  } catch {
-    return '';
-  }
-}
-
+// ── CONNECT ─────────────────────────────────────────
 async function connect(){
   try {
-    if (!window.TrimbleConnectWorkspace || !window.TrimbleConnectWorkspace.connect) {
-      throw new Error('Trimble Connect Workspace API ble ikke lastet.');
-    }
-    API = await TrimbleConnectWorkspace.connect(window.parent, () => {}, 30000);
-    // Debug: logg tilgjengelige API-metoder til konsollen
-    console.log('[RDS] API-objekt:', Object.keys(API));
-    if (API.models) console.log('[RDS] API.models:', Object.keys(API.models));
-    if (API.viewer) console.log('[RDS] API.viewer:', Object.keys(API.viewer));
-    els.loadModelsButton.disabled = false;
-    setStatus('✅ Tilkoblet Trimble Connect. Åpne begge IFC-modellene og trykk «Hent IFC-modeller».');
-  } catch (e) {
-    showError('Kunne ikke koble til Trimble Connect: ' + (e && e.message ? e.message : e));
-    setStatus('❌ Feil ved tilkobling.');
+    if (!window.TrimbleConnectWorkspace?.connect) throw new Error('API ikke tilgjengelig');
+    API = await TrimbleConnectWorkspace.connect(window.parent, ()=>{}, 30000);
+    console.log('[RDS-Val] API:', Object.keys(API));
+    if (API.viewer) console.log('[RDS-Val] viewer:', Object.keys(API.viewer));
+    btnLoad.disabled = false;
+    setStatus('✅ Tilkoblet Trimble Connect. Trykk «Hent modeller».');
+    modelBadge.textContent = 'Tilkoblet';
+  } catch(e){
+    setStatus('❌ ' + (e.message || e), 'error');
+    modelBadge.textContent = 'Feil';
   }
 }
 
-async function loadAvailableModels(){
+// ── LOAD MODELS ─────────────────────────────────────
+async function loadModels(){
   if (!API) return;
-  showError('');
-  setStatus('⏳ Leser tilgjengelige modeller i visningen…');
-
+  btnLoad.disabled = true;
+  setStatus('⏳ Leser modeller…');
   try {
-    // 1. Bygg et oppslag fra modelId → filnavn ved hjelp av getModels()
-    const modelNameMap = new Map();
-    try {
-      // Prøv ulike steder der Trimble Connect eksponerer modelliste
-      const sources = [
-        () => API.models && typeof API.models.getModels === 'function' ? API.models.getModels() : null,
-        () => API.viewer && typeof API.viewer.getModels === 'function' ? API.viewer.getModels() : null,
-        () => API.project && typeof API.project.getModels === 'function' ? API.project.getModels() : null,
-      ];
-      for (const src of sources) {
-        let result = null;
-        try { result = await src(); } catch {}
-        if (!result) continue;
-        const list = Array.isArray(result) ? result : (result.models || result.items || []);
+    // Hent filnavn-kart
+    const nameMap = new Map();
+    const srcs = [
+      () => API.models?.getModels?.(),
+      () => API.viewer?.getModels?.(),
+      () => API.project?.getModels?.(),
+    ];
+    for (const src of srcs) {
+      try {
+        const res = await src();
+        if (!res) continue;
+        const list = Array.isArray(res) ? res : (res.models || res.items || []);
         for (const m of list) {
-          const id = norm(m.id || m.modelId || m.modelid || '');
+          const id = norm(m.id || m.modelId || '');
           if (!id) continue;
-          // Prøv å hente filnavn fra alle kjente felter
-          const fileName = [
-            m.name, m.fileName, m.filename, m.displayName,
-            m.file && m.file.name, m.sourceFileName, m.originalFileName,
-            m.data && m.data.name, m.metadata && m.metadata.name
-          ].map(norm).filter(v => v && /\.ifc/i.test(v))[0]
-          || [m.name, m.fileName, m.filename, m.displayName].map(norm).filter(Boolean)[0];
-          if (fileName) modelNameMap.set(id, lastPathPart(fileName));
+          const fn = [m.name, m.fileName, m.filename].map(norm).find(v => /\.ifc/i.test(v));
+          if (fn) nameMap.set(id, lastPathPart(fn));
         }
-        if (modelNameMap.size > 0) break; // Fant noe — slutter å prøve
-      }
-    } catch {}
+        if (nameMap.size) break;
+      } catch {}
+    }
 
-    // 2. Hent objektliste (brukes til å finne modellId-er og antall objekter)
-    const objects = await API.viewer.getObjects();
-    availableModels = (objects || []).map((m, index) => {
+    const objs = await API.viewer.getObjects();
+    allModels = (objs || []).map((m, i) => {
       const modelId = norm(m.modelId || m.modelid || m['model Id'] || '');
       if (!modelId) return null;
-      const objectCount = Array.isArray(m.objects) ? m.objects.length : 0;
-
-      // Prioriter navn fra modelNameMap, fall tilbake til getCandidateModelName
-      let name = modelNameMap.get(modelId) || '';
-      if (!name) name = getCandidateModelName(m, index);
-
-      return { modelId, name, objectCount };
+      const cnt = Array.isArray(m.objects) ? m.objects.length : 0;
+      const name = nameMap.get(modelId) || getModelName(m, i);
+      return { modelId, name, objectCount: cnt };
     }).filter(Boolean);
 
-    fillModelSelects();
-    els.oldModelSelect.disabled = availableModels.length === 0;
-    els.newModelSelect.disabled = availableModels.length === 0;
-    updateCompareButtonState();
-    setStatus(`✅ Fant ${availableModels.length} modeller i visningen. Velg gammel og ny IFC.`);
-  } catch (e) {
-    showError('Feil ved henting av modeller: ' + (e && e.message ? e.message : e));
-    setStatus('❌ Kunne ikke lese modeller.');
+    modelSelect.innerHTML = '<option value="">– velg modell –</option>'
+      + allModels.map(m => `<option value="${esc(m.modelId)}">${esc(m.name)} (${m.objectCount} obj.)</option>`).join('');
+    modelSelect.disabled = false;
+    btnLoad.disabled = false;
+    setStatus(`✅ ${allModels.length} modeller hentet. Velg modell og valider.`, 'ok');
+  } catch(e){
+    setStatus('❌ Feil ved henting: ' + (e.message || e), 'error');
+    btnLoad.disabled = false;
   }
 }
 
-function fillModelSelects(){
-  const oldVal = els.oldModelSelect.value;
-  const newVal = els.newModelSelect.value;
-  const options = ['<option value="">Velg modell</option>']
-    .concat(availableModels.map(m => `<option value="${escapeHtml(m.modelId)}">${escapeHtml(m.name)} (${m.objectCount} objekter)</option>`))
-    .join('');
+// ── VALIDATE ────────────────────────────────────────
+async function validate(){
+  const modelId = modelSelect.value;
+  if (!modelId) { setStatus('⚠️ Velg en modell først.'); return; }
+  const modelEntry = allModels.find(m => m.modelId === modelId);
 
-  els.oldModelSelect.innerHTML = options;
-  els.newModelSelect.innerHTML = options;
-
-  if (availableModels.some(m => m.modelId === oldVal)) els.oldModelSelect.value = oldVal;
-  if (availableModels.some(m => m.modelId === newVal)) els.newModelSelect.value = newVal;
-}
-
-function updateCompareButtonState(){
-  const canCompare = !!els.oldModelSelect.value && !!els.newModelSelect.value && els.oldModelSelect.value !== els.newModelSelect.value;
-  els.compareButton.disabled = !canCompare;
-}
-
-async function readSingleModel(modelId){
-  const modelEntry = availableModels.find(m => m.modelId === modelId);
-  const objectsInfo = await API.viewer.getObjects();
-  const rawModel = (objectsInfo || []).find(m => (m.modelId || m.modelid || m['model Id']) === modelId);
-  if (!rawModel || !Array.isArray(rawModel.objects) || rawModel.objects.length === 0) return [];
-
-  const runtimeIds = rawModel.objects.map(o => o.id).filter(v => v != null);
-  const objProps = await API.viewer.getObjectProperties(modelId, runtimeIds);
-  const rows = [];
-
-  for (const obj of (objProps || [])) {
-    if (isIgnoredIfcEntity(obj)) continue;
-    const rdsTag = norm(getPropertyValue(obj, FIXED_PSET, FIXED_PROP));
-    const ifcGlobalId = await getIfcGlobalId(modelId, obj.id);
-    rows.push({
-      modelId,
-      modelName: modelEntry ? modelEntry.name : modelId,
-      runtimeId: obj.id,
-      name: norm(obj.name || obj.objectName || ''),
-      ifcGlobalId,
-      rdsTag,
-      duplicateCount: 0,
-      status: rdsTag ? 'OK' : 'Mangler'
-    });
-  }
-
-  const counts = new Map();
-  for (const row of rows) {
-    if (!row.rdsTag) continue;
-    counts.set(row.rdsTag, (counts.get(row.rdsTag) || 0) + 1);
-  }
-  for (const row of rows) {
-    if (!row.rdsTag) continue;
-    row.duplicateCount = counts.get(row.rdsTag) || 0;
-    if (row.duplicateCount > 1) row.status = 'Duplikat';
-  }
-
-  return rows;
-}
-
-function getDuplicateGroupMap(rows){
-  const map = new Map();
-  for (const row of rows) {
-    if (row.status !== 'Duplikat' || !row.rdsTag) continue;
-    if (!map.has(row.rdsTag)) map.set(row.rdsTag, []);
-    map.get(row.rdsTag).push(row);
-  }
-  return map;
-}
-
-function buildGuidComparisonRows(){
-  const oldByGuid = new Map();
-  const newByGuid = new Map();
-  const rowsWithoutGuid = [];
-
-  for (const row of oldRows) {
-    const guid = norm(row.ifcGlobalId);
-    if (!guid) {
-      rowsWithoutGuid.push({
-        ifcGlobalId: '',
-        oldModelName: norm(row.modelName),
-        oldName: norm(row.name),
-        oldRds: norm(row.rdsTag),
-        newModelName: '',
-        newName: '',
-        newRds: '',
-        status: 'ULIK',
-        color: 'RØD',
-        note: 'Mangler GUID i gammel IFC'
-      });
-      continue;
-    }
-    oldByGuid.set(guid, row);
-  }
-
-  for (const row of newRows) {
-    const guid = norm(row.ifcGlobalId);
-    if (!guid) {
-      rowsWithoutGuid.push({
-        ifcGlobalId: '',
-        oldModelName: '',
-        oldName: '',
-        oldRds: '',
-        newModelName: norm(row.modelName),
-        newName: norm(row.name),
-        newRds: norm(row.rdsTag),
-        status: 'ULIK',
-        color: 'RØD',
-        note: 'Mangler GUID i ny IFC'
-      });
-      continue;
-    }
-    newByGuid.set(guid, row);
-  }
-
-  const guidSet = new Set([].concat(Array.from(oldByGuid.keys()), Array.from(newByGuid.keys())));
-  const out = [];
-
-  for (const guid of Array.from(guidSet).sort()) {
-    const oldRow = oldByGuid.get(guid);
-    const newRow = newByGuid.get(guid);
-    const oldRds = norm(oldRow ? oldRow.rdsTag : '');
-    const newRds = norm(newRow ? newRow.rdsTag : '');
-    const same = !!oldRds && !!newRds && oldRds === newRds;
-
-    let note = '';
-    if (!oldRow) note = 'GUID finnes bare i ny IFC';
-    else if (!newRow) note = 'GUID finnes bare i gammel IFC';
-    else if (same) note = 'GUID og RDS-tag er lik i begge modeller';
-    else if (!oldRds || !newRds) note = 'Samme GUID, men RDS-tag mangler i en av modellene';
-    else note = 'Samme GUID, men ulik RDS-tag';
-
-    out.push({
-      ifcGlobalId: guid,
-      oldModelName: norm(oldRow ? oldRow.modelName : ''),
-      oldName: norm(oldRow ? oldRow.name : ''),
-      oldRds,
-      newModelName: norm(newRow ? newRow.modelName : ''),
-      newName: norm(newRow ? newRow.name : ''),
-      newRds,
-      status: same ? 'LIK' : 'ULIK',
-      color: same ? 'GRØNN' : 'RØD',
-      note
-    });
-  }
-
-  return out.concat(rowsWithoutGuid);
-}
-
-async function compareModels(){
-  const oldModelId = els.oldModelSelect.value;
-  const newModelId = els.newModelSelect.value;
-
-  if (!oldModelId || !newModelId || oldModelId === newModelId) {
-    showError('Velg to ulike modeller.');
-    return;
-  }
-
-  showError('');
-  setStatus('⏳ Leser gammel og ny IFC og sammenligner RDS-koder…');
+  btnValidate.disabled = true;
+  btnReset.disabled = true;
+  setStatus('⏳ Leser objekter og validerer RDS-felter…');
+  mainContent.innerHTML = '';
 
   try {
-    oldRows = await readSingleModel(oldModelId);
-    newRows = await readSingleModel(newModelId);
+    const objsInfo = await API.viewer.getObjects();
+    const raw = (objsInfo || []).find(m => norm(m.modelId || m.modelid || m['model Id'] || '') === modelId);
+    if (!raw || !Array.isArray(raw.objects) || !raw.objects.length) {
+      setStatus('⚠️ Ingen objekter funnet i valgt modell.', 'error');
+      btnValidate.disabled = false;
+      return;
+    }
 
-    els.colorizeButton.disabled = newRows.length === 0;
-    els.exportCompareButton.disabled = newRows.length === 0;
-    els.exportGuidCompareButton.disabled = newRows.length === 0;
-    els.resetButton.disabled = newRows.length === 0;
+    const runtimeIds = raw.objects.map(o => o.id).filter(v => v != null);
+    const total = runtimeIds.length;
+    let done = 0;
 
-    renderSummary();
-    renderCompareTable();
-    renderGuidCompareTable();
-    renderResultsTable();
+    // Les i bolker på 200 for å unngå timeout
+    const CHUNK = 200;
+    validationRows = [];
+    for (let i = 0; i < runtimeIds.length; i += CHUNK) {
+      const chunk = runtimeIds.slice(i, i + CHUNK);
+      const props = await API.viewer.getObjectProperties(modelId, chunk);
+      for (const obj of (props || [])) {
+        if (IGNORE.has(getIfcType(obj))) continue;
+        const fields = {};
+        let missing = 0;
+        for (const f of FIELDS) {
+          const val = getProp(obj, PSET, f.label.split(' ')[0] + '.');
+          // Prøv også eksakt match
+          const val2 = val || getProp(obj, PSET, f.label);
+          fields[f.key] = !!(val || val2);
+          if (!(val || val2)) missing++;
+        }
+        const score = Math.round(((FIELDS.length - missing) / FIELDS.length) * 100);
+        let guid = '';
+        try {
+          const ids = await API.viewer.convertToObjectIds(modelId, [Number(obj.id)]);
+          guid = ids?.[0] ? String(ids[0]) : '';
+        } catch {}
+        validationRows.push({
+          name: norm(obj.name || obj.objectName || ''),
+          guid,
+          modelId,
+          runtimeId: obj.id,
+          fields,
+          score,
+          missingCount: missing,
+        });
+      }
+      done += chunk.length;
+      setStatus(`⏳ Validerer… ${Math.min(done, total)} / ${total} objekter`);
+    }
 
-    const oldDupGroups = getDuplicateGroupMap(oldRows).size;
-    const newDupGroups = getDuplicateGroupMap(newRows).size;
-    setStatus(`✅ Sammenligning ferdig. Gammel IFC har ${oldDupGroups} duplikatgrupper. Ny IFC har ${newDupGroups} duplikatgrupper.`);
-  } catch (e) {
-    showError('Feil under sammenligning: ' + (e && e.message ? e.message : e));
-    setStatus('❌ Sammenligning feilet.');
+    renderDashboard(modelEntry);
+    btnReset.disabled = false;
+    setStatus(`✅ Validering fullført — ${validationRows.length} objekter analysert.`, 'ok');
+  } catch(e){
+    setStatus('❌ Feil under validering: ' + (e.message || e), 'error');
   }
+  btnValidate.disabled = false;
 }
 
-function renderSummary(){
-  const oldDupMap = getDuplicateGroupMap(oldRows);
-  const newDupMap = getDuplicateGroupMap(newRows);
-  const sameDupCount = Array.from(newDupMap.keys()).filter(rds => oldDupMap.has(rds)).length;
-  const newMissing = newRows.filter(r => r.status === 'Mangler').length;
-  const guidSummary = buildGuidComparisonRows();
-  const sameGuidRds = guidSummary.filter(r => r.status === 'LIK').length;
-  const changedGuidRds = guidSummary.filter(r => r.status === 'ULIK').length;
+// ── RENDER ───────────────────────────────────────────
+function renderDashboard(model){
+  const total = validationRows.length;
+  if (!total) {
+    mainContent.innerHTML = '<div class="empty"><div class="icon">⚠️</div><div>Ingen relevante objekter funnet.</div></div>';
+    return;
+  }
 
-  els.summaryGrid.innerHTML = `
-    <div class="card"><div class="muted">Objekter gammel IFC</div><div class="metric">${oldRows.length}</div></div>
-    <div class="card"><div class="muted">Objekter ny IFC</div><div class="metric">${newRows.length}</div></div>
-    <div class="card"><div class="muted">Duplikatgrupper gammel</div><div class="metric dup">${oldDupMap.size}</div></div>
-    <div class="card"><div class="muted">Duplikatgrupper ny</div><div class="metric dup">${newDupMap.size}</div></div>
-    <div class="card"><div class="muted">Like duplikater i begge</div><div class="metric warn">${sameDupCount}</div></div>
-    <div class="card"><div class="muted">Manglende RDS i ny IFC</div><div class="metric warn">${newMissing}</div></div>
-    <div class="card"><div class="muted">GUID med lik RDS</div><div class="metric ok">${sameGuidRds}</div></div>
-    <div class="card"><div class="muted">GUID med ulik RDS</div><div class="metric bad">${changedGuidRds}</div></div>
+  const perfect    = validationRows.filter(r => r.missingCount === 0).length;
+  const withIssues = validationRows.filter(r => r.missingCount > 0).length;
+  const totalChecks = total * FIELDS.length;
+  const totalMissing = validationRows.reduce((s,r) => s + r.missingCount, 0);
+  const totalOk = totalChecks - totalMissing;
+  const fillPct = Math.round((totalOk / totalChecks) * 100);
+
+  // Per-field stats
+  const fieldStats = FIELDS.map(f => {
+    const ok = validationRows.filter(r => r.fields[f.key]).length;
+    return { ...f, ok, miss: total - ok, pct: Math.round((ok / total) * 100) };
+  });
+
+  mainContent.innerHTML = `
+    <!-- SUMMARY CARDS -->
+    <div class="cards anim">
+      <div class="card blue">
+        <div class="label">Objekter</div>
+        <div class="value">${total}</div>
+        <div class="sub">analysert</div>
+      </div>
+      <div class="card green">
+        <div class="label">Komplett</div>
+        <div class="value">${perfect}</div>
+        <div class="sub">${Math.round((perfect/total)*100)}% alle felt utfylt</div>
+      </div>
+      <div class="card red">
+        <div class="label">Mangler felt</div>
+        <div class="value">${withIssues}</div>
+        <div class="sub">${Math.round((withIssues/total)*100)}% har avvik</div>
+      </div>
+      <div class="card yellow">
+        <div class="label">Feltfyllingsgrad</div>
+        <div class="value">${fillPct}%</div>
+        <div class="sub">${totalOk} av ${totalChecks} felt utfylt</div>
+      </div>
+    </div>
+
+    <!-- CHARTS ROW -->
+    <div class="grid-2col anim" style="animation-delay:.05s">
+      <!-- Donut -->
+      <div class="panel">
+        <div class="panel-header">
+          <h3>Overordnet status</h3>
+          <span class="hint">per objekt</span>
+        </div>
+        <div id="donutWrap">
+          <svg id="donutSvg" width="120" height="120" viewBox="0 0 120 120"></svg>
+          <div class="donut-legend" id="donutLegend"></div>
+        </div>
+      </div>
+
+      <!-- Field bar chart -->
+      <div class="panel">
+        <div class="panel-header">
+          <h3>Feltdekning</h3>
+          <span class="hint">grønn = utfylt · rød = mangler</span>
+        </div>
+        <div id="fieldChart"></div>
+      </div>
+    </div>
+
+    <!-- TABLE -->
+    <div class="panel anim" style="animation-delay:.1s">
+      <div class="panel-header">
+        <h3>Objektliste</h3>
+        <div class="tabs" id="filterTabs">
+          <button class="tab active" data-filter="all">Alle (${total})</button>
+          <button class="tab" data-filter="ok">✅ Komplett (${perfect})</button>
+          <button class="tab" data-filter="issues">⚠️ Avvik (${withIssues})</button>
+        </div>
+        <input id="searchInput" type="text" placeholder="Søk navn / GUID…" style="margin-left:8px"/>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Score</th>
+              <th>Navn</th>
+              <th>GUID</th>
+              ${FIELDS.map(f => `<th title="${esc(f.label)}">${f.key}</th>`).join('')}
+            </tr>
+          </thead>
+          <tbody id="tableBody"></tbody>
+        </table>
+      </div>
+    </div>
   `;
+
+  renderDonut(perfect, withIssues, total);
+  renderFieldBars(fieldStats);
+  renderTable();
+
+  // Events
+  document.getElementById('filterTabs').addEventListener('click', e => {
+    const btn = e.target.closest('.tab');
+    if (!btn) return;
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+    activeFilter = btn.dataset.filter;
+    renderTable();
+  });
+  document.getElementById('searchInput').addEventListener('input', e => {
+    searchTerm = e.target.value.toLowerCase();
+    renderTable();
+  });
 }
 
-function renderCompareTable(){
-  const oldGroups = getDuplicateGroupMap(oldRows);
-  const newGroups = getDuplicateGroupMap(newRows);
-  const rows = Array.from(newGroups.entries()).sort((a, b) => b[1].length - a[1].length);
+function renderDonut(perfect, withIssues, total){
+  const partial = total - perfect - withIssues;
+  // Bucket: perfect, partial (1–2 missing), issues (3+)
+  const p3 = validationRows.filter(r => r.missingCount === 0).length;
+  const p2 = validationRows.filter(r => r.missingCount > 0 && r.missingCount <= 3).length;
+  const p1 = validationRows.filter(r => r.missingCount > 3).length;
 
+  const slices = [
+    { label: 'Komplett (0 mangler)',   count: p3, color: '#3fb950' },
+    { label: '1–3 felt mangler',        count: p2, color: '#d29922' },
+    { label: '4+ felt mangler',         count: p1, color: '#f85149' },
+  ];
+  const svg = document.getElementById('donutSvg');
+  const legend = document.getElementById('donutLegend');
+  const cx = 60, cy = 60, r = 48, ir = 30;
+  const circumference = 2 * Math.PI * r;
+  let offset = 0;
+  let paths = '';
+
+  for (const s of slices) {
+    const frac = total > 0 ? s.count / total : 0;
+    const dashLen = frac * circumference;
+    const gap = circumference - dashLen;
+    paths += `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${s.color}"
+      stroke-width="18" stroke-dasharray="${dashLen.toFixed(2)} ${gap.toFixed(2)}"
+      stroke-dashoffset="${(-offset).toFixed(2)}" style="transition:stroke-dasharray .5s"/>`;
+    offset += dashLen;
+  }
+
+  const pct = total > 0 ? Math.round((p3 / total) * 100) : 0;
+  svg.innerHTML = paths + `
+    <circle cx="${cx}" cy="${cy}" r="${ir}" fill="var(--surface)"/>
+    <text x="${cx}" y="${cy - 4}" text-anchor="middle" font-family="Syne,sans-serif" font-size="18" font-weight="800" fill="var(--ink)">${pct}%</text>
+    <text x="${cx}" y="${cy + 12}" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8" fill="var(--muted)">komplett</text>
+  `;
+
+  legend.innerHTML = slices.map(s => `
+    <div class="legend-item">
+      <div class="legend-dot" style="background:${s.color}"></div>
+      <span class="legend-text">${esc(s.label)}</span>
+      <span class="legend-val">${s.count}</span>
+    </div>
+  `).join('');
+}
+
+function renderFieldBars(fieldStats){
+  const chart = document.getElementById('fieldChart');
+  chart.innerHTML = fieldStats.map(f => `
+    <div class="field-row">
+      <div class="field-name" title="${esc(f.label)}">${esc(f.label)}</div>
+      <div class="bar-track">
+        <div class="bar-fill-ok" style="width:${f.pct}%"></div>
+        <div class="bar-fill-miss" style="width:${100 - f.pct}%"></div>
+      </div>
+      <div class="bar-pct" style="color:${f.pct === 100 ? 'var(--green)' : f.pct < 50 ? 'var(--red)' : 'var(--yellow)'}">${f.pct}%</div>
+      <div class="bar-count">${f.ok}/${f.ok + f.miss}</div>
+    </div>
+  `).join('');
+}
+
+function renderTable(){
+  let rows = validationRows;
+  if (activeFilter === 'ok')     rows = rows.filter(r => r.missingCount === 0);
+  if (activeFilter === 'issues') rows = rows.filter(r => r.missingCount > 0);
+  if (searchTerm) rows = rows.filter(r =>
+    r.name.toLowerCase().includes(searchTerm) ||
+    r.guid.toLowerCase().includes(searchTerm)
+  );
+
+  const tbody = document.getElementById('tableBody');
   if (!rows.length) {
-    els.compareBody.innerHTML = '<tr><td colspan="5" class="muted">Ingen duplikater i ny IFC.</td></tr>';
+    tbody.innerHTML = `<tr><td colspan="${3 + FIELDS.length}" class="empty" style="padding:20px;text-align:center;color:var(--muted)">Ingen rader matcher filteret.</td></tr>`;
     return;
   }
 
-  els.compareBody.innerHTML = rows.map(([rds, newItems]) => {
-    const oldItems = oldGroups.get(rds) || [];
-    const statusText = oldItems.length > 1 ? 'Duplikat i begge IFC-er' : oldItems.length === 1 ? 'Fantes én gang i gammel IFC' : 'Ny duplikat i ny IFC';
-    const cls = oldItems.length > 1 ? 's-Begge' : oldItems.length === 1 ? 's-Gammel' : 's-Ny';
+  tbody.innerHTML = rows.map(r => {
+    const sc = scoreClass(r.score);
+    const cells = FIELDS.map(f =>
+      `<td><span class="fc ${r.fields[f.key] ? 'ok' : 'miss'}">${r.fields[f.key] ? '✓' : '✗'}</span></td>`
+    ).join('');
     return `
-      <tr>
-        <td><span class="status-pill ${cls}">${statusText}</span></td>
-        <td class="mono">${escapeHtml(rds)}</td>
-        <td>${oldItems.length}</td>
-        <td>${newItems.length}</td>
-        <td>${statusText}</td>
-      </tr>
-    `;
+      <tr data-mid="${esc(r.modelId)}" data-rid="${esc(r.runtimeId)}">
+        <td><span class="score ${sc}">${r.score}%</span></td>
+        <td class="obj-name" title="${esc(r.name)}">${esc(r.name) || '<span style="color:var(--muted)">–</span>'}</td>
+        <td class="guid" title="${esc(r.guid)}" onclick="copyGuid(this,'${esc(r.guid)}')">${esc(r.guid) ? r.guid.substring(0,12)+'…' : '–'}</td>
+        ${cells}
+      </tr>`;
   }).join('');
-}
 
-function renderGuidCompareTable(){
-  const rows = buildGuidComparisonRows();
-  if (!rows.length) {
-    els.guidCompareBody.innerHTML = '<tr><td colspan="6" class="muted">Ingen GUID-er å sammenligne.</td></tr>';
-    return;
-  }
-
-  els.guidCompareBody.innerHTML = rows.map(r => `
-    <tr>
-      <td><span class="status-pill ${r.status === 'LIK' ? 's-LIK' : 's-ULIK'}">${r.status}</span></td>
-      <td class="mono">${escapeHtml(r.ifcGlobalId)}</td>
-      <td>${escapeHtml(r.oldName)}</td>
-      <td class="mono">${escapeHtml(r.oldRds)}</td>
-      <td>${escapeHtml(r.newName)}</td>
-      <td class="mono">${escapeHtml(r.newRds)}</td>
-    </tr>
-  `).join('');
-}
-
-function getDisplayRowsForNewModel(){
-  return newRows.filter(r => r.status === 'Duplikat' || r.status === 'Mangler');
-}
-
-function renderResultsTable(){
-  const rows = getDisplayRowsForNewModel();
-  if (!rows.length) {
-    els.resultsBody.innerHTML = '<tr><td colspan="5" class="muted">Ingen avvik i ny IFC.</td></tr>';
-    return;
-  }
-
-  els.resultsBody.innerHTML = rows.map((r, idx) => `
-    <tr class="row-link" data-idx="${idx}">
-      <td><span class="status-pill ${r.status === 'Duplikat' ? 's-Begge' : 's-Gammel'}">${r.status}</span></td>
-      <td>${escapeHtml(r.name)}</td>
-      <td class="mono">${escapeHtml(r.ifcGlobalId)}</td>
-      <td class="mono">${escapeHtml(r.rdsTag)}</td>
-      <td>${r.duplicateCount || ''}</td>
-    </tr>
-  `).join('');
-
-  Array.from(els.resultsBody.querySelectorAll('tr[data-idx]')).forEach((tr, i) => {
-    tr.addEventListener('click', async () => {
-      const row = getDisplayRowsForNewModel()[i];
-      await zoomToObject(row.modelId, row.runtimeId);
+  tbody.querySelectorAll('tr[data-rid]').forEach(tr => {
+    tr.addEventListener('click', async e => {
+      if (e.target.classList.contains('guid')) return;
+      const mid = tr.dataset.mid;
+      const rid = parseInt(tr.dataset.rid);
+      try { await API.viewer.setSelection({ modelObjectIds:[{ modelId:mid, objectRuntimeIds:[rid] }] }, 'set'); } catch {}
+      try { await API.viewer.setCamera({ modelObjectIds:[{ modelId:mid, objectRuntimeIds:[rid] }] }, { animationTime:500 }); } catch {}
     });
   });
 }
 
-async function zoomToObject(modelId, runtimeId){
-  const selector = { modelObjectIds:[{ modelId, objectRuntimeIds:[Number(runtimeId)] }] };
-  try { await API.viewer.setSelection(selector, 'set'); } catch {}
-  try { await API.viewer.setCamera(selector, { animationTime:700 }); } catch {}
+window.copyGuid = function(el, guid){
+  navigator.clipboard?.writeText(guid).catch(()=>{});
+  const orig = el.textContent;
+  el.textContent = 'Kopiert!';
+  setTimeout(() => el.textContent = orig, 1200);
+};
+
+// ── RESET ───────────────────────────────────────────
+function reset(){
+  validationRows = [];
+  activeFilter = 'all';
+  searchTerm = '';
+  mainContent.innerHTML = '<div class="empty anim"><div class="icon">🔍</div><div>Velg en modell og trykk <strong>Valider</strong> for å starte.</div></div>';
+  btnReset.disabled = true;
+  setStatus('↺ Nullstilt.', '');
 }
 
-async function colorizeNewModel(){
-  if (!API || !newRows.length) return;
-  try {
-    await API.viewer.setObjectState(undefined, { color:'reset' });
-
-    // Bygg sett av RDS-koder i gammel og ny IFC
-    const oldRdsSet = new Set(oldRows.map(r => r.rdsTag).filter(Boolean));
-    const newRdsSet = new Set(newRows.map(r => r.rdsTag).filter(Boolean));
-
-    // GRØNN  – RDS-kode finnes i begge modeller (identisk match)
-    // GUL    – RDS-kode finnes kun i ny IFC (ny tag)
-    // LILLA  – RDS-kode finnes kun i gammel IFC (utgått tag, men vi fargelegger ny-modell-objekter uten denne koden)
-    // ROSA   – objektet mangler RDS-tag helt
-
-    const greenMap  = new Map(); // identisk RDS i begge
-    const yellowMap = new Map(); // ny RDS ikke i gammel
-    const purpleMap = new Map(); // gammel RDS ikke lenger i ny (objekter i ny som MANGLER gammel RDS)
-    const pinkMap   = new Map(); // mangler RDS-tag
-
-    for (const row of newRows) {
-      const mid = row.modelId;
-      const addTo = (map) => {
-        if (!map.has(mid)) map.set(mid, []);
-        map.get(mid).push(Number(row.runtimeId));
-      };
-
-      if (!row.rdsTag) {
-        addTo(pinkMap);                          // Rosa: mangler RDS
-      } else if (oldRdsSet.has(row.rdsTag)) {
-        addTo(greenMap);                         // Grønn: finnes i begge
-      } else {
-        addTo(yellowMap);                        // Gul: ny kode ikke i gammel
-      }
-    }
-
-    // Lilla: RDS-koder som fantes i gammel IFC men IKKE i ny —
-    // fargelegg alle ny-IFC objekter som har en hvilken som helst av disse kodene
-    const onlyInOld = new Set([...oldRdsSet].filter(rds => !newRdsSet.has(rds)));
-    for (const row of newRows) {
-      if (row.rdsTag && onlyInOld.has(row.rdsTag)) {
-        const mid = row.modelId;
-        if (!purpleMap.has(mid)) purpleMap.set(mid, []);
-        purpleMap.get(mid).push(Number(row.runtimeId));
-      }
-    }
-
-    const toSelector = (map) => Array.from(map.entries()).map(([modelId, objectRuntimeIds]) => ({ modelId, objectRuntimeIds }));
-
-    // Fargelegg i prioritert rekkefølge (rosa sist = høyest prioritet siden det skrives over)
-    const greenSel  = toSelector(greenMap);
-    const yellowSel = toSelector(yellowMap);
-    const purpleSel = toSelector(purpleMap);
-    const pinkSel   = toSelector(pinkMap);
-
-    if (greenSel.length)  await API.viewer.setObjectState({ modelObjectIds: greenSel  }, { color: { r:39,  g:174, b:96,  a:255 } }); // Grønn
-    if (yellowSel.length) await API.viewer.setObjectState({ modelObjectIds: yellowSel }, { color: { r:241, g:196, b:15,  a:255 } }); // Gul
-    if (purpleSel.length) await API.viewer.setObjectState({ modelObjectIds: purpleSel }, { color: { r:142, g:68,  b:173, a:255 } }); // Lilla
-    if (pinkSel.length)   await API.viewer.setObjectState({ modelObjectIds: pinkSel   }, { color: { r:255, g:105, b:180, a:255 } }); // Rosa
-
-    const greenCount  = [...greenMap.values()].reduce((s,a) => s+a.length, 0);
-    const yellowCount = [...yellowMap.values()].reduce((s,a) => s+a.length, 0);
-    const purpleCount = [...purpleMap.values()].reduce((s,a) => s+a.length, 0);
-    const pinkCount   = [...pinkMap.values()].reduce((s,a) => s+a.length, 0);
-
-    setStatus(`🎨 Fargelagt: 🟢 ${greenCount} lik RDS · 🟡 ${yellowCount} ny RDS · 🟣 ${purpleCount} gammel RDS · 🩷 ${pinkCount} mangler RDS`);
-  } catch (e) {
-    showError('Feil ved fargelegging: ' + (e && e.message ? e.message : e));
-  }
-}
-
-async function resetColors(){
-  if (!API) return;
-  try {
-    await API.viewer.setObjectState(undefined, { color:'reset' });
-    setStatus('♻️ Modellfarger er tilbakestilt.');
-  } catch (e) {
-    showError('Feil ved tilbakestilling: ' + (e && e.message ? e.message : e));
-  }
-}
-
-function exportGuidCompareCsv(){
-  const rows = buildGuidComparisonRows();
-  const header = [
-    'Status',
-    'Farge',
-    'IfcGlobalId',
-    'Modell gammel IFC',
-    'Objektnavn gammel IFC',
-    'RDS-tag gammel IFC',
-    'Modell ny IFC',
-    'Objektnavn ny IFC',
-    'RDS-tag ny IFC',
-    'Kommentar'
-  ];
-  const lines = [header.join(',')];
-
-  for (const row of rows) {
-    lines.push([
-      csvEscape(row.status),
-      csvEscape(row.color),
-      csvEscape(row.ifcGlobalId),
-      csvEscape(row.oldModelName),
-      csvEscape(row.oldName),
-      csvEscape(row.oldRds),
-      csvEscape(row.newModelName),
-      csvEscape(row.newName),
-      csvEscape(row.newRds),
-      csvEscape(row.note)
-    ].join(','));
-  }
-
-  downloadCsv(lines.join('\n'), 'alle_guid_rds_sammenligning.csv');
-}
-
-function exportCompareCsv(){
-  const oldGroups = getDuplicateGroupMap(oldRows);
-  const newGroups = getDuplicateGroupMap(newRows);
-  const header = ['RDS-kode','Antall i gammel IFC','Antall i ny IFC','Status'];
-  const lines = [header.join(',')];
-
-  for (const [rds, newItems] of Array.from(newGroups.entries()).sort((a, b) => b[1].length - a[1].length)) {
-    const oldItems = oldGroups.get(rds) || [];
-    const status = oldItems.length > 1 ? 'Duplikat i begge IFC-er' : oldItems.length === 1 ? 'Fantes én gang i gammel IFC' : 'Ny duplikat i ny IFC';
-    lines.push([
-      csvEscape(rds),
-      csvEscape(oldItems.length),
-      csvEscape(newItems.length),
-      csvEscape(status)
-    ].join(','));
-  }
-
-  downloadCsv(lines.join('\n'), 'rds_ifc_sammenstilling.csv');
-}
-
-function downloadCsv(content, filename){
-  const blob = new Blob([content], { type:'text/csv;charset=utf-8;' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = filename;
-  a.click();
-  URL.revokeObjectURL(a.href);
-}
-
-function csvEscape(v){
-  const s = norm(v).replace(/"/g, '""');
-  return /[",\n]/.test(s) ? `"${s}"` : s;
-}
-
-function runSelfTests(){
-  const failures = [];
-
-  if (lastPathPart('C:/tmp/a.ifc') !== 'a.ifc') failures.push('lastPathPart forward slash');
-  if (lastPathPart('C:\\tmp\\b.ifc') !== 'b.ifc') failures.push('lastPathPart backslash');
-  if (getCandidateModelName({ fileName:'C:/tmp/test_model.ifc' }, 0) !== 'test_model.ifc') failures.push('getCandidateModelName fileName');
-
-  oldRows = [
-    { ifcGlobalId:'GUID1', modelName:'old.ifc', name:'Obj A', rdsTag:'RDS-A', status:'OK' },
-    { ifcGlobalId:'GUID2', modelName:'old.ifc', name:'Obj B', rdsTag:'RDS-B', status:'OK' }
-  ];
-  newRows = [
-    { ifcGlobalId:'GUID1', modelName:'new.ifc', name:'Obj A2', rdsTag:'RDS-A', status:'OK' },
-    { ifcGlobalId:'GUID2', modelName:'new.ifc', name:'Obj B2', rdsTag:'RDS-C', status:'OK' },
-    { ifcGlobalId:'', modelName:'new.ifc', name:'Obj X', rdsTag:'', status:'Mangler' }
-  ];
-
-  const guidRows = buildGuidComparisonRows();
-  const row1 = guidRows.find(r => r.ifcGlobalId === 'GUID1');
-  const row2 = guidRows.find(r => r.ifcGlobalId === 'GUID2');
-  const row3 = guidRows.find(r => r.note === 'Mangler GUID i ny IFC');
-
-  if (!row1 || row1.status !== 'LIK') failures.push('GUID1 should be LIK');
-  if (!row2 || row2.status !== 'ULIK') failures.push('GUID2 should be ULIK');
-  if (!row3 || row3.color !== 'RØD') failures.push('Missing GUID row should be red');
-
-  oldRows = [];
-  newRows = [];
-
-  if (failures.length) {
-    console.error('Self tests failed:', failures);
-  }
-}
-
-window.addEventListener('error', function(e){
-  showError('JavaScript-feil: ' + e.message);
-  setStatus('❌ Scriptfeil.');
+// ── WIRING ──────────────────────────────────────────
+btnLoad.addEventListener('click', loadModels);
+btnValidate.addEventListener('click', validate);
+btnReset.addEventListener('click', reset);
+modelSelect.addEventListener('change', () => {
+  btnValidate.disabled = !modelSelect.value;
 });
 
-els.loadModelsButton.addEventListener('click', loadAvailableModels);
-els.compareButton.addEventListener('click', compareModels);
-els.colorizeButton.addEventListener('click', colorizeNewModel);
-els.exportCompareButton.addEventListener('click', exportCompareCsv);
-els.exportGuidCompareButton.addEventListener('click', exportGuidCompareCsv);
-els.resetButton.addEventListener('click', resetColors);
-els.oldModelSelect.addEventListener('change', updateCompareButtonState);
-els.newModelSelect.addEventListener('change', updateCompareButtonState);
+window.addEventListener('error', e => setStatus('❌ JS-feil: ' + e.message, 'error'));
 
-runSelfTests();
 connect();
 </script>
 </body>
