@@ -91,7 +91,10 @@
     .btn:not(:disabled):active { transform: scale(.97); }
     .btn-primary { background: var(--blue); color: #000; }
     .btn-ghost   { background: var(--surface2); color: var(--ink); border: 1px solid var(--border); }
-    .btn-danger  { background: #21262d; color: var(--red); border: 1px solid #3a1c1c; }
+    .btn-danger   { background: #21262d; color: var(--red); border: 1px solid #3a1c1c; }
+    .btn-colorize { background: #1a3a22; color: var(--green); border: 1px solid #2a5a32; }
+    .btn-unreset  { background: #1f2937; color: var(--muted); border: 1px solid var(--border); }
+    .btn-export   { background: #0d2044; color: var(--blue); border: 1px solid #1a3a6c; }
 
     /* ── STATUS BAR ── */
     #statusBar {
@@ -353,6 +356,9 @@
   <span class="badge" id="modelBadge">Ikke tilkoblet</span>
   <button class="btn btn-ghost" id="btnLoad" disabled>Hent modeller</button>
   <button class="btn btn-primary" id="btnValidate" disabled>▶ Valider</button>
+  <button class="btn btn-colorize" id="btnColorize" disabled>🎨 Fargelegg</button>
+  <button class="btn btn-unreset" id="btnUncolor" disabled>⬜ Fjern farger</button>
+  <button class="btn btn-export" id="btnExport" disabled>⬇ Eksporter CSV</button>
   <button class="btn btn-danger" id="btnReset" disabled>↺ Nullstill</button>
 </header>
 
@@ -396,7 +402,7 @@ const IGNORE = new Set(['IFCPROJECT','IFCSITE','IFCBUILDING','IFCBUILDINGSTOREY'
 // ── STATE ───────────────────────────────────────────
 let API = null;
 let allModels = [];
-let validationRows = [];  // { name, guid, modelId, runtimeId, fields:{key:bool}, score, missingCount }
+let validationRows = [];  // { name, guid, modelId, runtimeId, fields:{key:bool}, score, missingCount, elementType, rdsTag }
 let activeFilter = 'all';
 let searchTerm = '';
 
@@ -405,6 +411,9 @@ const $ = id => document.getElementById(id);
 const btnLoad     = $('btnLoad');
 const btnValidate = $('btnValidate');
 const btnReset    = $('btnReset');
+const btnColorize = $('btnColorize');
+const btnUncolor  = $('btnUncolor');
+const btnExport   = $('btnExport');
 const modelSelect = $('modelSelect');
 const statusBar   = $('statusBar');
 const modelBadge  = $('modelBadge');
@@ -459,6 +468,19 @@ function getProp(obj, pset, propStartsWith){
     }
   }
   return '';
+}
+
+// Get any property from a pset by partial name match (case-insensitive)
+function getPropAny(obj, pset){
+  const pt = norm(pset).toLowerCase();
+  const result = {};
+  for (const ps of (obj.properties || [])) {
+    if (norm(ps.name).toLowerCase() !== pt) continue;
+    for (const p of (ps.properties || [])) {
+      result[norm(p.name)] = norm(p.value);
+    }
+  }
+  return result;
 }
 
 function scoreClass(pct){
@@ -580,6 +602,17 @@ async function validate(){
           const ids = await API.viewer.convertToObjectIds(modelId, [Number(obj.id)]);
           guid = ids?.[0] ? String(ids[0]) : '';
         } catch {}
+        // Hent objekttype fra 0_Element PropertySet
+        const elemProps = getPropAny(obj, '0_Element');
+        let elementType = '';
+        for (const [k, v] of Object.entries(elemProps)) {
+          if (/objekttype|object.?type|type/i.test(k) && v) { elementType = v; break; }
+        }
+        // Fallback: prøv direkte feltnavn
+        if (!elementType) elementType = elemProps['Objekttype'] || elemProps['ObjectType'] || elemProps['Object Type'] || '';
+
+        const rdsTag = getProp(obj, PSET, '01.');
+
         validationRows.push({
           name: norm(obj.name || obj.objectName || ''),
           guid,
@@ -588,6 +621,8 @@ async function validate(){
           fields,
           score,
           missingCount: missing,
+          elementType: norm(elementType),
+          rdsTag: norm(rdsTag),
         });
       }
       done += chunk.length;
@@ -596,6 +631,8 @@ async function validate(){
 
     renderDashboard(modelEntry);
     btnReset.disabled = false;
+    btnColorize.disabled = false;
+    btnExport.disabled = false;
     setStatus(`✅ Validering fullført — ${validationRows.length} objekter analysert.`, 'ok');
   } catch(e){
     setStatus('❌ Feil under validering: ' + (e.message || e), 'error');
@@ -655,7 +692,7 @@ function renderDashboard(model){
       <div class="panel">
         <div class="panel-header">
           <h3>Overordnet status</h3>
-          <span class="hint">per objekt</span>
+          <span class="hint">per objekt · matcher 🎨 fargelegging</span>
         </div>
         <div id="donutWrap">
           <svg id="donutSvg" width="120" height="120" viewBox="0 0 120 120"></svg>
@@ -691,6 +728,7 @@ function renderDashboard(model){
               <th>Score</th>
               <th>Navn</th>
               <th>GUID</th>
+              <th>Objekttype</th>
               ${FIELDS.map(f => `<th title="${esc(f.label)}">${f.key}</th>`).join('')}
             </tr>
           </thead>
@@ -781,8 +819,10 @@ function renderFieldBars(fieldStats){
 
 function renderTable(){
   let rows = validationRows;
-  if (activeFilter === 'ok')     rows = rows.filter(r => r.missingCount === 0);
-  if (activeFilter === 'issues') rows = rows.filter(r => r.missingCount > 0);
+  if (activeFilter === 'ok')       rows = rows.filter(r => r.missingCount === 0);
+  if (activeFilter === 'issues')   rows = rows.filter(r => r.missingCount > 0 && r.missingCount <= 3);
+  if (activeFilter === 'critical') rows = rows.filter(r => r.missingCount > 3);
+  if (activeFilter === 'nords')    rows = rows.filter(r => !r.fields['01']);
   if (searchTerm) rows = rows.filter(r =>
     r.name.toLowerCase().includes(searchTerm) ||
     r.guid.toLowerCase().includes(searchTerm)
@@ -790,7 +830,7 @@ function renderTable(){
 
   const tbody = document.getElementById('tableBody');
   if (!rows.length) {
-    tbody.innerHTML = `<tr><td colspan="${3 + FIELDS.length}" class="empty" style="padding:20px;text-align:center;color:var(--muted)">Ingen rader matcher filteret.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="${4 + FIELDS.length}" class="empty" style="padding:20px;text-align:center;color:var(--muted)">Ingen rader matcher filteret.</td></tr>`;
     return;
   }
 
@@ -804,6 +844,7 @@ function renderTable(){
         <td><span class="score ${sc}">${r.score}%</span></td>
         <td class="obj-name" title="${esc(r.name)}">${esc(r.name) || '<span style="color:var(--muted)">–</span>'}</td>
         <td class="guid" title="${esc(r.guid)}" onclick="copyGuid(this,'${esc(r.guid)}')">${esc(r.guid) ? r.guid.substring(0,12)+'…' : '–'}</td>
+        <td style="color:var(--muted);max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(r.elementType)}">${esc(r.elementType) || '–'}</td>
         ${cells}
       </tr>`;
   }).join('');
@@ -826,19 +867,138 @@ window.copyGuid = function(el, guid){
   setTimeout(() => el.textContent = orig, 1200);
 };
 
+// ── FARGELEGG ───────────────────────────────────────
+async function colorizeModel(){
+  if (!API || !validationRows.length) return;
+  btnColorize.disabled = true;
+  setStatus('🎨 Fargelegger modell…');
+  try {
+    await API.viewer.setObjectState(undefined, { color: 'reset' });
+
+    // Tre kategorier som matcher donut-grafens farger:
+    // Grønn  = 0 mangler (komplett)
+    // Gul    = 1–3 mangler
+    // Rød    = 4+ mangler
+    const greenMap  = new Map();
+    const yellowMap = new Map();
+    const redMap    = new Map();
+
+    for (const row of validationRows) {
+      const mid = row.modelId;
+      const rid = Number(row.runtimeId);
+      const addTo = (map) => {
+        if (!map.has(mid)) map.set(mid, []);
+        map.get(mid).push(rid);
+      };
+      if (row.missingCount === 0)      addTo(greenMap);
+      else if (row.missingCount <= 3)  addTo(yellowMap);
+      else                             addTo(redMap);
+    }
+
+    const toSel = (map) => Array.from(map.entries()).map(([modelId, objectRuntimeIds]) => ({ modelId, objectRuntimeIds }));
+
+    const gSel = toSel(greenMap);
+    const ySel = toSel(yellowMap);
+    const rSel = toSel(redMap);
+
+    if (gSel.length) await API.viewer.setObjectState({ modelObjectIds: gSel }, { color: { r: 39,  g: 174, b: 96,  a: 255 } }); // Grønn
+    if (ySel.length) await API.viewer.setObjectState({ modelObjectIds: ySel }, { color: { r: 210, g: 153, b: 34,  a: 255 } }); // Gul
+    if (rSel.length) await API.viewer.setObjectState({ modelObjectIds: rSel }, { color: { r: 248, g: 81,  b: 73,  a: 255 } }); // Rød
+
+    const gc = [...greenMap.values()].reduce((s,a) => s + a.length, 0);
+    const yc = [...yellowMap.values()].reduce((s,a) => s + a.length, 0);
+    const rc = [...redMap.values()].reduce((s,a) => s + a.length, 0);
+
+    btnUncolor.disabled = false;
+    btnColorize.disabled = false;
+    setStatus(`🎨 Fargelagt: 🟢 ${gc} komplett · 🟡 ${yc} delvis · 🔴 ${rc} kritisk`, 'ok');
+  } catch(e) {
+    setStatus('❌ Feil ved fargelegging: ' + (e.message || e), 'error');
+    btnColorize.disabled = false;
+  }
+}
+
+async function removeColors(){
+  if (!API) return;
+  try {
+    await API.viewer.setObjectState(undefined, { color: 'reset' });
+    btnUncolor.disabled = true;
+    setStatus('⬜ Modellfarger fjernet.', '');
+  } catch(e) {
+    setStatus('❌ Feil ved fjerning av farger: ' + (e.message || e), 'error');
+  }
+}
+
+// ── CSV EKSPORT ──────────────────────────────────────
+function exportCsv(){
+  // Eksporter alle objekter der 01. RDS-tag mangler
+  const missingRds = validationRows.filter(r => !r.fields['01']);
+
+  if (!missingRds.length) {
+    setStatus('✅ Ingen objekter mangler RDS-tag — ingenting å eksportere.', 'ok');
+    return;
+  }
+
+  const headers = [
+    'Navn',
+    'GUID',
+    'Objekttype (0_Element)',
+    'Score (%)',
+    'Antall manglende felt',
+    ...FIELDS.map(f => f.label)
+  ];
+
+  const csvEsc = (v) => {
+    const s = (v ?? '').toString().replace(/"/g, '""');
+    return /[",
+
+]/.test(s) ? `"${s}"` : s;
+  };
+
+  const lines = [headers.map(csvEsc).join(',')];
+  for (const r of missingRds) {
+    lines.push([
+      csvEsc(r.name),
+      csvEsc(r.guid),
+      csvEsc(r.elementType),
+      csvEsc(r.score),
+      csvEsc(r.missingCount),
+      ...FIELDS.map(f => csvEsc(r.fields[f.key] ? 'OK' : 'MANGLER'))
+    ].join(','));
+  }
+
+  const bom = '﻿'; // UTF-8 BOM for Excel
+  const blob = new Blob([bom + lines.join('
+')], { type: 'text/csv;charset=utf-8;' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'RDS_mangler_' + new Date().toISOString().slice(0,10) + '.csv';
+  a.click();
+  URL.revokeObjectURL(a.href);
+
+  setStatus(`⬇ Eksportert ${missingRds.length} objekter uten RDS-tag til CSV.`, 'ok');
+}
+
 // ── RESET ───────────────────────────────────────────
 function reset(){
   validationRows = [];
   activeFilter = 'all';
   searchTerm = '';
+  if (API) { try { API.viewer.setObjectState(undefined, { color: 'reset' }); } catch {} }
   mainContent.innerHTML = '<div class="empty anim"><div class="icon">🔍</div><div>Velg en modell og trykk <strong>Valider</strong> for å starte.</div></div>';
   btnReset.disabled = true;
+  btnColorize.disabled = true;
+  btnUncolor.disabled = true;
+  btnExport.disabled = true;
   setStatus('↺ Nullstilt.', '');
 }
 
 // ── WIRING ──────────────────────────────────────────
 btnLoad.addEventListener('click', loadModels);
 btnValidate.addEventListener('click', validate);
+btnColorize.addEventListener('click', colorizeModel);
+btnUncolor.addEventListener('click', removeColors);
+btnExport.addEventListener('click', exportCsv);
 btnReset.addEventListener('click', reset);
 modelSelect.addEventListener('change', () => {
   btnValidate.disabled = !modelSelect.value;
