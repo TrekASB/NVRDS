@@ -55,10 +55,11 @@
     .results-table th{background:#f6f9fc;position:sticky;top:0;z-index:1}
     .status-pill{display:inline-block;padding:3px 8px;border-radius:999px;font-size:12px;font-weight:700}
     .s-Begge{background:#f1e7fa;color:#6c2a91}
-    .s-Ny{background:#fdecec;color:#9c1f2c}
-    .s-Gammel{background:#fff7db;color:#8a6400}
+    .s-Ny{background:#fef9e7;color:#9a7d0a}
+    .s-Gammel{background:#f1e7fa;color:#6c2a91}
     .s-LIK{background:#eaf7ef;color:#166b41}
-    .s-ULIK{background:#fdecec;color:#9c1f2c}
+    .s-ULIK{background:#fdecea;color:#9c1f2c}
+    .s-Mangler{background:#fde8f3;color:#8b1a5a}
     .row-link{cursor:pointer}
     .row-link:hover td{background:#eef6ff}
     .mono{font-family:Consolas,Monaco,monospace}
@@ -78,9 +79,10 @@
   </div>
 
   <div class="group">
-    <div class="chip">Property set: 2_RDS</div>
-    <div class="chip">Property: 01. RDS-tag</div>
-    <div class="chip">IFC mot IFC</div>
+    <div class="chip" style="background:#eaf7ef;border-color:#b2dfcb;color:#166b41">🟢 Lik RDS i begge</div>
+    <div class="chip" style="background:#fef9e7;border-color:#f9e79f;color:#9a7d0a">🟡 Ny RDS-tag</div>
+    <div class="chip" style="background:#f1e7fa;border-color:#d7bde2;color:#6c2a91">🟣 Gammel RDS-tag</div>
+    <div class="chip" style="background:#fde8f3;border-color:#f9b8de;color:#8b1a5a">🩷 Mangler RDS</div>
   </div>
 
   <div class="group">
@@ -100,6 +102,13 @@
   <section class="panel">
     <h3>Hvordan bruke denne</h3>
     <div class="muted">Åpne både eldre og nyere IFC i samme Trimble Connect-visning. Velg deretter hvilken modell som er eldre leveranse og hvilken som er nyere leveranse. Skriptet sammenligner RDS-koder direkte mellom modellene uten CSV.</div>
+    <div class="muted" style="margin-top:8px">
+      <b>Fargekoding av ny IFC:</b>
+      <span style="color:#166b41">🟢 Grønn</span> = identisk RDS i begge modeller &nbsp;|&nbsp;
+      <span style="color:#9a7d0a">🟡 Gul</span> = ny RDS-tag som ikke fantes i gammel IFC &nbsp;|&nbsp;
+      <span style="color:#6c2a91">🟣 Lilla</span> = RDS-tag som kun fantes i gammel IFC &nbsp;|&nbsp;
+      <span style="color:#8b1a5a">🩷 Rosa</span> = mangler RDS-tag
+    </div>
     <div class="grid-2" style="margin-top:12px">
       <div>
         <label for="oldModelSelect"><b>Eldre IFC</b></label><br>
@@ -685,29 +694,66 @@ async function colorizeNewModel(){
   try {
     await API.viewer.setObjectState(undefined, { color:'reset' });
 
-    const duplicateMap = new Map();
-    const missingMap = new Map();
+    // Bygg sett av RDS-koder i gammel og ny IFC
+    const oldRdsSet = new Set(oldRows.map(r => r.rdsTag).filter(Boolean));
+    const newRdsSet = new Set(newRows.map(r => r.rdsTag).filter(Boolean));
 
-    for (const row of newRows.filter(r => r.status === 'Duplikat')) {
-      if (!duplicateMap.has(row.modelId)) duplicateMap.set(row.modelId, []);
-      duplicateMap.get(row.modelId).push(Number(row.runtimeId));
-    }
-    for (const row of newRows.filter(r => r.status === 'Mangler')) {
-      if (!missingMap.has(row.modelId)) missingMap.set(row.modelId, []);
-      missingMap.get(row.modelId).push(Number(row.runtimeId));
+    // GRØNN  – RDS-kode finnes i begge modeller (identisk match)
+    // GUL    – RDS-kode finnes kun i ny IFC (ny tag)
+    // LILLA  – RDS-kode finnes kun i gammel IFC (utgått tag, men vi fargelegger ny-modell-objekter uten denne koden)
+    // ROSA   – objektet mangler RDS-tag helt
+
+    const greenMap  = new Map(); // identisk RDS i begge
+    const yellowMap = new Map(); // ny RDS ikke i gammel
+    const purpleMap = new Map(); // gammel RDS ikke lenger i ny (objekter i ny som MANGLER gammel RDS)
+    const pinkMap   = new Map(); // mangler RDS-tag
+
+    for (const row of newRows) {
+      const mid = row.modelId;
+      const addTo = (map) => {
+        if (!map.has(mid)) map.set(mid, []);
+        map.get(mid).push(Number(row.runtimeId));
+      };
+
+      if (!row.rdsTag) {
+        addTo(pinkMap);                          // Rosa: mangler RDS
+      } else if (oldRdsSet.has(row.rdsTag)) {
+        addTo(greenMap);                         // Grønn: finnes i begge
+      } else {
+        addTo(yellowMap);                        // Gul: ny kode ikke i gammel
+      }
     }
 
-    const duplicateSelector = Array.from(duplicateMap.entries()).map(([modelId, objectRuntimeIds]) => ({ modelId, objectRuntimeIds }));
-    const missingSelector = Array.from(missingMap.entries()).map(([modelId, objectRuntimeIds]) => ({ modelId, objectRuntimeIds }));
-
-    if (duplicateSelector.length) {
-      await API.viewer.setObjectState({ modelObjectIds: duplicateSelector }, { color: { r:142, g:68, b:173, a:255 } });
+    // Lilla: RDS-koder som fantes i gammel IFC men IKKE i ny —
+    // fargelegg alle ny-IFC objekter som har en hvilken som helst av disse kodene
+    const onlyInOld = new Set([...oldRdsSet].filter(rds => !newRdsSet.has(rds)));
+    for (const row of newRows) {
+      if (row.rdsTag && onlyInOld.has(row.rdsTag)) {
+        const mid = row.modelId;
+        if (!purpleMap.has(mid)) purpleMap.set(mid, []);
+        purpleMap.get(mid).push(Number(row.runtimeId));
+      }
     }
-    if (missingSelector.length) {
-      await API.viewer.setObjectState({ modelObjectIds: missingSelector }, { color: { r:240, g:173, b:78, a:255 } });
-    }
 
-    setStatus('🎨 Ny IFC er fargelagt. Lilla = duplikat, gul = mangler RDS.');
+    const toSelector = (map) => Array.from(map.entries()).map(([modelId, objectRuntimeIds]) => ({ modelId, objectRuntimeIds }));
+
+    // Fargelegg i prioritert rekkefølge (rosa sist = høyest prioritet siden det skrives over)
+    const greenSel  = toSelector(greenMap);
+    const yellowSel = toSelector(yellowMap);
+    const purpleSel = toSelector(purpleMap);
+    const pinkSel   = toSelector(pinkMap);
+
+    if (greenSel.length)  await API.viewer.setObjectState({ modelObjectIds: greenSel  }, { color: { r:39,  g:174, b:96,  a:255 } }); // Grønn
+    if (yellowSel.length) await API.viewer.setObjectState({ modelObjectIds: yellowSel }, { color: { r:241, g:196, b:15,  a:255 } }); // Gul
+    if (purpleSel.length) await API.viewer.setObjectState({ modelObjectIds: purpleSel }, { color: { r:142, g:68,  b:173, a:255 } }); // Lilla
+    if (pinkSel.length)   await API.viewer.setObjectState({ modelObjectIds: pinkSel   }, { color: { r:255, g:105, b:180, a:255 } }); // Rosa
+
+    const greenCount  = [...greenMap.values()].reduce((s,a) => s+a.length, 0);
+    const yellowCount = [...yellowMap.values()].reduce((s,a) => s+a.length, 0);
+    const purpleCount = [...purpleMap.values()].reduce((s,a) => s+a.length, 0);
+    const pinkCount   = [...pinkMap.values()].reduce((s,a) => s+a.length, 0);
+
+    setStatus(`🎨 Fargelagt: 🟢 ${greenCount} lik RDS · 🟡 ${yellowCount} ny RDS · 🟣 ${purpleCount} gammel RDS · 🩷 ${pinkCount} mangler RDS`);
   } catch (e) {
     showError('Feil ved fargelegging: ' + (e && e.message ? e.message : e));
   }
