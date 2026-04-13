@@ -90,7 +90,7 @@
     .btn:not(:disabled):active { transform: scale(.97); }
     .btn-primary { background: var(--blue); color: #000; }
     .btn-ghost   { background: var(--surface2); color: var(--ink); border: 1px solid var(--border); }
-    .btn-danger   { background: #21262d; color: var(--red); border: 1px solid #3a1c1c; }
+    .btn-danger  { background: #21262d; color: var(--red); border: 1px solid #3a1c1c; }
     .btn-colorize { background: #1a3a22; color: var(--green); border: 1px solid #2a5a32; }
     .btn-unreset  { background: #1f2937; color: var(--muted); border: 1px solid var(--border); }
     .btn-export   { background: #0d2044; color: var(--blue); border: 1px solid #1a3a6c; }
@@ -116,7 +116,12 @@
       align-items: center;
       flex-shrink: 0;
     }
-    #modelBar label { font-size: 11px; color: var(--muted); font-family: var(--mono); white-space: nowrap; }
+    #modelBar label {
+      font-size: 11px;
+      color: var(--muted);
+      font-family: var(--mono);
+      white-space: nowrap;
+    }
     select {
       font-family: var(--mono);
       font-size: 12px;
@@ -150,9 +155,25 @@
       border-radius: 10px;
       padding: 12px 14px;
     }
-    .card .label { font-size: 10px; color: var(--muted); font-family: var(--mono); text-transform: uppercase; letter-spacing: .5px; }
-    .card .value { font-size: 28px; font-weight: 800; line-height: 1.1; margin-top: 4px; }
-    .card .sub   { font-size: 10px; color: var(--muted); font-family: var(--mono); margin-top: 3px; }
+    .card .label {
+      font-size: 10px;
+      color: var(--muted);
+      font-family: var(--mono);
+      text-transform: uppercase;
+      letter-spacing: .5px;
+    }
+    .card .value {
+      font-size: 28px;
+      font-weight: 800;
+      line-height: 1.1;
+      margin-top: 4px;
+    }
+    .card .sub {
+      font-size: 10px;
+      color: var(--muted);
+      font-family: var(--mono);
+      margin-top: 3px;
+    }
     .card.green  { border-color: #1e4028; }
     .card.green .value { color: var(--green); }
     .card.yellow { border-color: #3a2d05; }
@@ -212,7 +233,7 @@
     .bar-pct {
       font-family: var(--mono);
       font-size: 10px;
-      width: 36px;
+      width: 48px;
       text-align: right;
       flex-shrink: 0;
       color: var(--ink);
@@ -259,7 +280,16 @@
     .guid     { color: var(--muted); max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; cursor: pointer; }
     .guid:hover { color: var(--ink); }
 
-    .fc { width: 22px; height: 22px; border-radius: 4px; display: inline-flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 700; }
+    .fc {
+      width: 22px;
+      height: 22px;
+      border-radius: 4px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 9px;
+      font-weight: 700;
+    }
     .fc.ok   { background: var(--green-dim); color: var(--green); }
     .fc.miss { background: var(--red-dim);   color: var(--red); }
     .fc.na   { background: #2a2f36; color: #9aa4af; }
@@ -293,7 +323,11 @@
       cursor: pointer;
       transition: all .15s;
     }
-    .tab.active, .tab:hover { background: var(--surface2); color: var(--ink); border-color: var(--blue); }
+    .tab.active, .tab:hover {
+      background: var(--surface2);
+      color: var(--ink);
+      border-color: var(--blue);
+    }
 
     #donutWrap { display: flex; align-items: center; gap: 20px; padding: 14px; }
     #donutSvg  { flex-shrink: 0; }
@@ -301,7 +335,15 @@
     .legend-item  { display: flex; align-items: center; gap: 8px; font-size: 11px; }
     .legend-dot   { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
     .legend-text  { color: var(--muted); font-family: var(--mono); font-size: 10px; }
-    .legend-val   { font-weight: 700; color: var(--ink); margin-left: auto; font-family: var(--mono); font-size: 10px; min-width: 28px; text-align: right; }
+    .legend-val   {
+      font-weight: 700;
+      color: var(--ink);
+      margin-left: auto;
+      font-family: var(--mono);
+      font-size: 10px;
+      min-width: 28px;
+      text-align: right;
+    }
 
     #searchInput {
       font-family: var(--mono);
@@ -327,10 +369,14 @@
     ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
 
-    @keyframes fadeUp { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:none; } }
+    @keyframes fadeUp {
+      from { opacity:0; transform:translateY(6px); }
+      to   { opacity:1; transform:none; }
+    }
     .anim { animation: fadeUp .3s ease both; }
 
     .grid-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
     @media(max-width: 640px) {
       .grid-2col { grid-template-columns: 1fr; }
       .cards { grid-template-columns: repeat(2,1fr); }
@@ -342,7 +388,7 @@
 <header>
   <div class="header-title">
     <h1>RDS Validator</h1>
-    <p>PropertySet: 2_RDS · 16 felter · Kun objekter med 0_Element valideres</p>
+    <p>PropertySet: 2_RDS · 16 felter · Objekter med 0_Element valideres · NotApplicable filtreres bort</p>
   </div>
   <span class="badge" id="modelBadge">Ikke tilkoblet</span>
   <button class="btn btn-ghost" id="btnLoad" disabled>Hent modeller</button>
@@ -365,7 +411,12 @@
 <main id="mainContent">
   <div class="empty anim">
     <div class="icon">🔍</div>
-    <div>Velg en modell og trykk <strong>Valider</strong> for å starte.<br><span style="font-size:11px;color:var(--muted)">Kun objekter med PropertySet <code>0_Element</code> valideres — romlige beholdere og type-objekter ekskluderes automatisk.</span></div>
+    <div>
+      Velg en modell og trykk <strong>Valider</strong> for å starte.<br>
+      <span style="font-size:11px;color:var(--muted)">
+        Kun objekter med PropertySet <code>0_Element</code> valideres. Elementer der både <code>Objektklasse</code> og <code>Objekttype</code> er satt til <code>NotApplicable</code> hoppes over.
+      </span>
+    </div>
   </div>
 </main>
 
@@ -575,6 +626,11 @@ let validationRows = [];
 let activeFilter = 'all';
 let searchTerm = '';
 let currentModelName = '';
+let skippedStats = {
+  notApplicable: 0,
+  ignoredIfc: 0,
+  missing0Element: 0
+};
 
 const $ = id => document.getElementById(id);
 const btnLoad = $('btnLoad');
@@ -641,6 +697,59 @@ function getPropAny(obj, pset){
   return result;
 }
 
+function isNotApplicableValue(v){
+  const s = norm(v).toLowerCase();
+  return s === 'notapplicable' || s === 'not applicable';
+}
+
+function getElementMeta(obj){
+  const elem = getPropAny(obj, '0_Element');
+
+  const objectType =
+    elem['Objekttype'] ||
+    elem['ObjectType'] ||
+    elem['Object Type'] ||
+    elem['objekttype'] ||
+    elem['objecttype'] ||
+    '';
+
+  const objectClass =
+    elem['Objektklasse'] ||
+    elem['ObjectClass'] ||
+    elem['Object Class'] ||
+    elem['objektklasse'] ||
+    elem['objectclass'] ||
+    '';
+
+  const underdiscipline =
+    elem['Underdisiplin'] ||
+    elem['underdisiplin'] ||
+    '';
+
+  const underdisciplineCode =
+    elem['Underdisiplinkode'] ||
+    elem['underdisiplinkode'] ||
+    '';
+
+  return {
+    elem,
+    objectType: norm(objectType),
+    objectClass: norm(objectClass),
+    underdiscipline: norm(underdiscipline),
+    underdisciplineCode: norm(underdisciplineCode)
+  };
+}
+
+function shouldSkipByNotApplicable(meta, discipline){
+  const bothNA =
+    isNotApplicableValue(meta.objectClass) &&
+    isNotApplicableValue(meta.objectType);
+
+  if (!bothNA) return false;
+
+  return true;
+}
+
 function fieldClass(status){
   if (status === 'ok') return 'ok';
   if (status === 'na') return 'na';
@@ -703,18 +812,24 @@ function resolveDiscipline(obj, modelName=''){
   const forced = getSelectedDiscipline();
   if (forced && forced !== 'AUTO') return forced;
 
-  const elem = getPropAny(obj, '0_Element');
-  const under = elem['Underdisiplin'] || elem['underdisiplin'] || '';
-  const underCode = elem['Underdisiplinkode'] || elem['underdisiplinkode'] || '';
-  const objectType = elem['Objekttype'] || elem['ObjectType'] || '';
+  const meta = getElementMeta(obj);
+  const combined = [
+    meta.underdiscipline,
+    meta.underdisciplineCode,
+    meta.objectType,
+    meta.objectClass,
+    modelName
+  ].map(v => norm(v).toUpperCase()).join(' | ');
 
-  const combined = [under, underCode, objectType, modelName].map(v => norm(v).toUpperCase()).join(' | ');
-  if ((combined.includes('SKILT') || combined.includes('SKO')) && combined.includes('TUNNEL')) return 'SKO_TUNNEL';
+  if ((combined.includes('SKILT') || combined.includes('SKO')) && combined.includes('TUNNEL')) {
+    return 'SKO_TUNNEL';
+  }
 
   return (
-    resolveDisciplineFromValue(underCode) ||
-    resolveDisciplineFromValue(under) ||
-    resolveDisciplineFromValue(objectType) ||
+    resolveDisciplineFromValue(meta.underdisciplineCode) ||
+    resolveDisciplineFromValue(meta.underdiscipline) ||
+    resolveDisciplineFromValue(meta.objectType) ||
+    resolveDisciplineFromValue(meta.objectClass) ||
     inferDisciplineFromNames(modelName) ||
     'VEI'
   );
@@ -893,6 +1008,12 @@ async function validate(){
   setStatus('⏳ Leser objekter og validerer RDS-felter…');
   mainContent.innerHTML = '';
 
+  skippedStats = {
+    notApplicable: 0,
+    ignoredIfc: 0,
+    missing0Element: 0
+  };
+
   try {
     const objsInfo = await API.viewer.getObjects();
     const raw = (objsInfo || []).find(m => norm(m.modelId || m.modelid || m['model Id'] || '') === modelId);
@@ -913,29 +1034,61 @@ async function validate(){
       const chunk = runtimeIds.slice(i, i + CHUNK);
       const props = await API.viewer.getObjectProperties(modelId, chunk);
 
-      for (const obj of (props || [])) {
-        if (IGNORE.has(getIfcType(obj))) continue;
+      const candidates = [];
 
-        const elemProps = getPropAny(obj, '0_Element');
-        if (!Object.keys(elemProps).length) continue;
+      for (const obj of (props || [])) {
+        const ifcType = getIfcType(obj);
+        if (IGNORE.has(ifcType)) {
+          skippedStats.ignoredIfc++;
+          continue;
+        }
+
+        const meta = getElementMeta(obj);
+
+        if (!Object.keys(meta.elem).length) {
+          skippedStats.missing0Element++;
+          continue;
+        }
+
+        const discipline = resolveDiscipline(obj, currentModelName);
+
+        if (shouldSkipByNotApplicable(meta, discipline)) {
+          skippedStats.notApplicable++;
+          continue;
+        }
 
         const ruleResult = validateByRule(obj, currentModelName);
 
-        let guid = '';
-        try {
-          const ids = await API.viewer.convertToObjectIds(modelId, [Number(obj.id)]);
-          guid = ids?.[0] ? String(ids[0]) : '';
-        } catch {}
+        candidates.push({
+          obj,
+          meta,
+          ruleResult
+        });
+      }
 
-        let elementType = elemProps['Objekttype'] || elemProps['ObjectType'] || elemProps['Object Type'] || '';
-        if (!elementType) {
-          for (const [k, v] of Object.entries(elemProps)) {
-            if (/objekttype|object.?type/i.test(k) && v) {
-              elementType = v;
-              break;
-            }
-          }
+      let guidMap = new Map();
+      try {
+        const candidateRuntimeIds = candidates
+          .map(c => Number(c.obj.id))
+          .filter(v => Number.isFinite(v));
+
+        if (candidateRuntimeIds.length) {
+          const converted = await API.viewer.convertToObjectIds(modelId, candidateRuntimeIds);
+          candidateRuntimeIds.forEach((rid, idx) => {
+            guidMap.set(String(rid), converted?.[idx] ? String(converted[idx]) : '');
+          });
         }
+      } catch (e) {
+        console.warn('GUID-konvertering feilet for chunk:', e);
+      }
+
+      for (const c of candidates) {
+        const obj = c.obj;
+        const meta = c.meta;
+        const ruleResult = c.ruleResult;
+
+        const guid = guidMap.get(String(obj.id)) || '';
+        const rdsTag = norm(getProp(obj, PSET, '01. RDS-tag'));
 
         validationRows.push({
           name: norm(obj.name || obj.objectName || ''),
@@ -948,8 +1101,9 @@ async function validate(){
           formatErrorCount: ruleResult.formatErrorCount,
           naCount: ruleResult.naCount,
           discipline: ruleResult.discipline,
-          elementType: norm(elementType),
-          rdsTag: norm(getProp(obj, PSET, '01. RDS-tag'))
+          elementType: meta.objectType,
+          objectClass: meta.objectClass,
+          rdsTag
         });
       }
 
@@ -961,7 +1115,11 @@ async function validate(){
     btnReset.disabled = false;
     btnColorize.disabled = false;
     btnExport.disabled = false;
-    setStatus(`✅ Validering fullført — ${validationRows.length} fagmodelobjekter analysert.`, 'ok');
+
+    setStatus(
+      `✅ Validering fullført — ${validationRows.length} objekter analysert · ${skippedStats.notApplicable} hoppet over (NotApplicable).`,
+      'ok'
+    );
   } catch (e) {
     setStatus('❌ Feil under validering: ' + (e.message || e), 'error');
     console.error(e);
@@ -973,7 +1131,16 @@ async function validate(){
 function renderDashboard(model){
   const total = validationRows.length;
   if (!total) {
-    mainContent.innerHTML = '<div class="empty"><div class="icon">⚠️</div><div>Ingen relevante objekter funnet.</div></div>';
+    mainContent.innerHTML = `
+      <div class="empty">
+        <div class="icon">⚠️</div>
+        <div>
+          Ingen relevante objekter funnet.<br>
+          <span style="font-size:11px;color:var(--muted)">
+            Hoppet over ${skippedStats.notApplicable} objekt(er) med Objektklasse=NotApplicable og Objekttype=NotApplicable.
+          </span>
+        </div>
+      </div>`;
     return;
   }
 
@@ -1010,7 +1177,7 @@ function renderDashboard(model){
   mainContent.innerHTML = `
     <div class="cards anim">
       <div class="card blue">
-        <div class="label">Objekter</div>
+        <div class="label">Analysert</div>
         <div class="value">${total}</div>
         <div class="sub">${esc(model?.name || '')}</div>
       </div>
@@ -1025,9 +1192,9 @@ function renderDashboard(model){
         <div class="sub">${totalMissing} mangler · ${totalFormat} formatfeil</div>
       </div>
       <div class="card yellow">
-        <div class="label">Fyllingsgrad</div>
-        <div class="value">${fillPct}%</div>
-        <div class="sub">${esc(selectedRuleLabel)}</div>
+        <div class="label">Hoppet over</div>
+        <div class="value">${skippedStats.notApplicable}</div>
+        <div class="sub">Objektklasse + Objekttype = NotApplicable</div>
       </div>
     </div>
 
@@ -1071,6 +1238,7 @@ function renderDashboard(model){
               <th>GUID</th>
               <th>Fag</th>
               <th>Objekttype</th>
+              <th>Objektklasse</th>
               <th>Disiplin</th>
               ${FIELDS.map(f => `<th title="${esc(f.label)}">${f.key}</th>`).join('')}
             </tr>
@@ -1165,11 +1333,16 @@ function renderTable(){
   let rows = validationRows.slice();
   if (activeFilter === 'ok') rows = rows.filter(r => r.missingCount === 0 && r.formatErrorCount === 0);
   if (activeFilter === 'issues') rows = rows.filter(r => r.missingCount > 0 || r.formatErrorCount > 0);
-  if (searchTerm) rows = rows.filter(r => r.name.toLowerCase().includes(searchTerm) || r.guid.toLowerCase().includes(searchTerm));
+  if (searchTerm) {
+    rows = rows.filter(r =>
+      r.name.toLowerCase().includes(searchTerm) ||
+      r.guid.toLowerCase().includes(searchTerm)
+    );
+  }
 
   const tbody = document.getElementById('tableBody');
   if (!rows.length) {
-    tbody.innerHTML = `<tr><td colspan="${6 + FIELDS.length}" class="empty" style="padding:20px;text-align:center;color:var(--muted)">Ingen rader matcher filteret.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="${7 + FIELDS.length}" class="empty" style="padding:20px;text-align:center;color:var(--muted)">Ingen rader matcher filteret.</td></tr>`;
     return;
   }
 
@@ -1188,6 +1361,7 @@ function renderTable(){
         <td class="guid" title="${esc(r.guid)}" onclick="copyGuid(event, this, '${esc(r.guid)}')">${r.guid ? esc(r.guid.substring(0,12) + '…') : '–'}</td>
         <td style="color:var(--muted)">${esc(r.discipline)}</td>
         <td style="color:var(--muted);max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(r.elementType)}">${esc(r.elementType) || '–'}</td>
+        <td style="color:var(--muted);max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(r.objectClass)}">${esc(r.objectClass) || '–'}</td>
         <td style="color:var(--muted);max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(r.discipline)}">${esc(r.discipline) || '–'}</td>
         ${cells}
       </tr>
@@ -1288,7 +1462,7 @@ function exportCsv(){
     return;
   }
 
-  const headers = ['Navn','GUID','Fag','Objekttype','Score (%)','Manglende felter','Formatfeil',...FIELDS.map(f => f.label)];
+  const headers = ['Navn','GUID','Fag','Objekttype','Objektklasse','Score (%)','Manglende felter','Formatfeil',...FIELDS.map(f => f.label)];
   const csvEsc = v => {
     const s = (v ?? '').toString().replace(/"/g, '""');
     return /[",\n]/.test(s) ? `"${s}"` : s;
@@ -1301,6 +1475,7 @@ function exportCsv(){
       csvEsc(r.guid),
       csvEsc(r.discipline),
       csvEsc(r.elementType),
+      csvEsc(r.objectClass),
       csvEsc(r.score),
       csvEsc(r.missingCount),
       csvEsc(r.formatErrorCount),
@@ -1331,12 +1506,26 @@ function reset(){
   validationRows = [];
   activeFilter = 'all';
   searchTerm = '';
+  skippedStats = {
+    notApplicable: 0,
+    ignoredIfc: 0,
+    missing0Element: 0
+  };
 
   if (API) {
     try { API.viewer.setObjectState(undefined, { color: 'reset' }); } catch {}
   }
 
-  mainContent.innerHTML = '<div class="empty anim"><div class="icon">🔍</div><div>Velg en modell og trykk <strong>Valider</strong> for å starte.<br><span style="font-size:11px;color:var(--muted)">Fagregler kan settes til Auto eller overstyres manuelt.</span></div></div>';
+  mainContent.innerHTML = `
+    <div class="empty anim">
+      <div class="icon">🔍</div>
+      <div>
+        Velg en modell og trykk <strong>Valider</strong> for å starte.<br>
+        <span style="font-size:11px;color:var(--muted)">
+          Fagregler kan settes til Auto eller overstyres manuelt. Elementer med NotApplicable filtreres bort.
+        </span>
+      </div>
+    </div>`;
   btnReset.disabled = true;
   btnColorize.disabled = true;
   btnUncolor.disabled = true;
