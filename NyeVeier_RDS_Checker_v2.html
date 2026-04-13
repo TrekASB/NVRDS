@@ -40,7 +40,6 @@
       overflow: hidden;
     }
 
-    /* ── HEADER ── */
     header {
       background: var(--surface);
       border-bottom: 1px solid var(--border);
@@ -96,7 +95,6 @@
     .btn-unreset  { background: #1f2937; color: var(--muted); border: 1px solid var(--border); }
     .btn-export   { background: #0d2044; color: var(--blue); border: 1px solid #1a3a6c; }
 
-    /* ── STATUS BAR ── */
     #statusBar {
       font-family: var(--mono);
       font-size: 11px;
@@ -109,7 +107,6 @@
     #statusBar.ok    { background: var(--green-dim); color: var(--green); border-color: #1a3a22; }
     #statusBar.error { background: var(--red-dim);   color: var(--red);   border-color: #3a1212; }
 
-    /* ── MODEL SELECTOR ── */
     #modelBar {
       background: var(--surface);
       border-bottom: 1px solid var(--border);
@@ -133,7 +130,6 @@
     }
     select:disabled { opacity: .4; }
 
-    /* ── MAIN LAYOUT ── */
     main {
       flex: 1;
       overflow-y: auto;
@@ -143,7 +139,6 @@
       gap: 14px;
     }
 
-    /* ── SUMMARY CARDS ── */
     .cards {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
@@ -167,7 +162,6 @@
     .card.blue   { border-color: #0d2044; }
     .card.blue .value { color: var(--blue); }
 
-    /* ── PANEL ── */
     .panel {
       background: var(--surface);
       border: 1px solid var(--border);
@@ -192,7 +186,6 @@
       font-family: var(--mono);
     }
 
-    /* ── FIELD CHART ── */
     #fieldChart { padding: 14px; display: flex; flex-direction: column; gap: 7px; }
 
     .field-row { display: flex; align-items: center; gap: 10px; }
@@ -233,7 +226,6 @@
       color: var(--muted);
     }
 
-    /* ── TABLE ── */
     .table-wrap { overflow: auto; max-height: 340px; }
     table {
       width: 100%;
@@ -267,16 +259,14 @@
     .guid     { color: var(--muted); max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; cursor: pointer; }
     .guid:hover { color: var(--ink); }
 
-    /* Field cells in table */
     .fc { width: 22px; height: 22px; border-radius: 4px; display: inline-flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 700; }
     .fc.ok   { background: var(--green-dim); color: var(--green); }
     .fc.miss { background: var(--red-dim);   color: var(--red); }
-
-    #disciplineSelect { max-width: 220px; flex: 0 0 220px; }
     .fc.na   { background: #2a2f36; color: #9aa4af; }
     .fc.warn { background: var(--yellow-dim); color: var(--yellow); }
 
-    /* ── SCORE PILL ── */
+    #disciplineSelect { max-width: 220px; flex: 0 0 220px; }
+
     .score {
       display: inline-block;
       font-family: var(--mono);
@@ -291,7 +281,6 @@
     .score.s25  { background: #3a2005; color: #d08030; }
     .score.s0   { background: var(--red-dim); color: var(--red); }
 
-    /* ── FILTER TABS ── */
     .tabs { display: flex; gap: 6px; }
     .tab {
       font-family: var(--mono);
@@ -306,7 +295,6 @@
     }
     .tab.active, .tab:hover { background: var(--surface2); color: var(--ink); border-color: var(--blue); }
 
-    /* ── DONUT ── */
     #donutWrap { display: flex; align-items: center; gap: 20px; padding: 14px; }
     #donutSvg  { flex-shrink: 0; }
     .donut-legend { display: flex; flex-direction: column; gap: 6px; }
@@ -315,7 +303,6 @@
     .legend-text  { color: var(--muted); font-family: var(--mono); font-size: 10px; }
     .legend-val   { font-weight: 700; color: var(--ink); margin-left: auto; font-family: var(--mono); font-size: 10px; min-width: 28px; text-align: right; }
 
-    /* ── SEARCH ── */
     #searchInput {
       font-family: var(--mono);
       font-size: 11px;
@@ -328,7 +315,6 @@
     }
     #searchInput::placeholder { color: var(--muted); }
 
-    /* ── EMPTY STATE ── */
     .empty {
       text-align: center;
       padding: 40px 20px;
@@ -337,17 +323,18 @@
     }
     .empty .icon { font-size: 36px; margin-bottom: 10px; }
 
-    /* Scrollbar */
     ::-webkit-scrollbar { width: 5px; height: 5px; }
     ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
 
-    /* Animate in */
     @keyframes fadeUp { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:none; } }
     .anim { animation: fadeUp .3s ease both; }
 
     .grid-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-    @media(max-width: 640px) { .grid-2col { grid-template-columns: 1fr; } .cards { grid-template-columns: repeat(2,1fr); } }
+    @media(max-width: 640px) {
+      .grid-2col { grid-template-columns: 1fr; }
+      .cards { grid-template-columns: repeat(2,1fr); }
+    }
   </style>
 </head>
 <body>
@@ -372,14 +359,7 @@
   <label>Modell:</label>
   <select id="modelSelect" disabled><option value="">– velg modell –</option></select>
   <label>Fagregel:</label>
-  <select id="disciplineSelect">
-    <option value="AUTO">Auto</option>
-    <option value="SKO">SKO – Skilt og oppmerking</option>
-    <option value="KNS">KNS – Konstruksjon</option>
-    <option value="VEI">VEI – Vei</option>
-    <option value="VAA">VAA – Vann og avløp</option>
-    <option value="LARK">LARK – Landskap</option>
-  </select>
+  <select id="disciplineSelect"></select>
 </div>
 
 <main id="mainContent">
@@ -390,8 +370,8 @@
 </main>
 
 <script>
-// ── KONFIG ──────────────────────────────────────────
 const PSET = '2_RDS';
+
 const FIELDS = [
   { key: '01', label: '01. RDS-tag' },
   { key: '02', label: '02. AAAAAA' },
@@ -429,6 +409,8 @@ const RX = {
   hhh: /^[A-Z]{3}\d+$/
 };
 
+const SKILT_TUNNEL_RDS_REGEX = /^<E6SØ>-(?:(?:D1\.(?:A1|A2|B1|B2|C1|C2|C3|C4|D1|D2|D3|D4|D5|D6|D7|D8|D9|D10|D11|BA1|CA1|CB1)\.M1\.ME2\.(?:PFA102|UBF101|ULG105|PHA101|PHA102|RUB101|RUB102|ULG106|PHD101|PHD102|PHD103|PHD104|PHD105|PHD109|PHD117|PHD167|UQB101|UQB102|UQB103|UQB106|UQB107)\.(?:PFA101|PFA102|PFA103|UBF101|UBF102|UBF103|ULG101|ULG102|ULG103|ULG104|ULG105|ULG106|ULG107|ULG108|ULG109|PHA101|PHA102|PHA103|PHA104|PHA105|PHA106|PHA107|PHA108|RUB101|PHD101|PHD102|PHD103|PHD104|PHD105|PHD106|PHD107|PHD108|PHD109|PHD110|PHD111|PHD112|PHD113|PHD114|PHD115|PHD116|PHD117|PHD118|PHD119|PHD120|PHD121|PHD122|PHD123|PHD124|PHD125|PHD126|PHD127|PHD128|PHD129|PHD130|PHD131|PHD132|PHD133|PHD134|PHD135|PHD136|PHD137|PHD138|PHD139|PHD140|PHD141|PHD142|PHD143|PHD144|PHD145|PHD146|PHD147|PHD148|PHD149|PHD150|PHD151|PHD152|PHD153|PHD154|PHD155|PHD156|PHD157|PHD158|PHD159|PHD160|PHD161|PHD162|PHD163|PHD164|PHD165|PHD166|PHD167|PHD168|PHD169|PHD170|PHD171|PHD172|PHD173|PHD174|PHD175|PHD176|PHD177|PHD178|PHD179|PHD180|PHD181|PHD182|PHD183|PHD184|PHD185|PHD186|PHD187|PHD188|PHD189|PHD190|PHD191|PHD192|PHD193|PHD194|PHD195|PHD196|PHD197|PHD198|PHD199|PHD200|PHD201|PHD202|PHD203|PHD204|PHD205|PHD206|PHD207|PHD208|UQB101|UQB102|UQB103|UQB106|UQB107)\.(PFA(?:[1-9]|1\d|2[01])|PHA(?:[1-9]|[1-8]\d|9[0-6])|PHD(?:[1-9]|[1-9]\d|1\d{2}|20[0-8])|UBF(?:1|3|4|5|7|8|9)|ULG(?:[1-4]|10[1-9])|UQB(?:[1-9]|1[0-9]|2[0-6])))|(?:D1\.(?:A1|A2|B1|B2|C1|C2|C3|C4|D1|D2|D3|D4|D5|D6|D7|D8|D9|D10|D11|BA1|CA1|CB1)\.BB1\.(?:PFA102|UBF101|ULG105|PHA101|PHA102|RUB101|RUB102|ULG106|PHD101|PHD102|PHD103|PHD104|PHD105|PHD109|PHD117|PHD167|UQB101|UQB102|UQB103|UQB106|UQB107)\.(?:PFA101|PFA102|PFA103|UBF101|UBF102|UBF103|ULG101|ULG102|ULG103|ULG104|ULG105|ULG106|ULG107|ULG108|ULG109|PHA101|PHA102|PHA103|PHA104|PHA105|PHA106|PHA107|PHA108|RUB101|PHD101|PHD102|PHD103|PHD104|PHD105|PHD106|PHD107|PHD108|PHD109|PHD110|PHD111|PHD112|PHD113|PHD114|PHD115|PHD116|PHD117|PHD118|PHD119|PHD120|PHD121|PHD122|PHD123|PHD124|PHD125|PHD126|PHD127|PHD128|PHD129|PHD130|PHD131|PHD132|PHD133|PHD134|PHD135|PHD136|PHD137|PHD138|PHD139|PHD140|PHD141|PHD142|PHD143|PHD144|PHD145|PHD146|PHD147|PHD148|PHD149|PHD150|PHD151|PHD152|PHD153|PHD154|PHD155|PHD156|PHD157|PHD158|PHD159|PHD160|PHD161|PHD162|PHD163|PHD164|PHD165|PHD166|PHD167|PHD168|PHD169|PHD170|PHD171|PHD172|PHD173|PHD174|PHD175|PHD176|PHD177|PHD178|PHD179|PHD180|PHD181|PHD182|PHD183|PHD184|PHD185|PHD186|PHD187|PHD188|PHD189|PHD190|PHD191|PHD192|PHD193|PHD194|PHD195|PHD196|PHD197|PHD198|PHD199|PHD200|PHD201|PHD202|PHD203|PHD204|PHD205|PHD206|PHD207|PHD208|UQB101|UQB102|UQB103|UQB106|UQB107)\.(PFA(?:[1-9]|1\d|2[01])|PHA(?:[1-9]|[1-8]\d|9[0-6])|PHD(?:[1-9]|[1-9]\d|1\d{2}|20[0-8])|UBF(?:1|3|4|5|7|8|9)|ULG(?:[1-4]|10[1-9])|UQB(?:[1-9]|1[0-9]|2[0-6]))))$/;
+
 const ANKER_RX = {
   VEI_TAG: /^<E6SØ>-(?:(?:A3\.A1\.(?:BA1|CA1|CB1)\.(?:FSD|NCA|NCG|RQA|ULA|UTA|UTB|WMB)(?:13|30|31|32|33|101|102|103|104|105|106|107|108|109|110|111)\.(?:FSD101|FSD102|NCA101|NCA102|NCA103|NCG101|NCG102|RQA101|ULA107|ULA109|ULA110|UTA101|UTA102|UTA103|UTA104|UTB101|WMB101)\.(?:FSD1|FSD2|NCA1|NCA3|NCA4|NCA5|NCG1|NCG2|RQA1|ULA1|UTA1|UTA2|UTB1|WMB1|WMB2))|(?:A3\.A1\.G1\.JD1\.(?:FSD|NCA|NCG|RQA|ULA|UTA|UTB|WMB)(?:13|30|31|32|33|101|102|103|104|105|106|107|108|109|110|111)\.(?:FSD101|FSD102|NCA101|NCA102|NCA103|NCG101|NCG102|RQA101|ULA107|ULA109|ULA110|UTA101|UTA102|UTA103|UTA104|UTB101|WMB101)\.(?:FSD1|FSD2|NCA1|NCA3|NCA4|NCA5|NCG1|NCG2|RQA1|ULA1|UTA1|UTA2|UTB1|WMB1|WMB2))|(?:B1\.CK1\.(?:FSD|NCA|NCG|RQA|ULA|UTA|UTB|WMB)(?:13|30|31|32|33|101|102|103|104|105|106|107|108|109|110|111)\.(?:FSD101|FSD102|NCA101|NCA102|NCA103|NCG101|NCG102|RQA101|ULA107|ULA109|ULA110|UTA101|UTA102|UTA103|UTA104|UTB101|WMB101)\.(?:FSD1|FSD2|NCA1|NCA3|NCA4|NCA5|NCG1|NCG2|RQA1|ULA1|UTA1|UTA2|UTB1|WMB1|WMB2)))$/,
   SKO_TAG: /^<E6SØ>-(?:A1|A2|A3|A4|D1)\.(?:A1|A2|A6)\.M1\.ME2\.(?:PFA102|UBF101|ULG105|PHA101|PHA102|RUB101|RUB102|ULG106|PHD102|PHD13|PHD103|PHD104)\.(?:PFA101|PFA102|PFA103|UBF101|UBF102|UBF103|ULG101|ULG102|ULG103|ULG104|ULG105|ULG106|ULG107|ULG108|ULG109|PHA101|PHA102|RUB101|PHD101|PHD102|PHD103|PHD104|PHD105|PHD106|PHD107|PHD108|PHD109|PHD110|PHD111|PHD112|PHD113|PHD114|PHD115|PHD116|PHD117|PHD118|PHD119|PHD120|PHD122|PHD123|PHD124|PHD125|PHD126|PHD127|PHD128|PHD129|PHD130|PHD131|PHD132|PHD133|PHD134|PHD135|PHD136|PHD137|PHD138|PHD139|PHD140|PHD141|PHD142|PHD143|PHD144|PHD145|PHD146|PHD147|PHD148|PHD149)\.(?:PFA\d+|UBF\d+|ULG\d+|PHA\d+|RUB\d+|PHD\d+)$/,
@@ -441,35 +423,117 @@ const DISCIPLINE_RULES = {
     label: 'Skilt og oppmerking',
     required: ['01','02','03','04','05','06','07','08','09','10','11','12','13','14','15','16'],
     optional: [],
-    regex: {'01':ANKER_RX.SKO_TAG,'02':RX.aaaaaa,'03':RX.bcd,'04':RX.anyText,'05':RX.bcd,'06':RX.anyText,'07':RX.bcd,'08':RX.anyText,'09':RX.ee,'10':RX.anyText,'11':RX.fff,'12':RX.anyText,'13':RX.ggg,'14':RX.anyText,'15':RX.hhh,'16':RX.anyText}
+    regex: {
+      '01': ANKER_RX.SKO_TAG,
+      '02': RX.aaaaaa,
+      '03': RX.bcd,
+      '04': RX.anyText,
+      '05': RX.bcd,
+      '06': RX.anyText,
+      '07': RX.bcd,
+      '08': RX.anyText,
+      '09': RX.ee,
+      '10': RX.anyText,
+      '11': RX.fff,
+      '12': RX.anyText,
+      '13': RX.ggg,
+      '14': RX.anyText,
+      '15': RX.hhh,
+      '16': RX.anyText
+    }
   },
   KNS: {
     label: 'Konstruksjon / bru',
     required: ['01','02','03','04','09','10','11','12','13','14','15','16'],
     optional: ['05','06','07','08'],
-    regex: {'01':ANKER_RX.BRU_TAG,'02':RX.aaaaaa,'03':RX.bcd,'04':RX.anyText,'05':RX.bcd,'06':RX.anyText,'07':RX.bcd,'08':RX.anyText,'09':RX.ee,'10':RX.anyText,'11':RX.fff,'12':RX.anyText,'13':RX.ggg,'14':RX.anyText,'15':RX.hhh,'16':RX.anyText}
+    regex: {
+      '01': ANKER_RX.BRU_TAG,
+      '02': RX.aaaaaa,
+      '03': RX.bcd,
+      '04': RX.anyText,
+      '05': RX.bcd,
+      '06': RX.anyText,
+      '07': RX.bcd,
+      '08': RX.anyText,
+      '09': RX.ee,
+      '10': RX.anyText,
+      '11': RX.fff,
+      '12': RX.anyText,
+      '13': RX.ggg,
+      '14': RX.anyText,
+      '15': RX.hhh,
+      '16': RX.anyText
+    }
   },
   VEI: {
     label: 'Vei',
     required: ['01','02','03','04','09','10','11','12','13','14','15','16'],
     optional: ['05','06','07','08'],
-    regex: {'01':ANKER_RX.VEI_TAG,'02':RX.aaaaaa,'03':RX.bcd,'04':RX.anyText,'05':RX.bcd,'06':RX.anyText,'07':RX.bcd,'08':RX.anyText,'09':RX.ee,'10':RX.anyText,'11':RX.fff,'12':RX.anyText,'13':RX.ggg,'14':RX.anyText,'15':RX.hhh,'16':RX.anyText}
+    regex: {
+      '01': ANKER_RX.VEI_TAG,
+      '02': RX.aaaaaa,
+      '03': RX.bcd,
+      '04': RX.anyText,
+      '05': RX.bcd,
+      '06': RX.anyText,
+      '07': RX.bcd,
+      '08': RX.anyText,
+      '09': RX.ee,
+      '10': RX.anyText,
+      '11': RX.fff,
+      '12': RX.anyText,
+      '13': RX.ggg,
+      '14': RX.anyText,
+      '15': RX.hhh,
+      '16': RX.anyText
+    }
   },
   VAA: {
     label: 'Vann og avløp',
     required: ['01','02','03','04','05','06','07','08','09','10','11','12','13','14','15','16'],
     optional: [],
     regex: {
-      '01': /^<E6SØ>-(?:A1(?:\.(?:A1|A2|A3|A4|A5|A6|A7|B1))?|A2(?:\.(?:A1|A2|A3|A4|A5|A6|A7|B1))?|A3(?:\.(?:A1|A2|A3|A4|A5|A6|A7|B1))?|A4(?:\.(?:A1|A2|A3|A4|A5|A6|A7|B1))?|B1|C1(?:\.(?:A1|B1))?|C2(?:\.(?:A1|B1))?|C3(?:\.(?:A1|B1))?|C4(?:\.(?:A1|B1))?|C5(?:\.(?:A1|B1))?|D1(?:\.(?:A1|A2|B1|B2|C1|C2|C3|C4|D1|D2|D3|D4|D5|D6|D7|D8|D9|D10|D11))?)\.(?:(?:F1\.(?:PB1|JB1))|(?:G1\.(?:JD1|JD2))|(?:K1\.JK1)|BA1)\.(?:XMA101|UCA108|WMB101|RQA102|UCA105|UCA106|WPA103|WPA109|WPA105|UCA104|WPA102|UCA110|WPA107|UCA107|WPA111|WPA110|UCA111|UCA109|WPA108|UTB102)\.(?:XMA101|UCA105|WMB101|RQA102|UCA103|UCA102|WPA109|UCA106|WPA101|WPA106|WPA107|WPA116|UCA101|WPA102|WPA105|WPA103|WPA108|UCA104|WPA117|WPA124|WPA123|RQA101|WPA119|WPA112|WPA114|WPA110|WPA115|WPA113|UCA107|WPA104|XMA102|UCA108|UCA111|WPA111|UTB101)\.(?:XMA1|RQA(?:[1-9]|1[0-7])|UTB(?:[1-9]|[12]\d|30)|WMB(?:1|2|4|25|240|731|1202|1278|1418|1437|1671)|WPA(?:[1-9]|[12]\d|3[0-9])|UCA(?:[1-9]|[1-4]\d|5[0-5]|141|18[1-9]|19[0-3]|19[5-8]|20[0-9]|21[0-5]))$/,
-'01':RX.tag,'02':RX.aaaaaa,'03':RX.bcd,'04':RX.anyText,'05':RX.bcd,'06':RX.anyText,'07':RX.bcd,'08':RX.anyText,'09':RX.ee,'10':RX.anyText,'11':RX.fff,'12':RX.anyText,'13':RX.ggg,'14':RX.anyText,'15':RX.hhh,'16':RX.anyText}
+      '01': RX.tag,
+      '02': RX.aaaaaa,
+      '03': RX.bcd,
+      '04': RX.anyText,
+      '05': RX.bcd,
+      '06': RX.anyText,
+      '07': RX.bcd,
+      '08': RX.anyText,
+      '09': RX.ee,
+      '10': RX.anyText,
+      '11': RX.fff,
+      '12': RX.anyText,
+      '13': RX.ggg,
+      '14': RX.anyText,
+      '15': RX.hhh,
+      '16': RX.anyText
+    }
   },
   LARK: {
     label: 'Landskap',
     required: ['01','02','03','04','09','10','11','12','13','14','15','16'],
     optional: ['05','06','07','08'],
-    regex: {'01':ANKER_RX.LARK_TAG,'02':RX.aaaaaa,'03':RX.bcd,'04':RX.anyText,'05':RX.bcd,'06':RX.anyText,'07':RX.bcd,'08':RX.anyText,'09':RX.ee,'10':RX.anyText,'11':RX.fff,'12':RX.anyText,'13':RX.ggg,'14':RX.anyText,'15':RX.hhh,'16':RX.anyText}
-  }
-
+    regex: {
+      '01': ANKER_RX.LARK_TAG,
+      '02': RX.aaaaaa,
+      '03': RX.bcd,
+      '04': RX.anyText,
+      '05': RX.bcd,
+      '06': RX.anyText,
+      '07': RX.bcd,
+      '08': RX.anyText,
+      '09': RX.ee,
+      '10': RX.anyText,
+      '11': RX.fff,
+      '12': RX.anyText,
+      '13': RX.ggg,
+      '14': RX.anyText,
+      '15': RX.hhh,
+      '16': RX.anyText
+    }
+  },
   SKO_TUNNEL: {
     label: 'Skilt i tunnel',
     required: ['01','02','03','04','05','06','07','08','09','10','11','12','13','14','15','16'],
@@ -477,13 +541,13 @@ const DISCIPLINE_RULES = {
     regex: {
       '01': SKILT_TUNNEL_RDS_REGEX,
       '02': /^<[^>]+>$/,
-      '03': /^[A-Z]\d$/,
+      '03': /^[A-Z]\d+$/,
       '04': /.+/,
-      '05': /^[A-Z]\d$/,
+      '05': /^[A-Z]\d+$/,
       '06': /.+/,
-      '07': /^[A-Z]\d$/,
+      '07': /^[A-Z]\d+$/,
       '08': /.+/,
-      '09': /^[A-Z]{2}\d$/,
+      '09': /^[A-Z]{2}\d+$/,
       '10': /.+/,
       '11': /^[A-Z]{3}\d{2,3}$/,
       '12': /.+/,
@@ -492,12 +556,8 @@ const DISCIPLINE_RULES = {
       '15': /^[A-Z]{3}\d+$/,
       '16': /.+/
     }
-  },
+  }
 };
-
-
-
-const SKILT_TUNNEL_RDS_REGEX = /^<E6SØ>-(?:(?:D1\.(?:A1|A2|B1|B2|C1|C2|C3|C4|D1|D2|D3|D4|D5|D6|D7|D8|D9|D10|D11|BA1|CA1|CB1)\.M1\.ME2\.(?:PFA102|UBF101|ULG105|PHA101|PHA102|RUB101|RUB102|ULG106|PHD101|PHD102|PHD103|PHD104|PHD105|PHD109|PHD117|PHD167|UQB101|UQB102|UQB103|UQB106|UQB107)\.(?:PFA101|PFA102|PFA103|UBF101|UBF102|UBF103|ULG101|ULG102|ULG103|ULG104|ULG105|ULG106|ULG107|ULG108|ULG109|PHA101|PHA102|PHA103|PHA104|PHA105|PHA106|PHA107|PHA108|RUB101|PHD101|PHD102|PHD103|PHD104|PHD105|PHD106|PHD107|PHD108|PHD109|PHD110|PHD111|PHD112|PHD113|PHD114|PHD115|PHD116|PHD117|PHD118|PHD119|PHD120|PHD121|PHD122|PHD123|PHD124|PHD125|PHD126|PHD127|PHD128|PHD129|PHD130|PHD131|PHD132|PHD133|PHD134|PHD135|PHD136|PHD137|PHD138|PHD139|PHD140|PHD141|PHD142|PHD143|PHD144|PHD145|PHD146|PHD147|PHD148|PHD149|PHD150|PHD151|PHD152|PHD153|PHD154|PHD155|PHD156|PHD157|PHD158|PHD159|PHD160|PHD161|PHD162|PHD163|PHD164|PHD165|PHD166|PHD167|PHD168|PHD169|PHD170|PHD171|PHD172|PHD173|PHD174|PHD175|PHD176|PHD177|PHD178|PHD179|PHD180|PHD181|PHD182|PHD183|PHD184|PHD185|PHD186|PHD187|PHD188|PHD189|PHD190|PHD191|PHD192|PHD193|PHD194|PHD195|PHD196|PHD197|PHD198|PHD199|PHD200|PHD201|PHD202|PHD203|PHD204|PHD205|PHD206|PHD207|PHD208|UQB101|UQB102|UQB103|UQB106|UQB107)\.(PFA(?:[1-9]|1\d|2[01])|PHA(?:[1-9]|[1-8]\d|9[0-6])|PHD(?:[1-9]|[1-9]\d|1\d{2}|20[0-8])|UBF(?:1|3|4|5|7|8|9)|ULG(?:[1-4]|10[1-9])|UQB(?:[1-9]|1[0-9]|2[0-6])))|(?:D1\.(?:A1|A2|B1|B2|C1|C2|C3|C4|D1|D2|D3|D4|D5|D6|D7|D8|D9|D10|D11|BA1|CA1|CB1)\.BB1\.(?:PFA102|UBF101|ULG105|PHA101|PHA102|RUB101|RUB102|ULG106|PHD101|PHD102|PHD103|PHD104|PHD105|PHD109|PHD117|PHD167|UQB101|UQB102|UQB103|UQB106|UQB107)\.(?:PFA101|PFA102|PFA103|UBF101|UBF102|UBF103|ULG101|ULG102|ULG103|ULG104|ULG105|ULG106|ULG107|ULG108|ULG109|PHA101|PHA102|PHA103|PHA104|PHA105|PHA106|PHA107|PHA108|RUB101|PHD101|PHD102|PHD103|PHD104|PHD105|PHD106|PHD107|PHD108|PHD109|PHD110|PHD111|PHD112|PHD113|PHD114|PHD115|PHD116|PHD117|PHD118|PHD119|PHD120|PHD121|PHD122|PHD123|PHD124|PHD125|PHD126|PHD127|PHD128|PHD129|PHD130|PHD131|PHD132|PHD133|PHD134|PHD135|PHD136|PHD137|PHD138|PHD139|PHD140|PHD141|PHD142|PHD143|PHD144|PHD145|PHD146|PHD147|PHD148|PHD149|PHD150|PHD151|PHD152|PHD153|PHD154|PHD155|PHD156|PHD157|PHD158|PHD159|PHD160|PHD161|PHD162|PHD163|PHD164|PHD165|PHD166|PHD167|PHD168|PHD169|PHD170|PHD171|PHD172|PHD173|PHD174|PHD175|PHD176|PHD177|PHD178|PHD179|PHD180|PHD181|PHD182|PHD183|PHD184|PHD185|PHD186|PHD187|PHD188|PHD189|PHD190|PHD191|PHD192|PHD193|PHD194|PHD195|PHD196|PHD197|PHD198|PHD199|PHD200|PHD201|PHD202|PHD203|PHD204|PHD205|PHD206|PHD207|PHD208|UQB101|UQB102|UQB103|UQB106|UQB107)\.(PFA(?:[1-9]|1\d|2[01])|PHA(?:[1-9]|[1-8]\d|9[0-6])|PHD(?:[1-9]|[1-9]\d|1\d{2}|20[0-8])|UBF(?:1|3|4|5|7|8|9)|ULG(?:[1-4]|10[1-9])|UQB(?:[1-9]|1[0-9]|2[0-6]))))$/;
 
 const DISCIPLINE_OPTIONS = [
   ['AUTO', 'Auto (fra 0_Element → Underdisiplin)'],
@@ -509,7 +569,6 @@ const DISCIPLINE_OPTIONS = [
   ['VAA', 'VAA']
 ];
 
-// ── STATE ───────────────────────────────────────────
 let API = null;
 let allModels = [];
 let validationRows = [];
@@ -517,7 +576,6 @@ let activeFilter = 'all';
 let searchTerm = '';
 let currentModelName = '';
 
-// ── DOM ─────────────────────────────────────────────
 const $ = id => document.getElementById(id);
 const btnLoad = $('btnLoad');
 const btnValidate = $('btnValidate');
@@ -531,7 +589,6 @@ const statusBar = $('statusBar');
 const modelBadge = $('modelBadge');
 const mainContent = $('mainContent');
 
-// ── UTILS ───────────────────────────────────────────
 function norm(v){ return (v ?? '').toString().trim(); }
 function esc(v){ return norm(v).replace(/[&<>"]/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[s])); }
 function setStatus(msg, cls=''){ statusBar.textContent = msg; statusBar.className = cls; }
@@ -599,12 +656,18 @@ function fieldText(status){
 }
 
 function scoreClass(pct){
+  if (pct === 100) return 's100';
+  if (pct >= 75) return 's75';
+  if (pct >= 50) return 's50';
+  if (pct >= 25) return 's25';
+  return 's0';
+}
 
 function populateDisciplineDropdown(){
-  if (!disciplineSelect) return;
   disciplineSelect.innerHTML = DISCIPLINE_OPTIONS.map(([value, label]) =>
     `<option value="${esc(value)}">${esc(label)}</option>`
   ).join('');
+  disciplineSelect.value = 'AUTO';
   disciplineSelect.disabled = false;
 }
 
@@ -626,34 +689,6 @@ function resolveDisciplineFromValue(raw){
   return null;
 }
 
-function resolveDiscipline(obj, modelName=''){
-  const forced = getSelectedDiscipline();
-  if (forced && forced !== 'AUTO') return forced;
-
-  const elem = getPropAny(obj, '0_Element');
-  const under = elem['Underdisiplin'] || elem['underdisiplin'] || '';
-  const underCode = elem['Underdisiplinkode'] || elem['underdisiplinkode'] || '';
-  const objectType = elem['Objekttype'] || elem['ObjectType'] || '';
-
-  // tunnel skilt først
-  const combined = [under, underCode, objectType, modelName].map(v => norm(v).toUpperCase()).join(' | ');
-  if ((combined.includes('SKILT') || combined.includes('SKO')) && combined.includes('TUNNEL')) return 'SKO_TUNNEL';
-
-  return (
-    resolveDisciplineFromValue(underCode) ||
-    resolveDisciplineFromValue(under) ||
-    resolveDisciplineFromValue(objectType) ||
-    resolveDisciplineFromValue(modelName) ||
-    null
-  );
-}
-  if (pct === 100) return 's100';
-  if (pct >= 75) return 's75';
-  if (pct >= 50) return 's50';
-  if (pct >= 25) return 's25';
-  return 's0';
-}
-
 function inferDisciplineFromNames(modelName=''){
   const m = modelName.toUpperCase();
   if (m.includes('LARK')) return 'LARK';
@@ -664,22 +699,25 @@ function inferDisciplineFromNames(modelName=''){
   return null;
 }
 
-function resolveDiscipline(obj, modelName){
-  const override = disciplineSelect?.value || 'AUTO';
-  if (override !== 'AUTO') return override;
+function resolveDiscipline(obj, modelName=''){
+  const forced = getSelectedDiscipline();
+  if (forced && forced !== 'AUTO') return forced;
 
   const elem = getPropAny(obj, '0_Element');
-  const code = (elem['Underdisiplinkode'] || '').toUpperCase().trim();
-  const name = (elem['Underdisiplin'] || '').toUpperCase().trim();
+  const under = elem['Underdisiplin'] || elem['underdisiplin'] || '';
+  const underCode = elem['Underdisiplinkode'] || elem['underdisiplinkode'] || '';
+  const objectType = elem['Objekttype'] || elem['ObjectType'] || '';
 
-  if (DISCIPLINE_RULES[code]) return code;
-  if (name.includes('LARK')) return 'LARK';
-  if (name.includes('SKILT') || name.includes('OPPMERK')) return 'SKO';
-  if (name.includes('KONSTRUKSJON')) return 'KNS';
-  if (name.includes('VEI') || name.includes('VEG')) return 'VEI';
-  if (name.includes('VANN') || name.includes('AVL')) return 'VAA';
+  const combined = [under, underCode, objectType, modelName].map(v => norm(v).toUpperCase()).join(' | ');
+  if ((combined.includes('SKILT') || combined.includes('SKO')) && combined.includes('TUNNEL')) return 'SKO_TUNNEL';
 
-  return inferDisciplineFromNames(modelName) || 'VEI';
+  return (
+    resolveDisciplineFromValue(underCode) ||
+    resolveDisciplineFromValue(under) ||
+    resolveDisciplineFromValue(objectType) ||
+    inferDisciplineFromNames(modelName) ||
+    'VEI'
+  );
 }
 
 function validateByRule(obj, modelName){
@@ -698,10 +736,6 @@ function validateByRule(obj, modelName){
     const key = f.key;
     const value = norm(rds[f.label] || getProp(obj, PSET, f.label));
 
-    // Conditional exception rules:
-    // 1) SKO / SKO_TUNNEL: when 09. EEnnn = ME2, then 07/08 are not used and must be empty
-    // 2) LARK: when 09. EEnnn = BA1 / CJ1 / RA1, then 07/08 are not used and must be empty
-    // 3) LARK: when 09. EEnnn = CL1, then 07. Dnn must be P1 and 08. Dnn navn is required
     if (key === '07' || key === '08') {
       if (skoNoD || larkNoD) {
         if (!value) {
@@ -779,28 +813,34 @@ function validateByRule(obj, modelName){
   return { discipline, fields, score, missingCount, formatErrorCount, naCount };
 }
 
-// ── CONNECT ─────────────────────────────────────────
 async function connect(){
   try {
-    if (!window.TrimbleConnectWorkspace?.connect) throw new Error('API ikke tilgjengelig');
-    API = await TrimbleConnectWorkspace.connect(window.parent, ()=>{}, 30000);
+    if (!window.TrimbleConnectWorkspace?.connect) {
+      throw new Error('Trimble Connect Workspace API ikke tilgjengelig');
+    }
+    API = await window.TrimbleConnectWorkspace.connect(window.parent, () => {}, 30000);
     btnLoad.disabled = false;
     setStatus('✅ Tilkoblet Trimble Connect. Trykk «Hent modeller».', 'ok');
     modelBadge.textContent = 'Tilkoblet';
-  } catch(e){
+  } catch (e) {
     setStatus('❌ ' + (e.message || e), 'error');
     modelBadge.textContent = 'Feil';
+    console.error(e);
   }
 }
 
-// ── LOAD MODELS ─────────────────────────────────────
 async function loadModels(){
   if (!API) return;
   btnLoad.disabled = true;
   setStatus('⏳ Leser modeller…');
   try {
     const nameMap = new Map();
-    const srcs = [() => API.models?.getModels?.(), () => API.viewer?.getModels?.(), () => API.project?.getModels?.()];
+    const srcs = [
+      () => API.models?.getModels?.(),
+      () => API.viewer?.getModels?.(),
+      () => API.project?.getModels?.()
+    ];
+
     for (const src of srcs) {
       try {
         const res = await src();
@@ -827,22 +867,25 @@ async function loadModels(){
 
     modelSelect.innerHTML = '<option value="">– velg modell –</option>' +
       allModels.map(m => `<option value="${esc(m.modelId)}">${esc(m.name)} (${m.objectCount} obj.)</option>`).join('');
+
     modelSelect.disabled = false;
-    if (disciplineSelect) disciplineSelect.disabled = false;
     btnLoad.disabled = false;
     setStatus(`✅ ${allModels.length} modeller hentet. Velg modell og valider.`, 'ok');
-  } catch(e){
+  } catch (e) {
     setStatus('❌ Feil ved henting: ' + (e.message || e), 'error');
     btnLoad.disabled = false;
+    console.error(e);
   }
 }
 
-// ── VALIDATE ────────────────────────────────────────
 async function validate(){
   const modelId = modelSelect.value;
-  if (!modelId) { setStatus('⚠️ Velg en modell først.'); return; }
+  if (!modelId) {
+    setStatus('⚠️ Velg en modell først.');
+    return;
+  }
+
   const modelEntry = allModels.find(m => m.modelId === modelId);
-  const selectedModelName = modelEntry?.name || '';
   currentModelName = modelEntry?.name || '';
 
   btnValidate.disabled = true;
@@ -853,6 +896,7 @@ async function validate(){
   try {
     const objsInfo = await API.viewer.getObjects();
     const raw = (objsInfo || []).find(m => norm(m.modelId || m.modelid || m['model Id'] || '') === modelId);
+
     if (!raw || !Array.isArray(raw.objects) || !raw.objects.length) {
       setStatus('⚠️ Ingen objekter funnet i valgt modell.', 'error');
       btnValidate.disabled = false;
@@ -868,6 +912,7 @@ async function validate(){
     for (let i = 0; i < runtimeIds.length; i += CHUNK) {
       const chunk = runtimeIds.slice(i, i + CHUNK);
       const props = await API.viewer.getObjectProperties(modelId, chunk);
+
       for (const obj of (props || [])) {
         if (IGNORE.has(getIfcType(obj))) continue;
 
@@ -884,8 +929,11 @@ async function validate(){
 
         let elementType = elemProps['Objekttype'] || elemProps['ObjectType'] || elemProps['Object Type'] || '';
         if (!elementType) {
-          for (const [k,v] of Object.entries(elemProps)) {
-            if (/objekttype|object.?type/i.test(k) && v) { elementType = v; break; }
+          for (const [k, v] of Object.entries(elemProps)) {
+            if (/objekttype|object.?type/i.test(k) && v) {
+              elementType = v;
+              break;
+            }
           }
         }
 
@@ -901,9 +949,10 @@ async function validate(){
           naCount: ruleResult.naCount,
           discipline: ruleResult.discipline,
           elementType: norm(elementType),
-          rdsTag: norm(getProp(obj, PSET, '01. RDS-tag')),
+          rdsTag: norm(getProp(obj, PSET, '01. RDS-tag'))
         });
       }
+
       done += chunk.length;
       setStatus(`⏳ Validerer… ${Math.min(done, total)} / ${total} objekter`);
     }
@@ -913,13 +962,14 @@ async function validate(){
     btnColorize.disabled = false;
     btnExport.disabled = false;
     setStatus(`✅ Validering fullført — ${validationRows.length} fagmodelobjekter analysert.`, 'ok');
-  } catch(e){
+  } catch (e) {
     setStatus('❌ Feil under validering: ' + (e.message || e), 'error');
+    console.error(e);
   }
+
   btnValidate.disabled = false;
 }
 
-// ── RENDER ───────────────────────────────────────────
 function renderDashboard(model){
   const total = validationRows.length;
   if (!total) {
@@ -929,8 +979,8 @@ function renderDashboard(model){
 
   const perfect = validationRows.filter(r => r.missingCount === 0 && r.formatErrorCount === 0).length;
   const issues = validationRows.filter(r => r.missingCount > 0 || r.formatErrorCount > 0).length;
-  const totalMissing = validationRows.reduce((s,r) => s + r.missingCount, 0);
-  const totalFormat = validationRows.reduce((s,r) => s + r.formatErrorCount, 0);
+  const totalMissing = validationRows.reduce((s, r) => s + r.missingCount, 0);
+  const totalFormat = validationRows.reduce((s, r) => s + r.formatErrorCount, 0);
   const requiredChecks = validationRows.reduce((sum, r) => sum + Object.values(r.fields).filter(f => f.status !== 'na').length, 0);
   const totalOk = validationRows.reduce((sum, r) => sum + Object.values(r.fields).filter(f => f.status === 'ok').length, 0);
   const fillPct = requiredChecks ? Math.round((totalOk / requiredChecks) * 100) : 100;
@@ -950,7 +1000,12 @@ function renderDashboard(model){
 
   const countsByDiscipline = {};
   for (const r of validationRows) countsByDiscipline[r.discipline] = (countsByDiscipline[r.discipline] || 0) + 1;
-  const disciplineText = Object.entries(countsByDiscipline).map(([k,v]) => `${k}:${v}`).join(' · ');
+  const disciplineText = Object.entries(countsByDiscipline).map(([k, v]) => `${k}:${v}`).join(' · ');
+
+  const selectedRuleLabel =
+    disciplineSelect.value === 'AUTO'
+      ? disciplineText
+      : `${disciplineSelect.value} – ${DISCIPLINE_RULES[disciplineSelect.value]?.label || ''}`;
 
   mainContent.innerHTML = `
     <div class="cards anim">
@@ -972,7 +1027,7 @@ function renderDashboard(model){
       <div class="card yellow">
         <div class="label">Fyllingsgrad</div>
         <div class="value">${fillPct}%</div>
-        <div class="sub">${disciplineSelect.value === 'AUTO' ? esc(disciplineText) : esc(disciplineSelect.value + ' – ' + DISCIPLINE_RULES[disciplineSelect.value].label)}</div>
+        <div class="sub">${esc(selectedRuleLabel)}</div>
       </div>
     </div>
 
@@ -1049,6 +1104,7 @@ function renderDonut(total){
   const ok = validationRows.filter(r => r.missingCount === 0 && r.formatErrorCount === 0).length;
   const format = validationRows.filter(r => r.missingCount === 0 && r.formatErrorCount > 0).length;
   const missing = validationRows.filter(r => r.missingCount > 0).length;
+
   const slices = [
     { label: 'OK', count: ok, color: '#3fb950' },
     { label: 'Formatfeil', count: format, color: '#d29922' },
@@ -1113,7 +1169,7 @@ function renderTable(){
 
   const tbody = document.getElementById('tableBody');
   if (!rows.length) {
-    tbody.innerHTML = `<tr><td colspan="${5 + FIELDS.length}" class="empty" style="padding:20px;text-align:center;color:var(--muted)">Ingen rader matcher filteret.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="${6 + FIELDS.length}" class="empty" style="padding:20px;text-align:center;color:var(--muted)">Ingen rader matcher filteret.</td></tr>`;
     return;
   }
 
@@ -1124,41 +1180,50 @@ function renderTable(){
       const val = esc(r.fields[f.key]?.value || '');
       return `<td title="${val}"><span class="fc ${fieldClass(st)}">${fieldText(st)}</span></td>`;
     }).join('');
+
     return `
       <tr data-mid="${esc(r.modelId)}" data-rid="${esc(r.runtimeId)}">
         <td><span class="score ${sc}">${r.score}%</span></td>
         <td class="obj-name" title="${esc(r.name)}">${esc(r.name) || '<span style="color:var(--muted)">–</span>'}</td>
-        <td class="guid" title="${esc(r.guid)}" onclick="copyGuid(this,'${esc(r.guid)}')">${r.guid ? esc(r.guid.substring(0,12)+'…') : '–'}</td>
+        <td class="guid" title="${esc(r.guid)}" onclick="copyGuid(event, this, '${esc(r.guid)}')">${r.guid ? esc(r.guid.substring(0,12) + '…') : '–'}</td>
         <td style="color:var(--muted)">${esc(r.discipline)}</td>
         <td style="color:var(--muted);max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(r.elementType)}">${esc(r.elementType) || '–'}</td>
         <td style="color:var(--muted);max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(r.discipline)}">${esc(r.discipline) || '–'}</td>
         ${cells}
-      </tr>`;
+      </tr>
+    `;
   }).join('');
 
   tbody.querySelectorAll('tr[data-rid]').forEach(tr => {
     tr.addEventListener('click', async e => {
       if (e.target.classList.contains('guid')) return;
       const mid = tr.dataset.mid;
-      const rid = parseInt(tr.dataset.rid);
-      try { await API.viewer.setSelection({ modelObjectIds:[{ modelId:mid, objectRuntimeIds:[rid] }] }, 'set'); } catch {}
-      try { await API.viewer.setCamera({ modelObjectIds:[{ modelId:mid, objectRuntimeIds:[rid] }] }, { animationTime:500 }); } catch {}
+      const rid = parseInt(tr.dataset.rid, 10);
+
+      try {
+        await API.viewer.setSelection({ modelObjectIds:[{ modelId:mid, objectRuntimeIds:[rid] }] }, 'set');
+      } catch {}
+
+      try {
+        await API.viewer.setCamera({ modelObjectIds:[{ modelId:mid, objectRuntimeIds:[rid] }] }, { animationTime:500 });
+      } catch {}
     });
   });
 }
 
-window.copyGuid = function(el, guid){
-  navigator.clipboard?.writeText(guid).catch(()=>{});
+window.copyGuid = function(ev, el, guid){
+  ev.stopPropagation();
+  navigator.clipboard?.writeText(guid).catch(() => {});
   const orig = el.textContent;
   el.textContent = 'Kopiert!';
-  setTimeout(() => el.textContent = orig, 1200);
+  setTimeout(() => { el.textContent = orig; }, 1200);
 };
 
-// ── FARGELEGG ───────────────────────────────────────
 async function colorizeModel(){
   if (!API || !validationRows.length) return;
   btnColorize.disabled = true;
   setStatus('🎨 Fargelegger modell…');
+
   try {
     await API.viewer.setObjectState(undefined, { color: 'reset' });
 
@@ -1169,32 +1234,38 @@ async function colorizeModel(){
     for (const row of validationRows) {
       const mid = row.modelId;
       const rid = Number(row.runtimeId);
-      const addTo = (map) => {
+
+      const addTo = map => {
         if (!map.has(mid)) map.set(mid, []);
         map.get(mid).push(rid);
       };
+
       if (row.missingCount > 0) addTo(redMap);
       else if (row.formatErrorCount > 0) addTo(yellowMap);
       else addTo(greenMap);
     }
 
-    const toSel = (map) => Array.from(map.entries()).map(([modelId, objectRuntimeIds]) => ({ modelId, objectRuntimeIds }));
-    const gSel = toSel(greenMap), ySel = toSel(yellowMap), rSel = toSel(redMap);
+    const toSel = map => Array.from(map.entries()).map(([modelId, objectRuntimeIds]) => ({ modelId, objectRuntimeIds }));
+
+    const gSel = toSel(greenMap);
+    const ySel = toSel(yellowMap);
+    const rSel = toSel(redMap);
 
     if (gSel.length) await API.viewer.setObjectState({ modelObjectIds: gSel }, { color: { r: 39,  g: 174, b: 96,  a: 255 } });
     if (ySel.length) await API.viewer.setObjectState({ modelObjectIds: ySel }, { color: { r: 210, g: 153, b: 34,  a: 255 } });
     if (rSel.length) await API.viewer.setObjectState({ modelObjectIds: rSel }, { color: { r: 248, g: 81,  b: 73,  a: 255 } });
 
-    const gc = [...greenMap.values()].reduce((s,a) => s + a.length, 0);
-    const yc = [...yellowMap.values()].reduce((s,a) => s + a.length, 0);
-    const rc = [...redMap.values()].reduce((s,a) => s + a.length, 0);
+    const gc = [...greenMap.values()].reduce((s, a) => s + a.length, 0);
+    const yc = [...yellowMap.values()].reduce((s, a) => s + a.length, 0);
+    const rc = [...redMap.values()].reduce((s, a) => s + a.length, 0);
 
     btnUncolor.disabled = false;
     btnColorize.disabled = false;
     setStatus(`🎨 Fargelagt: 🟢 ${gc} OK · 🟡 ${yc} formatfeil · 🔴 ${rc} mangler`, 'ok');
-  } catch(e) {
+  } catch (e) {
     setStatus('❌ Feil ved fargelegging: ' + (e.message || e), 'error');
     btnColorize.disabled = false;
+    console.error(e);
   }
 }
 
@@ -1204,12 +1275,12 @@ async function removeColors(){
     await API.viewer.setObjectState(undefined, { color: 'reset' });
     btnUncolor.disabled = true;
     setStatus('⬜ Modellfarger fjernet.', '');
-  } catch(e) {
+  } catch (e) {
     setStatus('❌ Feil ved fjerning av farger: ' + (e.message || e), 'error');
+    console.error(e);
   }
 }
 
-// ── CSV EKSPORT ──────────────────────────────────────
 function exportCsv(){
   const issueRows = validationRows.filter(r => r.missingCount > 0 || r.formatErrorCount > 0);
   if (!issueRows.length) {
@@ -1218,7 +1289,7 @@ function exportCsv(){
   }
 
   const headers = ['Navn','GUID','Fag','Objekttype','Score (%)','Manglende felter','Formatfeil',...FIELDS.map(f => f.label)];
-  const csvEsc = (v) => {
+  const csvEsc = v => {
     const s = (v ?? '').toString().replace(/"/g, '""');
     return /[",\n]/.test(s) ? `"${s}"` : s;
   };
@@ -1256,12 +1327,15 @@ function exportCsv(){
   setStatus(`⬇ Eksportert ${issueRows.length} objekter med avvik til CSV.`, 'ok');
 }
 
-// ── RESET ───────────────────────────────────────────
 function reset(){
   validationRows = [];
   activeFilter = 'all';
   searchTerm = '';
-  if (API) { try { API.viewer.setObjectState(undefined, { color: 'reset' }); } catch {} }
+
+  if (API) {
+    try { API.viewer.setObjectState(undefined, { color: 'reset' }); } catch {}
+  }
+
   mainContent.innerHTML = '<div class="empty anim"><div class="icon">🔍</div><div>Velg en modell og trykk <strong>Valider</strong> for å starte.<br><span style="font-size:11px;color:var(--muted)">Fagregler kan settes til Auto eller overstyres manuelt.</span></div></div>';
   btnReset.disabled = true;
   btnColorize.disabled = true;
@@ -1270,7 +1344,6 @@ function reset(){
   setStatus('↺ Nullstilt.', '');
 }
 
-// ── WIRING ──────────────────────────────────────────
 btnLoad.addEventListener('click', loadModels);
 btnValidate.addEventListener('click', validate);
 btnColorize.addEventListener('click', colorizeModel);
@@ -1278,7 +1351,13 @@ btnUncolor.addEventListener('click', removeColors);
 btnExport.addEventListener('click', exportCsv);
 btnReset.addEventListener('click', reset);
 modelSelect.addEventListener('change', () => { btnValidate.disabled = !modelSelect.value; });
-window.addEventListener('error', e => setStatus('❌ JS-feil: ' + e.message, 'error'));
+
+window.addEventListener('error', e => {
+  setStatus('❌ JS-feil: ' + e.message, 'error');
+  console.error(e.error || e.message);
+});
+
+populateDisciplineDropdown();
 connect();
 </script>
 </body>
