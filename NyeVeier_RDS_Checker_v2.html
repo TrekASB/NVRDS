@@ -2,7 +2,7 @@
 <html lang="nb">
 <head>
   <meta charset="UTF-8"/>
-  <title>E6SO RDS Validator V.3</title>
+  <title>E6SO RDS Validator V.4</title>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <script src="https://components.connect.trimble.com/trimble-connect-workspace-api/index.js"></script>
   <style>
@@ -387,7 +387,7 @@
 
 <header>
   <div class="header-title">
-    <h1>E6SO RDS Validator V.3</h1>
+    <h1>E6SO RDS Validator V.4</h1>
     <p>PropertySet: 2_RDS · 16 felter · Objekter med 0_Element valideres · NotApplicable filtreres bort</p>
   </div>
   <span class="badge" id="modelBadge">Ikke tilkoblet</span>
@@ -477,6 +477,18 @@ const SKO_TUNNEL_FFF_NAME_REGEX = /^(Signalhode|Skiltportal|Skiltportalfundament
 const KNS_FFF_REGEX = /^(RQB101|UTA105|UMA102|ULK101|ULH101|ULK102|RQB102|UPC101|ULG101|ULH102|ULK103|UQA101|QCA101|ULF101|UAH101|ULM101|RQB103|FSG101|UTA102|FQD101|UTA103)$/;
 const KNS_FFF_NAME_REGEX = /^(Asfaltmembran|Avrettingslag|Bergsikring|Betongavretting|Brem|Dybler|Fiberduk|Fuge i betong|Fundament|Hvelv|Hylse|Innstøpt gjengestag|Jording|Kjemisk anker|Klemlist|Knevegg|Membran|Membranbeskyttelse|Oppfylling|Rekkverk|Tilbakefylling)$/;
 
+// Gjelder KUN fagregel KNS / Bru.
+const KNS_GGG_REGEX = /^(?:FQD101|FSG101|QCA101|RQB101|RQB102|RQB103|RQB104|UAH101|ULF101|ULG101|ULH101|ULK101|ULM101|UMA101|UPC101|UQA101|UTA101)$/;
+const KNS_GGG_NAME_REGEX = /^(?:Asfaltmembran|Avrettingslag|Bergsikring|Betongavretting|Brem|Bruksklasse 4|Dybler|Fraksjon 0\/8|Fraksjon 22\/120|Fuge i betong|Fundament|Hvelv|Hylse|Innstøpt gjengestag|Jording|Kjemisk anker|Klemlist|Knevegg|L2|Oppfylling|Overgangsfolie|PVC)$/;
+
+// KNS/Bru 01. RDS-tag.
+// Dnn-avhengighet:
+// - EEnnn BA1/BC1/BD1/CG1: ingen Dnn-verdi i 01. RDS-tag.
+// - EEnnn PC1: Dnn = K1.
+// - EEnnn CL1: Dnn = P1.
+// GGGnnn-delen er begrenset til KNS_GGG-listen over.
+const KNS_BRU_RDS_REGEX = /^<E6SØ>-(?:(?:C4\.(?:(?:P1\.CL1)|(?:K1\.PC1)|(?:BA1|BC1|BD1|CG1)))|(?:D1\.(?:C3|C4)\.(?:(?:P1\.CL1)|(?:K1\.PC1)|(?:BA1|BC1|BD1|CG1))))\.(?:RQB101|UTA105|UMA102|ULK101|ULH101|ULK102|RQB102|UPC101|ULG101|ULH102|ULK103|UQA101|QCA101|ULF101|UAH101|ULM101|RQB103|FSG101|UTA102|FQD101|UTA103)\.(?:FQD101|FSG101|QCA101|RQB101|RQB102|RQB103|RQB104|UAH101|ULF101|ULG101|ULH101|ULK101|ULM101|UMA101|UPC101|UQA101|UTA101)\.(?:FQD10[1-4]|FSG10[1-2]|QCA10[1-2]|RQB10[1-4]|UAH10[1-2]|ULB10[1-4]|ULE10[1-2]|ULF(?:10[1-9]|1[1-9]\d|2[0-4]\d|25[0-3])|ULG10[1-4]|ULH10[1-2]|ULK(?:10[1-9]|1[1-3]\d|14[0-4])|ULM10[1-4]|UMA(?:101|10(?:0[0-9]|1[0-9]|2\d)|1[01]\d\d|120[0-2]|20(?:0[0-9]|1[0-9]|2[0-9]|3[0-9]|4[0-1])|30(?:0[0-9]|1\d|2\d|3[0-9])|33(?:0\d|1\d|2\d|3[0-9]|4[0-9]|5[0-9]|6[0-1])|40(?:0\d|1[0-2]))|UPC10[1-3]|UQA10[2-9]|UQA11[0-1]|UQB10[1-6]|UTA10[1-4]|UTB101|WPA10[1-5]|XNF(?:103[8-9]|111[5-7]|302[6-7]|314[1-2]|3288))$/;
+
 // KNS/Bru Dnn-avhengighet styrt av 09. EEnnn.
 // BA1, BC1, BD1, CG1 skal ikke ha 07. Dnn eller 08. Dnn navn.
 // PC1 skal ha 07. Dnn = K1 og 08. Dnn navn = Elkraftsystem.
@@ -535,8 +547,8 @@ const DISCIPLINE_RULES = {
       '10': RX.anyText,
       '11': KNS_FFF_REGEX,
       '12': KNS_FFF_NAME_REGEX,
-      '13': RX.ggg,
-      '14': RX.anyText,
+      '13': KNS_GGG_REGEX,
+      '14': KNS_GGG_NAME_REGEX,
       '15': RX.hhh,
       '16': RX.anyText
     }
@@ -901,7 +913,7 @@ function resolveDiscipline(obj, modelName=''){
 }
 
 function validateKnsRdsTagDependency(tag){
-  if (!tag || !ANKER_RX.BRU_TAG.test(tag)) return false;
+  if (!tag || !KNS_BRU_RDS_REGEX.test(tag)) return false;
 
   const parts = norm(tag).replace(/^<E6SØ>-/, '').split('.');
   const startIndex = parts[0] === 'D1' ? 2 : 1;
