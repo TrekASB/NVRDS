@@ -2,7 +2,7 @@
 <html lang="nb">
 <head>
   <meta charset="UTF-8"/>
-  <title>E6SO RDS Validator V.2</title>
+  <title>E6SO RDS Validator V.3</title>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <script src="https://components.connect.trimble.com/trimble-connect-workspace-api/index.js"></script>
   <style>
@@ -387,7 +387,7 @@
 
 <header>
   <div class="header-title">
-    <h1>E6SO RDS Validator V.2</h1>
+    <h1>E6SO RDS Validator V.3</h1>
     <p>PropertySet: 2_RDS · 16 felter · Objekter med 0_Element valideres · NotApplicable filtreres bort</p>
   </div>
   <span class="badge" id="modelBadge">Ikke tilkoblet</span>
@@ -476,6 +476,16 @@ const SKO_TUNNEL_FFF_NAME_REGEX = /^(Signalhode|Skiltportal|Skiltportalfundament
 // Gjelder KUN fagregel KNS / Bru.
 const KNS_FFF_REGEX = /^(RQB101|UTA105|UMA102|ULK101|ULH101|ULK102|RQB102|UPC101|ULG101|ULH102|ULK103|UQA101|QCA101|ULF101|UAH101|ULM101|RQB103|FSG101|UTA102|FQD101|UTA103)$/;
 const KNS_FFF_NAME_REGEX = /^(Asfaltmembran|Avrettingslag|Bergsikring|Betongavretting|Brem|Dybler|Fiberduk|Fuge i betong|Fundament|Hvelv|Hylse|Innstøpt gjengestag|Jording|Kjemisk anker|Klemlist|Knevegg|Membran|Membranbeskyttelse|Oppfylling|Rekkverk|Tilbakefylling)$/;
+
+// KNS/Bru Dnn-avhengighet styrt av 09. EEnnn.
+// BA1, BC1, BD1, CG1 skal ikke ha 07. Dnn eller 08. Dnn navn.
+// PC1 skal ha 07. Dnn = K1 og 08. Dnn navn = Elkraftsystem.
+// CL1 skal ha 07. Dnn = P1 og 08. Dnn navn = Sikkerhetssystem.
+const KNS_NO_DNN_EE = new Set(['BA1','BC1','BD1','CG1']);
+const KNS_REQUIRED_DNN_BY_EE = {
+  PC1: { dnn: 'K1', dnnName: 'Elkraftsystem' },
+  CL1: { dnn: 'P1', dnnName: 'Sikkerhetssystem' }
+};
 
 const ANKER_RX = {
   VEI_TAG: /^<E6SØ>-(?:(?:A3\.A1\.(?:BA1|CA1|CB1)\.(?:FSD|NCA|NCG|RQA|ULA|UTA|UTB|WMB)(?:13|30|31|32|33|101|102|103|104|105|106|107|108|109|110|111)\.(?:FSD101|FSD102|NCA101|NCA102|NCA103|NCG101|NCG102|RQA101|ULA107|ULA109|ULA110|UTA101|UTA102|UTA103|UTA104|UTB101|WMB101)\.(?:FSD1|FSD2|NCA1|NCA3|NCA4|NCA5|NCG1|NCG2|RQA1|ULA1|UTA1|UTA2|UTB1|WMB1|WMB2))|(?:A3\.A1\.G1\.JD1\.(?:FSD|NCA|NCG|RQA|ULA|UTA|UTB|WMB)(?:13|30|31|32|33|101|102|103|104|105|106|107|108|109|110|111)\.(?:FSD101|FSD102|NCA101|NCA102|NCA103|NCG101|NCG102|RQA101|ULA107|ULA109|ULA110|UTA101|UTA102|UTA103|UTA104|UTB101|WMB101)\.(?:FSD1|FSD2|NCA1|NCA3|NCA4|NCA5|NCG1|NCG2|RQA1|ULA1|UTA1|UTA2|UTB1|WMB1|WMB2))|(?:B1\.CK1\.(?:FSD|NCA|NCG|RQA|ULA|UTA|UTB|WMB)(?:13|30|31|32|33|101|102|103|104|105|106|107|108|109|110|111)\.(?:FSD101|FSD102|NCA101|NCA102|NCA103|NCG101|NCG102|RQA101|ULA107|ULA109|ULA110|UTA101|UTA102|UTA103|UTA104|UTB101|WMB101)\.(?:FSD1|FSD2|NCA1|NCA3|NCA4|NCA5|NCG1|NCG2|RQA1|ULA1|UTA1|UTA2|UTB1|WMB1|WMB2)))$/,
@@ -890,6 +900,21 @@ function resolveDiscipline(obj, modelName=''){
   );
 }
 
+function validateKnsRdsTagDependency(tag){
+  if (!tag || !ANKER_RX.BRU_TAG.test(tag)) return false;
+
+  const parts = norm(tag).replace(/^<E6SØ>-/, '').split('.');
+  const startIndex = parts[0] === 'D1' ? 2 : 1;
+  const maybeDnnOrEe = parts[startIndex];
+  const maybeEe = parts[startIndex + 1];
+
+  if (KNS_NO_DNN_EE.has(maybeDnnOrEe)) return true;
+  if (maybeDnnOrEe === 'K1' && maybeEe === 'PC1') return true;
+  if (maybeDnnOrEe === 'P1' && maybeEe === 'CL1') return true;
+
+  return false;
+}
+
 function validateByRule(obj, modelName){
   const discipline = resolveDiscipline(obj, modelName);
   const rules = DISCIPLINE_RULES[discipline];
@@ -917,6 +942,42 @@ function validateByRule(obj, modelName){
     const value = norm(rds[f.label] || getProp(obj, PSET, f.label));
 
     if (key === '07' || key === '08') {
+      /*
+        KNS/Bru:
+        - EEnnn BA1/BC1/BD1/CG1: Dnn/Dnn navn skal være tomt.
+        - EEnnn PC1: Dnn = K1 og Dnn navn = Elkraftsystem.
+        - EEnnn CL1: Dnn = P1 og Dnn navn = Sikkerhetssystem.
+      */
+      if (discipline === 'KNS' && KNS_NO_DNN_EE.has(ee)) {
+        if (!value) {
+          fields[key] = { status: 'na', value };
+          naCount++;
+        } else {
+          fields[key] = { status: 'format', value };
+          formatErrorCount++;
+        }
+        continue;
+      }
+
+      if (discipline === 'KNS' && KNS_REQUIRED_DNN_BY_EE[ee]) {
+        const expected = key === '07'
+          ? KNS_REQUIRED_DNN_BY_EE[ee].dnn
+          : KNS_REQUIRED_DNN_BY_EE[ee].dnnName;
+
+        reqTotal++;
+        if (!value) {
+          fields[key] = { status: 'missing', value };
+          missingCount++;
+        } else if (value !== expected) {
+          fields[key] = { status: 'format', value };
+          formatErrorCount++;
+        } else {
+          fields[key] = { status: 'ok', value };
+          reqOk++;
+        }
+        continue;
+      }
+
       if (skoNoD || skoTunnelNoD || larkNoD) {
         if (!value) {
           fields[key] = { status: 'na', value };
@@ -954,6 +1015,21 @@ function validateByRule(obj, modelName){
         }
         continue;
       }
+    }
+
+    if (discipline === 'KNS' && key === '01') {
+      reqTotal++;
+      if (!value) {
+        fields[key] = { status: 'missing', value };
+        missingCount++;
+      } else if (!validateKnsRdsTagDependency(value)) {
+        fields[key] = { status: 'format', value };
+        formatErrorCount++;
+      } else {
+        fields[key] = { status: 'ok', value };
+        reqOk++;
+      }
+      continue;
     }
 
     const isRequired = rules.required.includes(key);
