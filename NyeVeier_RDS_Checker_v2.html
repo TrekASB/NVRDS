@@ -2,7 +2,7 @@
 <html lang="nb">
 <head>
   <meta charset="UTF-8"/>
-  <title>E6SO RDS Validator V.1</title>
+  <title>E6SO RDS Validator V.2</title>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <script src="https://components.connect.trimble.com/trimble-connect-workspace-api/index.js"></script>
   <style>
@@ -473,6 +473,10 @@ const SKILT_TUNNEL_RDS_REGEX = /^<E6SØ>-D1\.(?:A1|A2|B1|B2|C1|C2|C3|C4|D(?:[1-9
 const SKO_TUNNEL_FFF_REGEX = /^(PFA102|UBF101|ULG105|PHA101|PHA102|RUB101|RUB102|ULG106|PHD102|PHD13|PHD103|PHD104|UQB101|UQB102|PHD30|PHD101|PHA30|PHD105|UQB103)$/;
 const SKO_TUNNEL_FFF_NAME_REGEX = /^(Signalhode|Skiltportal|Skiltportalfundament|Skilt|VariabeltSkilt|Ledebom|Stengebom|Veibomfundament|Skiltfundament|Skiltmast|Skiltplate|Skiltholder|Festbolt|Mutter|Sanntidsinfo Leskur|Skilt fast|Skiltoppheng|Skjøtehylse|Festebolt)$/;
 
+// Gjelder KUN fagregel KNS / Bru.
+const KNS_FFF_REGEX = /^(RQB101|UTA105|UMA102|ULK101|ULH101|ULK102|RQB102|UPC101|ULG101|ULH102|ULK103|UQA101|QCA101|ULF101|UAH101|ULM101|RQB103|FSG101|UTA102|FQD101|UTA103)$/;
+const KNS_FFF_NAME_REGEX = /^(Asfaltmembran|Avrettingslag|Bergsikring|Betongavretting|Brem|Dybler|Fiberduk|Fuge i betong|Fundament|Hvelv|Hylse|Innstøpt gjengestag|Jording|Kjemisk anker|Klemlist|Knevegg|Membran|Membranbeskyttelse|Oppfylling|Rekkverk|Tilbakefylling)$/;
+
 const ANKER_RX = {
   VEI_TAG: /^<E6SØ>-(?:(?:A3\.A1\.(?:BA1|CA1|CB1)\.(?:FSD|NCA|NCG|RQA|ULA|UTA|UTB|WMB)(?:13|30|31|32|33|101|102|103|104|105|106|107|108|109|110|111)\.(?:FSD101|FSD102|NCA101|NCA102|NCA103|NCG101|NCG102|RQA101|ULA107|ULA109|ULA110|UTA101|UTA102|UTA103|UTA104|UTB101|WMB101)\.(?:FSD1|FSD2|NCA1|NCA3|NCA4|NCA5|NCG1|NCG2|RQA1|ULA1|UTA1|UTA2|UTB1|WMB1|WMB2))|(?:A3\.A1\.G1\.JD1\.(?:FSD|NCA|NCG|RQA|ULA|UTA|UTB|WMB)(?:13|30|31|32|33|101|102|103|104|105|106|107|108|109|110|111)\.(?:FSD101|FSD102|NCA101|NCA102|NCA103|NCG101|NCG102|RQA101|ULA107|ULA109|ULA110|UTA101|UTA102|UTA103|UTA104|UTB101|WMB101)\.(?:FSD1|FSD2|NCA1|NCA3|NCA4|NCA5|NCG1|NCG2|RQA1|ULA1|UTA1|UTA2|UTB1|WMB1|WMB2))|(?:B1\.CK1\.(?:FSD|NCA|NCG|RQA|ULA|UTA|UTB|WMB)(?:13|30|31|32|33|101|102|103|104|105|106|107|108|109|110|111)\.(?:FSD101|FSD102|NCA101|NCA102|NCA103|NCG101|NCG102|RQA101|ULA107|ULA109|ULA110|UTA101|UTA102|UTA103|UTA104|UTB101|WMB101)\.(?:FSD1|FSD2|NCA1|NCA3|NCA4|NCA5|NCG1|NCG2|RQA1|ULA1|UTA1|UTA2|UTB1|WMB1|WMB2)))$/,
   SKO_TAG: /^<E6SØ>-(?:A1|A2|A3|A4|D1)\.(?:A1|A2|A6)\.M1\.ME2\.(?:PFA102|UBF101|ULG105|PHA101|PHA102|RUB101|RUB102|ULG106|PHD102|PHD13|PHD103|PHD104)\.(?:PFA101|PFA102|PFA103|UBF101|UBF102|UBF103|ULG101|ULG102|ULG103|ULG104|ULG105|ULG106|ULG107|ULG108|ULG109|PHA101|PHA102|RUB101|PHD101|PHD102|PHD103|PHD104|PHD105|PHD106|PHD107|PHD108|PHD109|PHD110|PHD111|PHD112|PHD113|PHD114|PHD115|PHD116|PHD117|PHD118|PHD119|PHD120|PHD122|PHD123|PHD124|PHD125|PHD126|PHD127|PHD128|PHD129|PHD130|PHD131|PHD132|PHD133|PHD134|PHD135|PHD136|PHD137|PHD138|PHD139|PHD140|PHD141|PHD142|PHD143|PHD144|PHD145|PHD146|PHD147|PHD148|PHD149)\.(?:PFA\d+|UBF\d+|ULG\d+|PHA\d+|RUB\d+|PHD\d+)$/,
@@ -519,8 +523,8 @@ const DISCIPLINE_RULES = {
       '08': RX.anyText,
       '09': RX.ee,
       '10': RX.anyText,
-      '11': RX.fff,
-      '12': RX.anyText,
+      '11': KNS_FFF_REGEX,
+      '12': KNS_FFF_NAME_REGEX,
       '13': RX.ggg,
       '14': RX.anyText,
       '15': RX.hhh,
@@ -640,7 +644,8 @@ let currentModelName = '';
 let skippedStats = {
   notApplicable: 0,
   ignoredIfc: 0,
-  missing0Element: 0
+  missing0Element: 0,
+  knsNoRds: 0
 };
 
 const $ = id => document.getElementById(id);
@@ -711,6 +716,45 @@ function getPropAny(obj, pset){
 function isNotApplicableValue(v){
   const s = norm(v).toLowerCase();
   return s === 'notapplicable' || s === 'not applicable';
+}
+
+// KNS/Bru: objekter uten RDS-krav.
+// Disse hoppes over når Objektklasse = Informasjonsobjekt.
+const KNS_NO_RDS_OBJECT_TYPES = new Set([
+  'forskaling',
+  'herdetiltak',
+  'kjøreboks',
+  'metadataobjekt',
+  'stikningsobjekt innstøpt skjøtehylse',
+  'stikningsobjekt innstopt skjotehylse'
+]);
+
+function normalizeNoRdsText(v){
+  return norm(v)
+    .toLowerCase()
+    .replace(/ø/g, 'o')
+    .replace(/æ/g, 'ae')
+    .replace(/å/g, 'a')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function shouldSkipKnsNoRds(meta, discipline){
+  if (discipline !== 'KNS') return false;
+
+  const objectClass = normalizeNoRdsText(meta.objectClass);
+  const objectType = normalizeNoRdsText(meta.objectType);
+
+  if (objectClass !== 'informasjonsobjekt') return false;
+
+  return (
+    KNS_NO_RDS_OBJECT_TYPES.has(objectType) ||
+    objectType.includes('forskaling') ||
+    objectType.includes('herdetiltak') ||
+    objectType.includes('kjoreboks') ||
+    objectType.includes('metadataobjekt') ||
+    (objectType.includes('stikningsobjekt') && objectType.includes('skjotehylse'))
+  );
 }
 
 function getElementMeta(obj){
@@ -1030,10 +1074,11 @@ async function validate(){
   mainContent.innerHTML = '';
 
   skippedStats = {
-    notApplicable: 0,
-    ignoredIfc: 0,
-    missing0Element: 0
-  };
+  notApplicable: 0,
+  ignoredIfc: 0,
+  missing0Element: 0,
+  knsNoRds: 0
+};
 
   try {
     const objsInfo = await API.viewer.getObjects();
@@ -1075,6 +1120,11 @@ async function validate(){
 
         if (shouldSkipByNotApplicable(meta, discipline)) {
           skippedStats.notApplicable++;
+          continue;
+        }
+
+        if (shouldSkipKnsNoRds(meta, discipline)) {
+          skippedStats.knsNoRds++;
           continue;
         }
 
@@ -1138,7 +1188,7 @@ async function validate(){
     btnExport.disabled = false;
 
     setStatus(
-      `✅ Validering fullført — ${validationRows.length} objekter analysert · ${skippedStats.notApplicable} hoppet over (NotApplicable).`,
+      `✅ Validering fullført — ${validationRows.length} objekter analysert · ${skippedStats.notApplicable} hoppet over (NotApplicable) · ${skippedStats.knsNoRds} hoppet over (KNS uten RDS-krav).`,
       'ok'
     );
   } catch (e) {
@@ -1158,7 +1208,7 @@ function renderDashboard(model){
         <div>
           Ingen relevante objekter funnet.<br>
           <span style="font-size:11px;color:var(--muted)">
-            Hoppet over ${skippedStats.notApplicable} objekt(er) med Objektklasse=NotApplicable og Objekttype=NotApplicable.
+            Hoppet over ${skippedStats.notApplicable} objekt(er) med NotApplicable og ${skippedStats.knsNoRds} KNS/Bru-objekt(er) uten RDS-krav.
           </span>
         </div>
       </div>`;
@@ -1215,7 +1265,7 @@ function renderDashboard(model){
       <div class="card yellow">
         <div class="label">Hoppet over</div>
         <div class="value">${skippedStats.notApplicable}</div>
-        <div class="sub">Objektklasse + Objekttype = NotApplicable</div>
+        <div class="sub">NotApplicable · KNS uten RDS: ${skippedStats.knsNoRds}</div>
       </div>
     </div>
 
@@ -1528,10 +1578,11 @@ function reset(){
   activeFilter = 'all';
   searchTerm = '';
   skippedStats = {
-    notApplicable: 0,
-    ignoredIfc: 0,
-    missing0Element: 0
-  };
+  notApplicable: 0,
+  ignoredIfc: 0,
+  missing0Element: 0,
+  knsNoRds: 0
+};
 
   if (API) {
     try { API.viewer.setObjectState(undefined, { color: 'reset' }); } catch {}
