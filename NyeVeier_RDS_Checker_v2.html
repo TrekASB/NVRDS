@@ -2,7 +2,7 @@
 <html lang="nb">
 <head>
   <meta charset="UTF-8"/>
-  <title>E6SO RDS Validator V.6</title>
+  <title>E6SO RDS Validator V.7</title>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <script src="https://components.connect.trimble.com/trimble-connect-workspace-api/index.js"></script>
   <style>
@@ -280,6 +280,39 @@
     .guid     { color: var(--muted); max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; cursor: pointer; }
     .guid:hover { color: var(--ink); }
 
+
+    .issue-cell {
+      min-width: 240px;
+      max-width: 360px;
+      white-space: normal;
+      line-height: 1.35;
+    }
+    .issue-pill {
+      display: inline-block;
+      font-family: var(--mono);
+      font-size: 10px;
+      padding: 3px 7px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: var(--surface2);
+      color: var(--muted);
+    }
+    .issue-pill.ok {
+      background: var(--green-dim);
+      color: var(--green);
+      border-color: #1e4028;
+    }
+    .issue-pill.warn {
+      background: var(--yellow-dim);
+      color: var(--yellow);
+      border-color: #3a2d05;
+    }
+    .issue-pill.miss {
+      background: var(--red-dim);
+      color: var(--red);
+      border-color: #3a1212;
+    }
+
     .fc {
       width: 22px;
       height: 22px;
@@ -387,7 +420,7 @@
 
 <header>
   <div class="header-title">
-    <h1>E6SO RDS Validator V.6</h1>
+    <h1>E6SO RDS Validator V.7</h1>
     <p>PropertySet: 2_RDS · 16 felter · Objekter med 0_Element valideres · NotApplicable filtreres bort</p>
   </div>
   <span class="badge" id="modelBadge">Ikke tilkoblet</span>
@@ -507,7 +540,8 @@ const VEI_GGG_REGEX = /^(?:FRB101|FSD101|FSD102|FSD103|FSD104|FSD105|FSD106|NCA1
 const VEI_GGG_NAME_REGEX = /^(?:Filterlag|Revegetering|Grasdekker|Steinmaterialer|Plastring bekk|Voll|Tilsåing|Undergrunnsjord|Stedegen jord med frøbank|Matjord, Type 1|Bindlag, Ab11|Bindlag, Agb11|Slitelag|Slitelag, Fk 0\/11|Slitelag, Ska16|Slitelag, Agb11|Slitelag, Ab11|Grasdekke|SkjæringBerg|SkjæringJord|Naturkantstein|Trafikkdeler|Frostsikringslag, Knust berg|Tre|Bærelag, Fk 0\/11|Bærelag, Fk 0\/32|Nedre bærelag, Ag22|Øvre bærelag, Ag22|Nedre bærelag, Fk 0\/32|Øvre bærelag, Ag16|Deponi|Oppfylling|Tilbakefylling|Jordpåslag|Forsterkningslag, Fk 22\/125|PlanumBerg|PlanumJord|PlanumFylling|Planum|Fyllingsskråning|LavesteGravenivå|Graveflate|Grøft|GrøftÅpen)$/;
 
 const ANKER_RX = {
-  // VEI 01. RDS-tag – oppdatert mot Anker-regel 26.04.2026 / V.6.
+  // VEI 01. RDS-tag – oppdatert mot Anker-regel 26.04.2026 / V.7.
+  // Revidert: FFFnnn, GGGnnn og 01. RDS-tag er synkronisert mot siste Anker-regex for veg.
   // Tillater disse hovedstrukturene:
   // 1) <E6SØ>-A3.A1.(BA1|CA1|CB1).EEnnn.FFFnnn.GGGnnn.HHHnnnn
   // 2) <E6SØ>-A3.A1.G1.JD1.EEnnn.FFFnnn.GGGnnn.HHHnnnn
@@ -851,6 +885,116 @@ function fieldText(status){
   if (status === 'na') return '–';
   if (status === 'format') return '!';
   return '✗';
+}
+
+
+function getFieldNameByKey(key){
+  const f = FIELDS.find(x => x.key === key);
+  return f ? f.label : key;
+}
+
+function getFieldIssueMessage(row, key){
+  const f = FIELDS.find(x => x.key === key);
+  const label = f ? f.label : key;
+  const field = row.fields?.[key] || {};
+  const value = norm(field.value);
+
+  if (field.status === 'ok') return `${label}: OK`;
+  if (field.status === 'na') return `${label}: ikke påkrevd for valgt fagregel`;
+  if (field.status === 'missing') return `${label}: mangler verdi`;
+
+  // Mer brukervennlige meldinger for formatfeil.
+  if (field.status === 'format') {
+    if (key === '01') return explainRdsTagIssue(row.discipline, value, row);
+    if (key === '07') return `${label}: ugyldig Dnn-verdi${value ? ` (${value})` : ''}`;
+    if (key === '08') return `${label}: ugyldig Dnn navn${value ? ` (${value})` : ''}`;
+    if (key === '09') return `${label}: ugyldig EEnnn-verdi${value ? ` (${value})` : ''}`;
+    if (key === '11') return `${label}: ugyldig FFFnnn-verdi${value ? ` (${value})` : ''}`;
+    if (key === '12') return `${label}: ugyldig FFFnnn navn${value ? ` (${value})` : ''}`;
+    if (key === '13') return `${label}: ugyldig GGGnnn-verdi${value ? ` (${value})` : ''}`;
+    if (key === '14') return `${label}: ugyldig GGGnnn navn${value ? ` (${value})` : ''}`;
+    if (key === '15') return `${label}: ugyldig HHHnnnnn-verdi${value ? ` (${value})` : ''}`;
+    if (key === '16') return `${label}: ugyldig HHHnnnnn navn${value ? ` (${value})` : ''}`;
+    return `${label}: ugyldig verdi${value ? ` (${value})` : ''}`;
+  }
+
+  return `${label}: feil`;
+}
+
+function explainRdsTagIssue(discipline, tag, row){
+  if (!tag) return '01. RDS-tag: mangler verdi';
+
+  const clean = norm(tag);
+  if (!clean.startsWith('<E6SØ>-')) {
+    return `01. RDS-tag: feil prefiks. Forventet <E6SØ>-`;
+  }
+
+  const parts = clean.replace(/^<E6SØ>-/, '').split('.');
+
+  if (discipline === 'VEI') {
+    // VEI har tre hovedstrukturer i denne validatoren:
+    // A3.A1.(BA1/CA1/CB1).FFFnnn.GGGnnn.HHHnnnnn
+    // A3.A1.G1.JD1.FFFnnn.GGGnnn.HHHnnnnn
+    // B1.CK1.FFFnnn.GGGnnn.HHHnnnnn
+    const veiFff = DISCIPLINE_RULES.VEI.regex['11'];
+    const veiGgg = DISCIPLINE_RULES.VEI.regex['13'];
+    const hhh = DISCIPLINE_RULES.VEI.regex['15'];
+
+    let fffIndex = -1;
+    let expectedStructure = '';
+
+    if (parts[0] === 'A3' && parts[1] === 'A1' && ['BA1','CA1','CB1'].includes(parts[2])) {
+      fffIndex = 3;
+      expectedStructure = 'A3.A1.(BA1/CA1/CB1).FFFnnn.GGGnnn.HHHnnnnn';
+    } else if (parts[0] === 'A3' && parts[1] === 'A1' && parts[2] === 'G1' && parts[3] === 'JD1') {
+      fffIndex = 4;
+      expectedStructure = 'A3.A1.G1.JD1.FFFnnn.GGGnnn.HHHnnnnn';
+    } else if (parts[0] === 'B1' && parts[1] === 'CK1') {
+      fffIndex = 2;
+      expectedStructure = 'B1.CK1.FFFnnn.GGGnnn.HHHnnnnn';
+    } else {
+      return `01. RDS-tag: ugyldig VEI-struktur. Forventet A3.A1.(BA1/CA1/CB1), A3.A1.G1.JD1 eller B1.CK1`;
+    }
+
+    if (parts.length !== fffIndex + 3) {
+      return `01. RDS-tag: feil antall ledd for VEI. Forventet ${expectedStructure}`;
+    }
+
+    if (!veiFff.test(parts[fffIndex] || '')) {
+      return `01. RDS-tag: ugyldig FFFnnn-verdi (${parts[fffIndex] || 'tom'})`;
+    }
+    if (!veiGgg.test(parts[fffIndex + 1] || '')) {
+      return `01. RDS-tag: ugyldig GGGnnn-verdi (${parts[fffIndex + 1] || 'tom'})`;
+    }
+    if (!hhh.test(parts[fffIndex + 2] || '')) {
+      return `01. RDS-tag: ugyldig HHHnnnnn-verdi (${parts[fffIndex + 2] || 'tom'})`;
+    }
+
+    return '01. RDS-tag: ugyldig kombinasjon for VEI';
+  }
+
+  if (discipline === 'KNS') return '01. RDS-tag: ugyldig KNS/BRU-struktur eller Dnn/EEnnn-avhengighet';
+  if (discipline === 'LARK') return '01. RDS-tag: ugyldig LARK-struktur eller Dnn/EEnnn-avhengighet';
+  if (discipline === 'SKO_TUNNEL') return '01. RDS-tag: ugyldig SKO tunnel-struktur';
+  if (discipline === 'SKO') return '01. RDS-tag: ugyldig SKO-struktur';
+
+  return `01. RDS-tag: ugyldig verdi (${clean})`;
+}
+
+function getRowIssueSummary(row){
+  const issueKeys = FIELDS
+    .filter(f => ['missing','format'].includes(row.fields?.[f.key]?.status))
+    .map(f => f.key);
+
+  if (!issueKeys.length) {
+    return { cls: 'ok', text: 'OK' };
+  }
+
+  const first = issueKeys[0];
+  const msg = getFieldIssueMessage(row, first);
+  const extra = issueKeys.length > 1 ? ` + ${issueKeys.length - 1} til` : '';
+  const cls = row.fields?.[first]?.status === 'missing' ? 'miss' : 'warn';
+  return { cls, text: msg + extra };
 }
 
 function scoreClass(pct){
@@ -1405,6 +1549,7 @@ function renderDashboard(model){
           <thead>
             <tr>
               <th>Score</th>
+              <th>Feil / årsak</th>
               <th>Navn</th>
               <th>GUID</th>
               <th>Fag</th>
@@ -1513,21 +1658,25 @@ function renderTable(){
 
   const tbody = document.getElementById('tableBody');
   if (!rows.length) {
-    tbody.innerHTML = `<tr><td colspan="${7 + FIELDS.length}" class="empty" style="padding:20px;text-align:center;color:var(--muted)">Ingen rader matcher filteret.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="${8 + FIELDS.length}" class="empty" style="padding:20px;text-align:center;color:var(--muted)">Ingen rader matcher filteret.</td></tr>`;
     return;
   }
 
   tbody.innerHTML = rows.map(r => {
     const sc = scoreClass(r.score);
+    const issue = getRowIssueSummary(r);
     const cells = FIELDS.map(f => {
       const st = r.fields[f.key]?.status || 'missing';
       const val = esc(r.fields[f.key]?.value || '');
-      return `<td title="${val}"><span class="fc ${fieldClass(st)}">${fieldText(st)}</span></td>`;
+      const msg = esc(getFieldIssueMessage(r, f.key));
+      return `<td title="${msg}
+Verdi: ${val || '–'}"><span class="fc ${fieldClass(st)}">${fieldText(st)}</span></td>`;
     }).join('');
 
     return `
-      <tr data-mid="${esc(r.modelId)}" data-rid="${esc(r.runtimeId)}">
+      <tr data-mid="${esc(r.modelId)}" data-rid="${esc(r.runtimeId)}" title="${esc(issue.text)}">
         <td><span class="score ${sc}">${r.score}%</span></td>
+        <td class="issue-cell"><span class="issue-pill ${issue.cls}" title="${esc(issue.text)}">${esc(issue.text)}</span></td>
         <td class="obj-name" title="${esc(r.name)}">${esc(r.name) || '<span style="color:var(--muted)">–</span>'}</td>
         <td class="guid" title="${esc(r.guid)}" onclick="copyGuid(event, this, '${esc(r.guid)}')">${r.guid ? esc(r.guid.substring(0,12) + '…') : '–'}</td>
         <td style="color:var(--muted)">${esc(r.discipline)}</td>
@@ -1633,7 +1782,7 @@ function exportCsv(){
     return;
   }
 
-  const headers = ['Navn','GUID','Fag','Objekttype','Objektklasse','Score (%)','Manglende felter','Formatfeil',...FIELDS.map(f => f.label)];
+  const headers = ['Navn','GUID','Fag','Objekttype','Objektklasse','Score (%)','Feil / årsak','Manglende felter','Formatfeil',...FIELDS.map(f => f.label),...FIELDS.map(f => f.label + ' - feilmelding')];
   const csvEsc = v => {
     const s = (v ?? '').toString().replace(/"/g, '""');
     return /[",\n]/.test(s) ? `"${s}"` : s;
@@ -1648,6 +1797,7 @@ function exportCsv(){
       csvEsc(r.elementType),
       csvEsc(r.objectClass),
       csvEsc(r.score),
+      csvEsc(getRowIssueSummary(r).text),
       csvEsc(r.missingCount),
       csvEsc(r.formatErrorCount),
       ...FIELDS.map(f => {
@@ -1656,7 +1806,8 @@ function exportCsv(){
         if (st === 'na') return csvEsc('IKKE PÅKREVD');
         if (st === 'format') return csvEsc('FORMATFEIL');
         return csvEsc('MANGLER');
-      })
+      }),
+      ...FIELDS.map(f => csvEsc(getFieldIssueMessage(r, f.key)))
     ].join(','));
   }
 
