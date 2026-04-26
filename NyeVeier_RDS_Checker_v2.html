@@ -2,7 +2,7 @@
 <html lang="nb">
 <head>
   <meta charset="UTF-8"/>
-  <title>E6SO RDS Validator V.7</title>
+  <title>E6SO RDS Validator V.8</title>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <script src="https://components.connect.trimble.com/trimble-connect-workspace-api/index.js"></script>
   <style>
@@ -328,6 +328,31 @@
     .fc.na   { background: #2a2f36; color: #9aa4af; }
     .fc.warn { background: var(--yellow-dim); color: var(--yellow); }
 
+    .field-value {
+      display: inline-block;
+      max-width: 150px;
+      min-width: 72px;
+      padding: 3px 7px;
+      border-radius: 5px;
+      font-family: var(--mono);
+      font-size: 10px;
+      line-height: 1.2;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      border: 1px solid transparent;
+    }
+    .field-value.ok { background: var(--green-dim); color: var(--green); border-color: #1e4028; }
+    .field-value.warn { background: var(--yellow-dim); color: var(--yellow); border-color: #3a2d05; }
+    .field-value.miss { background: var(--red-dim); color: var(--red); border-color: #3a1212; }
+    .field-value.na { background: #2a2f36; color: #9aa4af; border-color: #30363d; }
+    .field-col-head {
+      min-width: 110px;
+      max-width: 150px;
+      white-space: normal;
+      line-height: 1.15;
+    }
+
     #disciplineSelect { max-width: 220px; flex: 0 0 220px; }
 
     .score {
@@ -420,7 +445,7 @@
 
 <header>
   <div class="header-title">
-    <h1>E6SO RDS Validator V.7</h1>
+    <h1>E6SO RDS Validator V.8</h1>
     <p>PropertySet: 2_RDS · 16 felter · Objekter med 0_Element valideres · NotApplicable filtreres bort</p>
   </div>
   <span class="badge" id="modelBadge">Ikke tilkoblet</span>
@@ -540,7 +565,7 @@ const VEI_GGG_REGEX = /^(?:FRB101|FSD101|FSD102|FSD103|FSD104|FSD105|FSD106|NCA1
 const VEI_GGG_NAME_REGEX = /^(?:Filterlag|Revegetering|Grasdekker|Steinmaterialer|Plastring bekk|Voll|Tilsåing|Undergrunnsjord|Stedegen jord med frøbank|Matjord, Type 1|Bindlag, Ab11|Bindlag, Agb11|Slitelag|Slitelag, Fk 0\/11|Slitelag, Ska16|Slitelag, Agb11|Slitelag, Ab11|Grasdekke|SkjæringBerg|SkjæringJord|Naturkantstein|Trafikkdeler|Frostsikringslag, Knust berg|Tre|Bærelag, Fk 0\/11|Bærelag, Fk 0\/32|Nedre bærelag, Ag22|Øvre bærelag, Ag22|Nedre bærelag, Fk 0\/32|Øvre bærelag, Ag16|Deponi|Oppfylling|Tilbakefylling|Jordpåslag|Forsterkningslag, Fk 22\/125|PlanumBerg|PlanumJord|PlanumFylling|Planum|Fyllingsskråning|LavesteGravenivå|Graveflate|Grøft|GrøftÅpen)$/;
 
 const ANKER_RX = {
-  // VEI 01. RDS-tag – oppdatert mot Anker-regel 26.04.2026 / V.7.
+  // VEI 01. RDS-tag – oppdatert mot Anker-regel 26.04.2026 / V.8.
   // Revidert: FFFnnn, GGGnnn og 01. RDS-tag er synkronisert mot siste Anker-regex for veg.
   // Tillater disse hovedstrukturene:
   // 1) <E6SØ>-A3.A1.(BA1|CA1|CB1).EEnnn.FFFnnn.GGGnnn.HHHnnnn
@@ -891,6 +916,23 @@ function fieldText(status){
 function getFieldNameByKey(key){
   const f = FIELDS.find(x => x.key === key);
   return f ? f.label : key;
+}
+
+function fieldDisplayName(label){
+  return norm(label).replace(/^\d+\.\s*/, '');
+}
+
+function fieldCellText(row, key){
+  const field = row.fields?.[key] || {};
+  const value = norm(field.value);
+
+  if (field.status === 'ok') return value || 'OK';
+  if (field.status === 'na') return 'Ikke påkrevd';
+  if (field.status === 'missing') return 'Mangler verdi';
+  if (field.status === 'format') {
+    return value ? `Ugyldig verdi: ${value}` : 'Ugyldig verdi';
+  }
+  return value || 'Feil';
 }
 
 function getFieldIssueMessage(row, key){
@@ -1556,7 +1598,7 @@ function renderDashboard(model){
               <th>Objekttype</th>
               <th>Objektklasse</th>
               <th>Disiplin</th>
-              ${FIELDS.map(f => `<th title="${esc(f.label)}">${f.key}</th>`).join('')}
+              ${FIELDS.map(f => `<th class="field-col-head" title="${esc(f.label)}">${esc(f.label)}</th>`).join('')}
             </tr>
           </thead>
           <tbody id="tableBody"></tbody>
@@ -1669,8 +1711,10 @@ function renderTable(){
       const st = r.fields[f.key]?.status || 'missing';
       const val = esc(r.fields[f.key]?.value || '');
       const msg = esc(getFieldIssueMessage(r, f.key));
+      const cellText = esc(fieldCellText(r, f.key));
+      const cls = fieldClass(st);
       return `<td title="${msg}
-Verdi: ${val || '–'}"><span class="fc ${fieldClass(st)}">${fieldText(st)}</span></td>`;
+Verdi: ${val || '–'}"><span class="field-value ${cls}">${cellText}</span></td>`;
     }).join('');
 
     return `
