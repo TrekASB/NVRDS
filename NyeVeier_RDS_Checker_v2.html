@@ -2,7 +2,7 @@
 <html lang="nb">
 <head>
   <meta charset="UTF-8"/>
-  <title>E6SO RDS Validator V.12</title>
+  <title>E6SO RDS Validator V.13</title>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <script src="https://components.connect.trimble.com/trimble-connect-workspace-api/index.js"></script>
   <style>
@@ -445,7 +445,7 @@
 
 <header>
   <div class="header-title">
-    <h1>E6SO RDS Validator V.12</h1>
+    <h1>E6SO RDS Validator V.13</h1>
     <p>PropertySet: 2_RDS · 16 felter · Objekter med 0_Element valideres · NotApplicable filtreres bort</p>
   </div>
   <span class="badge" id="modelBadge">Ikke tilkoblet</span>
@@ -515,7 +515,7 @@ const RX = {
   ee: /^[A-Z]{2}\d+$/,
   fff: /^[A-Z]{3}\d+$/,
   ggg: /^[A-Z]{3}\d+$/,
-  hhh: /^[A-Z]{3}\d{1,5}$/
+  hhh: /^[A-Z]{3}\d+$/
 };
 
 /*
@@ -531,64 +531,50 @@ const SKILT_TUNNEL_RDS_REGEX = /^<E6SØ>-D1\.(?:A1|A2|B1|B2|C1|C2|C3|C4|D(?:[1-9
 const SKO_TUNNEL_FFF_REGEX = /^(PFA102|UBF101|ULG105|PHA101|PHA102|RUB101|RUB102|ULG106|PHD102|PHD13|PHD103|PHD104|UQB101|UQB102|PHD30|PHD101|PHA30|PHD105|UQB103)$/;
 const SKO_TUNNEL_FFF_NAME_REGEX = /^(Signalhode|Skiltportal|Skiltportalfundament|Skilt|VariabeltSkilt|Ledebom|Stengebom|Veibomfundament|Skiltfundament|Skiltmast|Skiltplate|Skiltholder|Festbolt|Mutter|Sanntidsinfo Leskur|Skilt fast|Skiltoppheng|Skjøtehylse|Festebolt)$/;
 
-// Gjelder KUN fagregel KNS / Bru – oppdatert V.10.
-// Bnn = D1, Cnn = C1/C2/C3/C4.
-// Dnn/EEnnn:
-// - EEnnn BA1/BC1/BD1/CG1: ingen Dnn-verdi i 01. RDS-tag.
-// - EEnnn JK1/PC1: Dnn = K2.
-// - EEnnn CL1: Dnn = P1.
-const KNS_BNN_REGEX = /^D1$/;
-const KNS_BNN_NAME_REGEX = /^Tunnel, Fåbergtunnelen$/;
-const KNS_CNN_REGEX = /^(?:C1|C2|C3|C4)$/;
-const KNS_CNN_NAME_REGEX = /^(?:Portal K721|Portal K725|Portal K731|Portal K735)$/;
-const KNS_EE_REGEX = /^(?:BA1|BC1|BD1|CG1|CL1|JK1|PC1)$/;
-const KNS_EE_NAME_REGEX = /^(?:Gjerde- og rekkverkssystem|Grunnarbeid, terreng|Jordingssystem|Kabelføringssystem|Overbygning|Underbygning|Vann- og fuktforebyggende system)$/;
-
-const KNS_FFF_REGEX = /^(?:FQD101|FSG101|QCA101|RQB101|RQB102|RQB103|UAH101|ULF101|ULG101|ULH101|ULH102|ULK101|ULK102|ULK103|ULM101|UMA101|UMA102|UPC101|UQA101|UTA102|UTA103|UTA105|XNF101)$/;
-const KNS_FFF_NAME_REGEX = /^(?:Armering|Asfaltmembran|Avrettingslag|Bergsikring|Betongavretting|Brem|Dybler|Fiberduk|Fuge i betong|Fundament|Hvelv|Hylse|Innstøpt gjengestag|Jording|Kjemisk anker|Klemlist|Knevegg|Membran|Membranbeskyttelse|Oppfylling|Rekkverk|Skjøtekobling|Tilbakefylling)$/;
+// Gjelder KUN fagregel KNS / Bru.
+const KNS_FFF_REGEX = /^(RQB101|UTA105|UMA102|ULK101|ULH101|ULK102|RQB102|UPC101|ULG101|ULH102|ULK103|UQA101|QCA101|ULF101|UAH101|ULM101|RQB103|FSG101|UTA102|FQD101|UTA103)$/;
+const KNS_FFF_NAME_REGEX = /^(Asfaltmembran|Avrettingslag|Bergsikring|Betongavretting|Brem|Dybler|Fiberduk|Fuge i betong|Fundament|Hvelv|Hylse|Innstøpt gjengestag|Jording|Kjemisk anker|Klemlist|Knevegg|Membran|Membranbeskyttelse|Oppfylling|Rekkverk|Tilbakefylling)$/;
 
 // Gjelder KUN fagregel KNS / Bru.
-const KNS_GGG_REGEX = /^(?:FQD101|FSG101|QCA101|RQB101|RQB102|RQB103|RQB104|UAH101|ULF101|ULG101|ULH101|ULK101|ULM101|UMA101|UMA102|UMA103|UMA104|UMA105|UMA106|UMA107|UMA108|UMA109|UMA110|UMA111|UMA112|UMA113|UMA114|UMA115|UMA116|UPC101|UQA101|UTA101|XNF104|XNF115)$/;
-const KNS_GGG_NAME_REGEX = /^(?:Asfaltmembran|Avrettingslag|Bergsikring|Betongavretting|Brem|Bruksklasse 4|Byggeetappe B40|Byggeetappe F10V|Byggeetappe F10Ø|Byggeetappe F11V|Byggeetappe F11Ø|Byggeetappe H30|Byggeetappe H31|Byggeetappe H32|Byggeetappe H33|Byggeetappe H34|Byggeetappe H35|Byggeetappe K20V|Byggeetappe K20Ø|Byggeetappe K21V|Byggeetappe K21Ø|Byggeetappe K22|Dybler|Fraksjon 0\/8|Fraksjon 22\/120|Fuge i betong|Fundament|Hvelv|Hylse|Innstøpt gjengestag|Jording|Kjemisk anker|Klemlist|Knevegg|L2|Oppfylling|Overgangsfolie|PVC)$/;
+const KNS_GGG_REGEX = /^(?:FQD101|FSG101|QCA101|RQB101|RQB102|RQB103|RQB104|UAH101|ULF101|ULG101|ULH101|ULK101|ULM101|UMA101|UPC101|UQA101|UTA101)$/;
+const KNS_GGG_NAME_REGEX = /^(?:Asfaltmembran|Avrettingslag|Bergsikring|Betongavretting|Brem|Bruksklasse 4|Dybler|Fraksjon 0\/8|Fraksjon 22\/120|Fuge i betong|Fundament|Hvelv|Hylse|Innstøpt gjengestag|Jording|Kjemisk anker|Klemlist|Knevegg|L2|Oppfylling|Overgangsfolie|PVC)$/;
 
-// KNS/Bru 01. RDS-tag V.11.
-// Struktur:
-// <E6SØ>-D1.Cnn.[Dnn.]EEnnn.FFFnnn.GGGnnn.HHHnnnnn
-// Cnn er bare gyldig når Bnn = D1.
+// KNS/Bru 01. RDS-tag.
 // Dnn-avhengighet:
-// - EEnnn BA1/BC1/BD1/CG1: ingen Dnn.
-// - EEnnn JK1/PC1: Dnn = K2.
+// - EEnnn BA1/BC1/BD1/CG1: ingen Dnn-verdi i 01. RDS-tag.
+// - EEnnn PC1: Dnn = K1.
 // - EEnnn CL1: Dnn = P1.
-const KNS_BRU_RDS_REGEX = /^<E6SØ>-D1\.(?:C1|C2|C3|C4)\.(?:(?:K2\.(?:JK1|PC1))|(?:P1\.CL1)|BA1|BC1|BD1|CG1)\.(?:FQD101|FSG101|QCA101|RQB101|RQB102|RQB103|UAH101|ULF101|ULG101|ULH101|ULH102|ULK101|ULK102|ULK103|ULM101|UMA101|UMA102|UPC101|UQA101|UTA102|UTA103|UTA105|XNF101)\.(?:FQD101|FSG101|QCA101|RQB101|RQB102|RQB103|RQB104|UAH101|ULF101|ULG101|ULH101|ULK101|ULM101|UMA101|UMA102|UMA103|UMA104|UMA105|UMA106|UMA107|UMA108|UMA109|UMA110|UMA111|UMA112|UMA113|UMA114|UMA115|UMA116|UPC101|UQA101|UTA101|XNF104|XNF115)\.[A-Z]{3}\d{1,5}$/;
+// GGGnnn-delen er begrenset til KNS_GGG-listen over.
+const KNS_BRU_RDS_REGEX = /^<E6SØ>-(?:(?:C4\.(?:(?:P1\.CL1)|(?:K1\.PC1)|(?:BA1|BC1|BD1|CG1)))|(?:D1\.(?:C3|C4)\.(?:(?:P1\.CL1)|(?:K1\.PC1)|(?:BA1|BC1|BD1|CG1))))\.(?:RQB101|UTA105|UMA102|ULK101|ULH101|ULK102|RQB102|UPC101|ULG101|ULH102|ULK103|UQA101|QCA101|ULF101|UAH101|ULM101|RQB103|FSG101|UTA102|FQD101|UTA103)\.(?:FQD101|FSG101|QCA101|RQB101|RQB102|RQB103|RQB104|UAH101|ULF101|ULG101|ULH101|ULK101|ULM101|UMA101|UPC101|UQA101|UTA101)\.(?:FQD10[1-4]|FSG10[1-2]|QCA10[1-2]|RQB10[1-4]|UAH10[1-2]|ULB10[1-4]|ULE10[1-2]|ULF(?:10[1-9]|1[1-9]\d|2[0-4]\d|25[0-3])|ULG10[1-4]|ULH10[1-2]|ULK(?:10[1-9]|1[1-3]\d|14[0-4])|ULM10[1-4]|UMA(?:101|10(?:0[0-9]|1[0-9]|2\d)|1[01]\d\d|120[0-2]|20(?:0[0-9]|1[0-9]|2[0-9]|3[0-9]|4[0-1])|30(?:0[0-9]|1\d|2\d|3[0-9])|33(?:0\d|1\d|2\d|3[0-9]|4[0-9]|5[0-9]|6[0-1])|40(?:0\d|1[0-2]))|UPC10[1-3]|UQA10[2-9]|UQA11[0-1]|UQB10[1-6]|UTA10[1-4]|UTB101|WPA10[1-5]|XNF(?:103[8-9]|111[5-7]|302[6-7]|314[1-2]|3288))$/;
 
 // KNS/Bru Dnn-avhengighet styrt av 09. EEnnn.
 // BA1, BC1, BD1, CG1 skal ikke ha 07. Dnn eller 08. Dnn navn.
-// JK1 og PC1 skal ha 07. Dnn = K2.
+// PC1 skal ha 07. Dnn = K1 og 08. Dnn navn = Elkraftsystem.
 // CL1 skal ha 07. Dnn = P1 og 08. Dnn navn = Sikkerhetssystem.
 const KNS_NO_DNN_EE = new Set(['BA1','BC1','BD1','CG1']);
 const KNS_REQUIRED_DNN_BY_EE = {
-  JK1: { dnn: 'K2', dnnName: null },
-  PC1: { dnn: 'K2', dnnName: null },
+  PC1: { dnn: 'K1', dnnName: 'Elkraftsystem' },
   CL1: { dnn: 'P1', dnnName: 'Sikkerhetssystem' }
 };
 
-// Gjelder KUN fagregel VEI – oppdatert 26.04.2026.
+
+// Gjelder KUN fagregel VEI – oppdatert V.13.
 const VEI_FFF_REGEX = /^(?:FSD102|NCA101|NCA103|NCG101|RQA101|ULA101|UTA101|UTA102|UTA103|UTA104|UTA105|UTB101|WMB102)$/;
-const VEI_FFF_NAME_REGEX = /^(?:Bindlag|Bærelag|Deponi|Filterlag|Forsterkningslag|Frostsikringslag|Fylling|Fyllingsskråning|Grøft|GrøftÅpen|Kantstein|LavesteGravenivå|Planum|Skjæring|SkjæringBerg|Slitelag|Stikningsobjekt|Terrengforming|Underbygning|Voll|NotApplicable)$/;
-const VEI_GGG_REGEX = /^(?:FRB101|FSD101|FSD102|FSD103|FSD104|FSD105|FSD106|NCA101|NCA102|NCA103|NCA104|NCA105|NCG101|NCG102|NVG101|NDA101|RQA101|TRA101|ULA103|ULA104|ULA105|ULA106|ULA107|ULA108|ULA109|ULA110|ULA111|UMC101|UTA101|UTA102|UTA103|UTA104|UTA105|UTB101|WMB101|WMB102)$/;
-const VEI_GGG_NAME_REGEX = /^(?:Filterlag|Revegetering|Grasdekker|Steinmaterialer|Plastring bekk|Voll|Tilsåing|Undergrunnsjord|Stedegen jord med frøbank|Matjord, Type 1|Bindlag, Ab11|Bindlag, Agb11|Slitelag|Slitelag, Fk 0\/11|Slitelag, Ska16|Slitelag, Agb11|Slitelag, Ab11|Grasdekke|SkjæringBerg|SkjæringJord|Naturkantstein|Trafikkdeler|Frostsikringslag, Knust berg|Tre|Bærelag, Fk 0\/11|Bærelag, Fk 0\/32|Nedre bærelag, Ag22|Øvre bærelag, Ag22|Nedre bærelag, Fk 0\/32|Øvre bærelag, Ag16|Deponi|Oppfylling|Tilbakefylling|Jordpåslag|Forsterkningslag, Fk 22\/125|PlanumBerg|PlanumJord|PlanumFylling|Planum|Fyllingsskråning|LavesteGravenivå|Graveflate|Grøft|GrøftÅpen)$/;
+const VEI_FFF_NAME_REGEX = /^(?:Bindlag|Bærelag|Forsterkningslag|Frostsikringslag|Fylling|Fyllingsskråning|Grøft|LavesteGravenivå|Planum|Skjæring|Slitelag|Terrengforming|Voll)$/;
+const VEI_GGG_REGEX = /^(?:FSD101|FSD102|NCA101|NCA102|NCA103|NCA104|NCA105|NCG101|NCG102|RQA101|ULA107|ULA108|ULA109|ULA110|ULA111|UTA101|UTA102|UTA103|UTA105|UTB101|WMB101)$/;
+const VEI_GGG_NAME_REGEX = /^(?:Bindlag, Ab11|Bindlag, Agb11|Bærelag, Fk 0\/32|Forsterkningslag, Fk 22\/125|Frostsikringslag, Knust berg|Fyllingsskråning|GrøftÅpen|LavesteGravenivå|Nedre bærelag, Ag22|Nedre bærelag, Fk 0\/32|Oppfylling|PlanumBerg|PlanumFylling|PlanumJord|Revegetering|SkjæringBerg|SkjæringJord|Slitelag, Ab11|Slitelag, Agb11|Slitelag, Fk 0\/11|Slitelag, Ska16|Voll|Øvre bærelag, Ag16|Øvre bærelag, Ag22)$/;
 
 const ANKER_RX = {
-  // VEI 01. RDS-tag – oppdatert mot Anker-regel 26.04.2026 / V.8.
-  // Revidert: FFFnnn, GGGnnn og 01. RDS-tag er synkronisert mot siste Anker-regex for veg.
-  // Tillater disse hovedstrukturene:
-  // 1) <E6SØ>-A3.A1.(BA1|CA1|CB1).EEnnn.FFFnnn.GGGnnn.HHHnnnn
-  // 2) <E6SØ>-A3.A1.G1.JD1.EEnnn.FFFnnn.GGGnnn.HHHnnnn
-  // 3) <E6SØ>-B1.CK1.EEnnn.FFFnnn.GGGnnn.HHHnnnn
-  VEI_TAG: /^<E6SØ>-(?:(?:A3\.A1\.(?:BA1|CA1|CB1)\.(?:FSD102|NCA101|NCA103|NCG101|RQA101|ULA101|UTA101|UTA102|UTA103|UTA104|UTA105|UTB101|WMB102)\.(?:FRB101|FSD101|FSD102|FSD103|FSD104|FSD105|FSD106|NCA101|NCA102|NCA103|NCA104|NCA105|NCG101|NCG102|NVG101|NDA101|RQA101|TRA101|ULA103|ULA104|ULA105|ULA106|ULA107|ULA108|ULA109|ULA110|ULA111|UMC101|UTA101|UTA102|UTA103|UTA104|UTA105|UTB101|WMB101|WMB102)\.[A-Za-z]{3}[0-9]+)|(?:A3\.A1\.G1\.JD1\.(?:FSD102|NCA101|NCA103|NCG101|RQA101|ULA101|UTA101|UTA102|UTA103|UTA104|UTA105|UTB101|WMB102)\.(?:FRB101|FSD101|FSD102|FSD103|FSD104|FSD105|FSD106|NCA101|NCA102|NCA103|NCA104|NCA105|NCG101|NCG102|NVG101|NDA101|RQA101|TRA101|ULA103|ULA104|ULA105|ULA106|ULA107|ULA108|ULA109|ULA110|ULA111|UMC101|UTA101|UTA102|UTA103|UTA104|UTA105|UTB101|WMB101|WMB102)\.[A-Za-z]{3}[0-9]+)|(?:B1\.CK1\.(?:FSD102|NCA101|NCA103|NCG101|RQA101|ULA101|UTA101|UTA102|UTA103|UTA104|UTA105|UTB101|WMB102)\.(?:FRB101|FSD101|FSD102|FSD103|FSD104|FSD105|FSD106|NCA101|NCA102|NCA103|NCA104|NCA105|NCG101|NCG102|NVG101|NDA101|RQA101|TRA101|ULA103|ULA104|ULA105|ULA106|ULA107|ULA108|ULA109|ULA110|ULA111|UMC101|UTA101|UTA102|UTA103|UTA104|UTA105|UTB101|WMB101|WMB102)\.[A-Za-z]{3}[0-9]+))$/,
+  // VEI 01. RDS-tag – oppdatert V.13.
+  // Struktur:
+  // 1) <E6SØ>-A3.A1.(BA1|CA1|CB1).FFFnnn.GGGnnn.HHHnnnnn
+  // 2) <E6SØ>-A3.A1.G1.JD1.FFFnnn.GGGnnn.HHHnnnnn
+  // 3) <E6SØ>-B1.CK1.FFFnnn.GGGnnn.HHHnnnnn
+  // Bnn = B1 skal ikke ha Cnn-kode.
+  VEI_TAG: /^<E6SØ>-(?:(?:A3\.A1\.(?:BA1|CA1|CB1)\.(?:FSD102|NCA101|NCA103|NCG101|RQA101|ULA101|UTA101|UTA102|UTA103|UTA104|UTA105|UTB101|WMB102)\.(?:FSD101|FSD102|NCA101|NCA102|NCA103|NCA104|NCA105|NCG101|NCG102|RQA101|ULA107|ULA108|ULA109|ULA110|ULA111|UTA101|UTA102|UTA103|UTA105|UTB101|WMB101)\.[A-Z]{3}\d{1,5})|(?:A3\.A1\.G1\.JD1\.(?:FSD102|NCA101|NCA103|NCG101|RQA101|ULA101|UTA101|UTA102|UTA103|UTA104|UTA105|UTB101|WMB102)\.(?:FSD101|FSD102|NCA101|NCA102|NCA103|NCA104|NCA105|NCG101|NCG102|RQA101|ULA107|ULA108|ULA109|ULA110|ULA111|UTA101|UTA102|UTA103|UTA105|UTB101|WMB101)\.[A-Z]{3}\d{1,5})|(?:B1\.CK1\.(?:FSD102|NCA101|NCA103|NCG101|RQA101|ULA101|UTA101|UTA102|UTA103|UTA104|UTA105|UTB101|WMB102)\.(?:FSD101|FSD102|NCA101|NCA102|NCA103|NCA104|NCA105|NCG101|NCG102|RQA101|ULA107|ULA108|ULA109|ULA110|ULA111|UTA101|UTA102|UTA103|UTA105|UTB101|WMB101)\.[A-Z]{3}\d{1,5}))$/,
   SKO_TAG: /^<E6SØ>-(?:A1|A2|A3|A4|D1)\.(?:A1|A2|A6)\.M1\.ME2\.(?:PFA102|UBF101|ULG105|PHA101|PHA102|RUB101|RUB102|ULG106|PHD102|PHD13|PHD103|PHD104)\.(?:PFA101|PFA102|PFA103|UBF101|UBF102|UBF103|ULG101|ULG102|ULG103|ULG104|ULG105|ULG106|ULG107|ULG108|ULG109|PHA101|PHA102|RUB101|PHD101|PHD102|PHD103|PHD104|PHD105|PHD106|PHD107|PHD108|PHD109|PHD110|PHD111|PHD112|PHD113|PHD114|PHD115|PHD116|PHD117|PHD118|PHD119|PHD120|PHD122|PHD123|PHD124|PHD125|PHD126|PHD127|PHD128|PHD129|PHD130|PHD131|PHD132|PHD133|PHD134|PHD135|PHD136|PHD137|PHD138|PHD139|PHD140|PHD141|PHD142|PHD143|PHD144|PHD145|PHD146|PHD147|PHD148|PHD149)\.(?:PFA\d+|UBF\d+|ULG\d+|PHA\d+|RUB\d+|PHD\d+)$/,
   LARK_TAG: /^<E6SØ>-(?:(?:(?:A1|A2|A3)\.(?:A1|A2|A3|A4|A5|A6|A7|B1)\.(?:P1\.CL1|BA1|CJ1|RA1)\.(?:FQD101|FSD102|FSD103|FSD104|TRA101|ULM103|UTA104)\.(?:UTA101|FSD101|FQD107|FSD104|FSD102|FSD106|TRA101|ULM101)\.[A-Z]{3}\d+)|(?:B1\.(?:P1\.CL1|BA1|CJ1|RA1)\.(?:FQD101|FSD102|FSD103|FSD104|TRA101|ULM103|UTA104)\.(?:UTA101|FSD101|FQD107|FSD104|FSD102|FSD106|TRA101|ULM101)\.[A-Z]{3}\d+))$/,
-  BRU_TAG: KNS_BRU_RDS_REGEX
+  BRU_TAG: /^<E6SØ>-(?:(?:C4\.(?:(?:P1\.CL1)|(?:K1\.(?:JK1|PC1))|(?:BA1|BC1|BD1|CG1)))|(?:D1\.(?:C3|C4)\.(?:(?:P1\.CL1)|(?:K1\.(?:JK1|PC1))|(?:BA1|BC1|BD1|CG1))))\.(?:FQD101|FSG101|QCA101|RQB101|RQB102|RQB107|UAH101|ULB101|ULE101|ULF101|ULG101|ULH101|ULH102|ULK101|ULK102|ULK103|ULK105|ULK106|ULM101|ULM102|ULM103|UMA102|UQA101|UQB101|UQB102|UTA101|UTA102|UTA103|UTA105|UTB101|WPA110)\.(?:FQD101|FQD103|FSG101|QCA101|RQB101|RQB102|RQB103|RQB104|UAH101|ULB101|ULE101|ULF101|ULG101|ULH101|ULK101|ULM101|UMA101|UPC101|UQB101|UTA101|UTB101|WPA103|WPA104)\.(?:FQD10[1-4]|FSG10[1-2]|QCA10[1-2]|RQB10[1-4]|UAH10[1-2]|ULB10[1-4]|ULE10[1-2]|ULF(?:10[1-9]|1[1-9]\d|2[0-4]\d|25[0-3])|ULG10[1-4]|ULH10[1-2]|ULK(?:10[1-9]|1[1-3]\d|14[0-4])|ULM10[1-4]|UMA(?:101|10(?:0[0-9]|1[0-9]|2\d)|1[01]\d\d|120[0-2]|20(?:0[0-9]|1[0-9]|2[0-9]|3[0-9]|4[0-1])|30(?:0[0-9]|1\d|2\d|3[0-9])|33(?:0\d|1\d|2\d|3[0-9]|4[0-9]|5[0-9]|6[0-1])|40(?:0\d|1[0-2]))|UPC10[1-3]|UQA10[2-9]|UQA11[0-1]|UQB10[1-6]|UTA10[1-4]|UTB101|WPA10[1-5]|XNF(?:103[8-9]|111[5-7]|302[6-7]|314[1-2]|3288))$/
 };
 
 const DISCIPLINE_RULES = {
@@ -617,19 +603,19 @@ const DISCIPLINE_RULES = {
   },
   KNS: {
     label: 'Konstruksjon / bru',
-    required: ['01','02','03','04','05','06','09','10','11','12','13','14','15','16'],
-    optional: ['07','08'],
+    required: ['01','02','03','04','09','10','11','12','13','14','15','16'],
+    optional: ['05','06','07','08'],
     regex: {
       '01': ANKER_RX.BRU_TAG,
       '02': RX.aaaaaa,
-      '03': KNS_BNN_REGEX,
-      '04': KNS_BNN_NAME_REGEX,
-      '05': KNS_CNN_REGEX,
-      '06': KNS_CNN_NAME_REGEX,
+      '03': RX.bcd,
+      '04': RX.anyText,
+      '05': RX.bcd,
+      '06': RX.anyText,
       '07': RX.bcd,
       '08': RX.anyText,
-      '09': KNS_EE_REGEX,
-      '10': KNS_EE_NAME_REGEX,
+      '09': RX.ee,
+      '10': RX.anyText,
       '11': KNS_FFF_REGEX,
       '12': KNS_FFF_NAME_REGEX,
       '13': KNS_GGG_REGEX,
@@ -1128,15 +1114,12 @@ function validateKnsRdsTagDependency(tag){
   if (!tag || !KNS_BRU_RDS_REGEX.test(tag)) return false;
 
   const parts = norm(tag).replace(/^<E6SØ>-/, '').split('.');
-  // V.10 struktur: D1.Cnn.[Dnn.]EEnnn.FFFnnn.GGGnnn.HHHnnnnn
-  if (parts[0] !== 'D1') return false;
-  if (!KNS_CNN_REGEX.test(parts[1] || '')) return false;
-
-  const maybeDnnOrEe = parts[2];
-  const maybeEe = parts[3];
+  const startIndex = parts[0] === 'D1' ? 2 : 1;
+  const maybeDnnOrEe = parts[startIndex];
+  const maybeEe = parts[startIndex + 1];
 
   if (KNS_NO_DNN_EE.has(maybeDnnOrEe)) return true;
-  if (maybeDnnOrEe === 'K2' && (maybeEe === 'JK1' || maybeEe === 'PC1')) return true;
+  if (maybeDnnOrEe === 'K1' && maybeEe === 'PC1') return true;
   if (maybeDnnOrEe === 'P1' && maybeEe === 'CL1') return true;
 
   return false;
@@ -1172,7 +1155,7 @@ function validateByRule(obj, modelName){
       /*
         KNS/Bru:
         - EEnnn BA1/BC1/BD1/CG1: Dnn/Dnn navn skal være tomt.
-        - EEnnn JK1/PC1: Dnn = K2.
+        - EEnnn PC1: Dnn = K1 og Dnn navn = Elkraftsystem.
         - EEnnn CL1: Dnn = P1 og Dnn navn = Sikkerhetssystem.
       */
       if (discipline === 'KNS' && KNS_NO_DNN_EE.has(ee)) {
@@ -1195,7 +1178,7 @@ function validateByRule(obj, modelName){
         if (!value) {
           fields[key] = { status: 'missing', value };
           missingCount++;
-        } else if (expected && value !== expected) {
+        } else if (value !== expected) {
           fields[key] = { status: 'format', value };
           formatErrorCount++;
         } else {
