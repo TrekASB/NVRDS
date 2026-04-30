@@ -2,7 +2,7 @@
 <html lang="nb">
 <head>
   <meta charset="UTF-8"/>
-  <title>E6SO RDS Validator V.17</title>
+  <title>E6SO RDS Validator V.18</title>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <script src="https://components.connect.trimble.com/trimble-connect-workspace-api/index.js"></script>
   <style>
@@ -445,7 +445,7 @@
 
 <header>
   <div class="header-title">
-    <h1>E6SO RDS Validator V.17</h1>
+    <h1>E6SO RDS Validator V.18</h1>
     <p>PropertySet: 2_RDS · 16 felter · KNS: JK1/PC1 ⇒ Dnn K1 · Armering/skjøtekobling støttet · HHHnnnnn: 3 bokstaver + 1–5 siffer</p>
   </div>
   <span class="badge" id="modelBadge">Ikke tilkoblet</span>
@@ -559,11 +559,12 @@ const KNS_REQUIRED_DNN_BY_EE = {
 };
 
 
-// Gjelder KUN fagregel VEI – oppdatert V.13.
-const VEI_FFF_REGEX = /^(?:FSD102|NCA101|NCA103|NCG101|RQA101|ULA101|UTA101|UTA102|UTA103|UTA104|UTA105|UTB101|WMB102)$/;
-const VEI_FFF_NAME_REGEX = /^(?:Bindlag|Bærelag|Forsterkningslag|Frostsikringslag|Fylling|Fyllingsskråning|Grøft|LavesteGravenivå|Planum|Skjæring|Slitelag|Terrengforming|Voll)$/;
-const VEI_GGG_REGEX = /^(?:FSD101|FSD102|NCA101|NCA102|NCA103|NCA104|NCA105|NCG101|NCG102|RQA101|ULA107|ULA108|ULA109|ULA110|ULA111|UTA101|UTA102|UTA103|UTA105|UTB101|WMB101)$/;
-const VEI_GGG_NAME_REGEX = /^(?:Bindlag, Ab11|Bindlag, Agb11|Bærelag, Fk 0\/32|Forsterkningslag, Fk 22\/125|Frostsikringslag, Knust berg|Fyllingsskråning|GrøftÅpen|LavesteGravenivå|Nedre bærelag, Ag22|Nedre bærelag, Fk 0\/32|Oppfylling|PlanumBerg|PlanumFylling|PlanumJord|Revegetering|SkjæringBerg|SkjæringJord|Slitelag, Ab11|Slitelag, Agb11|Slitelag, Fk 0\/11|Slitelag, Ska16|Voll|Øvre bærelag, Ag16|Øvre bærelag, Ag22)$/;
+// Gjelder KUN fagregel VEI – oppdatert V.18.
+const VEI_BNN_NAME_REGEX = /^(?:Dagsone, Ensby - Midtskog|Dagsone, Storove - Ødegården|Dagsone, Ødegården - Ensby|Skjæring\/Mur|Tunnel, Fåbergtunnelen)$/;
+const VEI_FFF_REGEX = /^(?:FSD102|NCA101|NCA103|NCG101|NDA103|RQA101|RQB102|ULA101|UMC101|UTA101|UTA102|UTA103|UTA104|UTA105|UTB101|WMB102)$/;
+const VEI_FFF_NAME_REGEX = /^(?:Bindlag|Bærelag|Deponi|Fiberduk|Forsterkningslag|Frostsikringslag|Fylling|Fyllingsskråning|Grøft|Kantstein|LavesteGravenivå|Planum|Skjæring|Slitelag|Terrengforming|Voll)$/;
+const VEI_GGG_REGEX = /^(?:FSD101|FSD102|NCA101|NCA102|NCA103|NCA104|NCA105|NCG101|NCG102|NDA101|RQA101|RQB101|ULA107|ULA108|ULA109|ULA110|ULA111|UMC101|UTA101|UTA102|UTA103|UTA105|UTB101|WMB101)$/;
+const VEI_GGG_NAME_REGEX = /^(?:Bindlag, Ab11|Bindlag, Agb11|Bærelag, Fk 0\/32|Deponi|Fiberduk|Forsterkningslag, Fk 22\/125|Frostsikringslag, Knust berg|Fyllingsskråning|GrøftÅpen|Kantstein|LavesteGravenivå|Nedre bærelag, Ag22|Nedre bærelag, Fk 0\/32|Oppfylling|PlanumBerg|PlanumFylling|PlanumJord|Revegetering|SkjæringBerg|SkjæringJord|Slitelag, Ab11|Slitelag, Agb11|Slitelag, Fk 0\/11|Slitelag, Ska16|Voll|Øvre bærelag, Ag16|Øvre bærelag, Ag22)$/;
 
 
 
@@ -575,13 +576,13 @@ const VAA_GGG_NAME_REGEX = /^(?:110_PVC|Bekkeinntak|DR_100_DV-D ID|DR_110_DVD|DR
 const VAA_HHH_REGEX = /^[A-Za-z]{3}\d{1,5}$/;
 
 const ANKER_RX = {
-  // VEI 01. RDS-tag – oppdatert V.13.
+  // VEI 01. RDS-tag – oppdatert V.18.
   // Struktur:
   // 1) <E6SØ>-A3.A1.(BA1|CA1|CB1).FFFnnn.GGGnnn.HHHnnnnn
   // 2) <E6SØ>-A3.A1.G1.JD1.FFFnnn.GGGnnn.HHHnnnnn
   // 3) <E6SØ>-B1.CK1.FFFnnn.GGGnnn.HHHnnnnn
   // Bnn = B1 skal ikke ha Cnn-kode.
-  VEI_TAG: /^<E6SØ>-(?:(?:A3\.A1\.(?:BA1|CA1|CB1)\.(?:FSD102|NCA101|NCA103|NCG101|RQA101|ULA101|UTA101|UTA102|UTA103|UTA104|UTA105|UTB101|WMB102)\.(?:FSD101|FSD102|NCA101|NCA102|NCA103|NCA104|NCA105|NCG101|NCG102|RQA101|ULA107|ULA108|ULA109|ULA110|ULA111|UTA101|UTA102|UTA103|UTA105|UTB101|WMB101)\.[A-Z]{3}\d{1,5})|(?:A3\.A1\.G1\.JD1\.(?:FSD102|NCA101|NCA103|NCG101|RQA101|ULA101|UTA101|UTA102|UTA103|UTA104|UTA105|UTB101|WMB102)\.(?:FSD101|FSD102|NCA101|NCA102|NCA103|NCA104|NCA105|NCG101|NCG102|RQA101|ULA107|ULA108|ULA109|ULA110|ULA111|UTA101|UTA102|UTA103|UTA105|UTB101|WMB101)\.[A-Z]{3}\d{1,5})|(?:B1\.CK1\.(?:FSD102|NCA101|NCA103|NCG101|RQA101|ULA101|UTA101|UTA102|UTA103|UTA104|UTA105|UTB101|WMB102)\.(?:FSD101|FSD102|NCA101|NCA102|NCA103|NCA104|NCA105|NCG101|NCG102|RQA101|ULA107|ULA108|ULA109|ULA110|ULA111|UTA101|UTA102|UTA103|UTA105|UTB101|WMB101)\.[A-Z]{3}\d{1,5}))$/,
+  VEI_TAG: /^<E6SØ>-(?:(?:A3\.A1\.(?:BA1|CA1|CB1)\.(?:FSD102|NCA101|NCA103|NCG101|NDA103|RQA101|RQB102|ULA101|UMC101|UTA101|UTA102|UTA103|UTA104|UTA105|UTB101|WMB102)\.(?:FSD101|FSD102|NCA101|NCA102|NCA103|NCA104|NCA105|NCG101|NCG102|NDA101|RQA101|RQB101|ULA107|ULA108|ULA109|ULA110|ULA111|UMC101|UTA101|UTA102|UTA103|UTA105|UTB101|WMB101)\.[A-Z]{3}\d{1,5})|(?:A3\.A1\.G1\.JD1\.(?:FSD102|NCA101|NCA103|NCG101|NDA103|RQA101|RQB102|ULA101|UMC101|UTA101|UTA102|UTA103|UTA104|UTA105|UTB101|WMB102)\.(?:FSD101|FSD102|NCA101|NCA102|NCA103|NCA104|NCA105|NCG101|NCG102|NDA101|RQA101|RQB101|ULA107|ULA108|ULA109|ULA110|ULA111|UMC101|UTA101|UTA102|UTA103|UTA105|UTB101|WMB101)\.[A-Z]{3}\d{1,5})|(?:B1\.CK1\.(?:FSD102|NCA101|NCA103|NCG101|NDA103|RQA101|RQB102|ULA101|UMC101|UTA101|UTA102|UTA103|UTA104|UTA105|UTB101|WMB102)\.(?:FSD101|FSD102|NCA101|NCA102|NCA103|NCA104|NCA105|NCG101|NCG102|NDA101|RQA101|RQB101|ULA107|ULA108|ULA109|ULA110|ULA111|UMC101|UTA101|UTA102|UTA103|UTA105|UTB101|WMB101)\.[A-Z]{3}\d{1,5}))$/,
   VAA_TAG: /^<E6SØ>-(?:A1(?:\.(?:A1|A2|A3|A4|A5|A6|A7|B1))?|A2(?:\.(?:A1|A2|A3|A4|A5|A6|A7|B1))?|A3(?:\.(?:A1|A2|A3|A4|A5|A6|A7|B1))?|A4(?:\.(?:A1|A2|A3|A4|A5|A6|A7|B1))?|B1|C1(?:\.(?:A1|B1))?|C2(?:\.(?:A1|B1))?|C3(?:\.(?:A1|B1))?|C4(?:\.(?:A1|B1))?|C5(?:\.(?:A1|B1))?|D1(?:\.(?:A1|A2|B1|B2|C1|C2|C3|C4|D1|D2|D3|D4|D5|D6|D7|D8|D9|D10|D11))?)\.(?:(?:F1\.(?:PB1|JB1))|(?:G1\.(?:JD1|JD2))|(?:K1\.JK1)|BA1)\.(?:RQA102|UCA104|UCA105|UCA106|UCA107|UCA108|UCA109|UCA110|WMB101|WPA102|WPA103|WPA105|WPA107|WPA108|WPA109|WPA110|WPA111|XMA101)\.(?:RQA101|RQA102|UCA101|UCA102|UCA103|UCA104|UCA105|UCA106|UCA107|UCA108|UCA110|UCA111|WMB101|WPA101|WPA102|WPA103|WPA104|WPA105|WPA106|WPA107|WPA108|WPA109|WPA111|WPA112|WPA113|WPA114|WPA115|WPA116|WPA117|WPA118|WPA119|WPA121|WPA122|WPA123|WPA124|XMA101)\.[A-Za-z]{3}\d+$/,
   SKO_TAG: /^<E6SØ>-(?:A1|A2|A3|A4|D1)\.(?:A1|A2|A6)\.M1\.ME2\.(?:PFA102|UBF101|ULG105|PHA101|PHA102|RUB101|RUB102|ULG106|PHD102|PHD13|PHD103|PHD104)\.(?:PFA101|PFA102|PFA103|UBF101|UBF102|UBF103|ULG101|ULG102|ULG103|ULG104|ULG105|ULG106|ULG107|ULG108|ULG109|PHA101|PHA102|RUB101|PHD101|PHD102|PHD103|PHD104|PHD105|PHD106|PHD107|PHD108|PHD109|PHD110|PHD111|PHD112|PHD113|PHD114|PHD115|PHD116|PHD117|PHD118|PHD119|PHD120|PHD122|PHD123|PHD124|PHD125|PHD126|PHD127|PHD128|PHD129|PHD130|PHD131|PHD132|PHD133|PHD134|PHD135|PHD136|PHD137|PHD138|PHD139|PHD140|PHD141|PHD142|PHD143|PHD144|PHD145|PHD146|PHD147|PHD148|PHD149)\.(?:PFA\d+|UBF\d+|ULG\d+|PHA\d+|RUB\d+|PHD\d+)$/,
   LARK_TAG: /^<E6SØ>-(?:(?:(?:A1|A2|A3)\.(?:A1|A2|A3|A4|A5|A6|A7|B1)\.(?:P1\.CL1|BA1|CJ1|RA1)\.(?:FQD101|FSD102|FSD103|FSD104|TRA101|ULM103|UTA104)\.(?:UTA101|FSD101|FQD107|FSD104|FSD102|FSD106|TRA101|ULM101)\.[A-Z]{3}\d+)|(?:B1\.(?:P1\.CL1|BA1|CJ1|RA1)\.(?:FQD101|FSD102|FSD103|FSD104|TRA101|ULM103|UTA104)\.(?:UTA101|FSD101|FQD107|FSD104|FSD102|FSD106|TRA101|ULM101)\.[A-Z]{3}\d+))$/,
@@ -643,7 +644,7 @@ const DISCIPLINE_RULES = {
       '01': ANKER_RX.VEI_TAG,
       '02': RX.aaaaaa,
       '03': RX.bcd,
-      '04': RX.anyText,
+      '04': VEI_BNN_NAME_REGEX,
       '05': RX.bcd,
       '06': RX.anyText,
       '07': RX.bcd,
@@ -959,6 +960,7 @@ function getFieldIssueMessage(row, key){
   // Mer brukervennlige meldinger for formatfeil.
   if (field.status === 'format') {
     if (key === '01') return explainRdsTagIssue(row.discipline, value, row);
+    if (key === '04') return `${label}: ugyldig Bnn navn${value ? ` (${value})` : ''}`;
     if (key === '07') return `${label}: ugyldig Dnn-verdi${value ? ` (${value})` : ''}`;
     if (key === '08') return `${label}: ugyldig Dnn navn${value ? ` (${value})` : ''}`;
     if (key === '09') return `${label}: ugyldig EEnnn-verdi${value ? ` (${value})` : ''}`;
