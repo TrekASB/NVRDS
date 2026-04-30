@@ -2,7 +2,7 @@
 <html lang="nb">
 <head>
   <meta charset="UTF-8"/>
-  <title>E6SO RDS Validator V.18</title>
+  <title>E6SO RDS Validator V.19</title>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <script src="https://components.connect.trimble.com/trimble-connect-workspace-api/index.js"></script>
   <style>
@@ -445,7 +445,7 @@
 
 <header>
   <div class="header-title">
-    <h1>E6SO RDS Validator V.18</h1>
+    <h1>E6SO RDS Validator V.19</h1>
     <p>PropertySet: 2_RDS · 16 felter · KNS: JK1/PC1 ⇒ Dnn K1 · Armering/skjøtekobling støttet · HHHnnnnn: 3 bokstaver + 1–5 siffer</p>
   </div>
   <span class="badge" id="modelBadge">Ikke tilkoblet</span>
@@ -559,8 +559,8 @@ const KNS_REQUIRED_DNN_BY_EE = {
 };
 
 
-// Gjelder KUN fagregel VEI – oppdatert V.18.
-const VEI_BNN_NAME_REGEX = /^(?:Dagsone, Ensby - Midtskog|Dagsone, Storove - Ødegården|Dagsone, Ødegården - Ensby|Skjæring\/Mur|Tunnel, Fåbergtunnelen)$/;
+// Gjelder KUN fagregel VEI – oppdatert V.19.
+const VEI_BNN_NAME_REGEX = /^(?:Dagsone, Ensby - Midtskog|Dagsone, Storhove - Ødegården|Dagsone, Ødegården - Ensby|Skjæring\/Mur|Tunnel, Fåbergtunnelen)$/;
 const VEI_FFF_REGEX = /^(?:FSD102|NCA101|NCA103|NCG101|NDA103|RQA101|RQB102|ULA101|UMC101|UTA101|UTA102|UTA103|UTA104|UTA105|UTB101|WMB102)$/;
 const VEI_FFF_NAME_REGEX = /^(?:Bindlag|Bærelag|Deponi|Fiberduk|Forsterkningslag|Frostsikringslag|Fylling|Fyllingsskråning|Grøft|Kantstein|LavesteGravenivå|Planum|Skjæring|Slitelag|Terrengforming|Voll)$/;
 const VEI_GGG_REGEX = /^(?:FSD101|FSD102|NCA101|NCA102|NCA103|NCA104|NCA105|NCG101|NCG102|NDA101|RQA101|RQB101|ULA107|ULA108|ULA109|ULA110|ULA111|UMC101|UTA101|UTA102|UTA103|UTA105|UTB101|WMB101)$/;
@@ -576,7 +576,7 @@ const VAA_GGG_NAME_REGEX = /^(?:110_PVC|Bekkeinntak|DR_100_DV-D ID|DR_110_DVD|DR
 const VAA_HHH_REGEX = /^[A-Za-z]{3}\d{1,5}$/;
 
 const ANKER_RX = {
-  // VEI 01. RDS-tag – oppdatert V.18.
+  // VEI 01. RDS-tag – oppdatert V.19.
   // Struktur:
   // 1) <E6SØ>-A3.A1.(BA1|CA1|CB1).FFFnnn.GGGnnn.HHHnnnnn
   // 2) <E6SØ>-A3.A1.G1.JD1.FFFnnn.GGGnnn.HHHnnnnn
