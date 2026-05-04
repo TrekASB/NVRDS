@@ -1984,4 +1984,93 @@ function exportCsv(){
   const headers = ['Navn','GUID','Fag','Objekttype','Objektklasse','Score (%)','Feil / årsak','Manglende felter','Formatfeil',...FIELDS.map(f => f.label),...FIELDS.map(f => f.label + ' - feilmelding')];
   const csvEsc = v => {
     const s = (v ?? '').toString().replace(/"/g, '""');
-    return /[",\n]/.test(s) ? 
+    return /[",\n]/.test(s) ? `"${s}"` : s;
+  };
+
+  const lines = [headers.map(csvEsc).join(',')];
+  for (const r of issueRows) {
+    lines.push([
+      csvEsc(r.name),
+      csvEsc(r.guid),
+      csvEsc(r.discipline),
+      csvEsc(r.elementType),
+      csvEsc(r.objectClass),
+      csvEsc(r.score),
+      csvEsc(getRowIssueSummary(r).text),
+      csvEsc(r.missingCount),
+      csvEsc(r.formatErrorCount),
+      ...FIELDS.map(f => {
+        const st = r.fields[f.key]?.status || '';
+        if (st === 'ok') return csvEsc('OK');
+        if (st === 'na') return csvEsc('IKKE PÅKREVD');
+        if (st === 'format') return csvEsc('FORMATFEIL');
+        return csvEsc('MANGLER');
+      }),
+      ...FIELDS.map(f => csvEsc(getFieldIssueMessage(r, f.key)))
+    ].join(','));
+  }
+
+  const bom = '\ufeff';
+  const blob = new Blob([bom + lines.join('\n')], { type: 'text/csv;charset=utf-8;' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'RDS_avvik_' + new Date().toISOString().slice(0,10) + '.csv';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(a.href);
+
+  setStatus(`⬇ Eksportert ${issueRows.length} objekter med avvik til CSV.`, 'ok');
+}
+
+function reset(){
+  validationRows = [];
+  activeFilter = 'all';
+  searchTerm = '';
+  skippedStats = {
+  notApplicable: 0,
+  ignoredIfc: 0,
+  missing0Element: 0,
+  knsNoRds: 0,
+  byggtekNoRds: 0
+};
+
+  if (API) {
+    try { API.viewer.setObjectState(undefined, { color: 'reset' }); } catch {}
+  }
+
+  mainContent.innerHTML = `
+    <div class="empty anim">
+      <div class="icon">🔍</div>
+      <div>
+        Velg en modell og trykk <strong>Valider</strong> for å starte.<br>
+        <span style="font-size:11px;color:var(--muted)">
+          Fagregler kan settes til Auto eller overstyres manuelt. Elementer med NotApplicable filtreres bort.
+        </span>
+      </div>
+    </div>`;
+  btnReset.disabled = true;
+  btnColorize.disabled = true;
+  btnUncolor.disabled = true;
+  btnExport.disabled = true;
+  setStatus('↺ Nullstilt.', '');
+}
+
+btnLoad.addEventListener('click', loadModels);
+btnValidate.addEventListener('click', validate);
+btnColorize.addEventListener('click', colorizeModel);
+btnUncolor.addEventListener('click', removeColors);
+btnExport.addEventListener('click', exportCsv);
+btnReset.addEventListener('click', reset);
+modelSelect.addEventListener('change', () => { btnValidate.disabled = !modelSelect.value; });
+
+window.addEventListener('error', e => {
+  setStatus('❌ JS-feil: ' + e.message, 'error');
+  console.error(e.error || e.message);
+});
+
+populateDisciplineDropdown();
+connect();
+</script>
+</body>
+</html>
