@@ -446,7 +446,7 @@
 <header>
   <div class="header-title">
     <h1>E6SO RDS Validator V.24</h1>
-    <p>PropertySet: 2_RDS · 16 felter · VEI V.21 · VVA/VAA V.23 · BYGGTEK V.1 · HHHnnnnn: 3 bokstaver + 1–5 siffer</p>
+    <p>PropertySet: 2_RDS · 16 felter · VEI V.21 · VVA/VAA V.23 · BYGGTEK V.2 · HHHnnnnn: 3 bokstaver + 1–5 siffer</p>
   </div>
   <span class="badge" id="modelBadge">Ikke tilkoblet</span>
   <button class="btn btn-ghost" id="btnLoad" disabled>Hent modeller</button>
@@ -807,7 +807,8 @@ let skippedStats = {
   notApplicable: 0,
   ignoredIfc: 0,
   missing0Element: 0,
-  knsNoRds: 0
+  knsNoRds: 0,
+  byggtekNoRds: 0
 };
 
 const $ = id => document.getElementById(id);
@@ -917,6 +918,17 @@ function shouldSkipKnsNoRds(meta, discipline){
     objectType.includes('metadataobjekt') ||
     (objectType.includes('stikningsobjekt') && objectType.includes('skjotehylse'))
   );
+}
+
+// BYGGTEK: objekter uten RDS-krav.
+// Objektklasse = LUKE og Objekttype = UTSPARING skal ikke valideres mot 2_RDS.
+function shouldSkipByggtekNoRds(meta, discipline){
+  if (discipline !== 'BYGGTEK') return false;
+
+  const objectClass = normalizeNoRdsText(meta.objectClass);
+  const objectType = normalizeNoRdsText(meta.objectType);
+
+  return objectClass === 'luke' && objectType === 'utsparing';
 }
 
 function getElementMeta(obj){
@@ -1445,7 +1457,8 @@ async function validate(){
   notApplicable: 0,
   ignoredIfc: 0,
   missing0Element: 0,
-  knsNoRds: 0
+  knsNoRds: 0,
+  byggtekNoRds: 0
 };
 
   try {
@@ -1493,6 +1506,11 @@ async function validate(){
 
         if (shouldSkipKnsNoRds(meta, discipline)) {
           skippedStats.knsNoRds++;
+          continue;
+        }
+
+        if (shouldSkipByggtekNoRds(meta, discipline)) {
+          skippedStats.byggtekNoRds++;
           continue;
         }
 
@@ -1556,7 +1574,7 @@ async function validate(){
     btnExport.disabled = false;
 
     setStatus(
-      `✅ Validering fullført — ${validationRows.length} objekter analysert · ${skippedStats.notApplicable} hoppet over (NotApplicable) · ${skippedStats.knsNoRds} hoppet over (KNS uten RDS-krav).`,
+      `✅ Validering fullført — ${validationRows.length} objekter analysert · ${skippedStats.notApplicable} hoppet over (NotApplicable) · ${skippedStats.knsNoRds} hoppet over (KNS uten RDS-krav) · ${skippedStats.byggtekNoRds} hoppet over (BYGGTEK Luke/Utsparing).`,
       'ok'
     );
   } catch (e) {
@@ -1576,7 +1594,7 @@ function renderDashboard(model){
         <div>
           Ingen relevante objekter funnet.<br>
           <span style="font-size:11px;color:var(--muted)">
-            Hoppet over ${skippedStats.notApplicable} objekt(er) med NotApplicable og ${skippedStats.knsNoRds} KNS/Bru-objekt(er) uten RDS-krav.
+            Hoppet over ${skippedStats.notApplicable} objekt(er) med NotApplicable, ${skippedStats.knsNoRds} KNS/Bru-objekt(er) uten RDS-krav og ${skippedStats.byggtekNoRds} BYGGTEK Luke/Utsparing-objekt(er).
           </span>
         </div>
       </div>`;
@@ -1632,8 +1650,8 @@ function renderDashboard(model){
       </div>
       <div class="card yellow">
         <div class="label">Hoppet over</div>
-        <div class="value">${skippedStats.notApplicable}</div>
-        <div class="sub">NotApplicable · KNS uten RDS: ${skippedStats.knsNoRds}</div>
+        <div class="value">${skippedStats.notApplicable + skippedStats.knsNoRds + skippedStats.byggtekNoRds}</div>
+        <div class="sub">NotApplicable: ${skippedStats.notApplicable} · KNS uten RDS: ${skippedStats.knsNoRds} · BYGGTEK Luke/Utsparing: ${skippedStats.byggtekNoRds}</div>
       </div>
     </div>
 
@@ -1958,7 +1976,8 @@ function reset(){
   notApplicable: 0,
   ignoredIfc: 0,
   missing0Element: 0,
-  knsNoRds: 0
+  knsNoRds: 0,
+  byggtekNoRds: 0
 };
 
   if (API) {
