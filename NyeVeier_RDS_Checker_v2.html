@@ -2,7 +2,7 @@
 <html lang="nb">
 <head>
   <meta charset="UTF-8"/>
-  <title>E6SO RDS Validator V.24</title>
+  <title>E6SO RDS Validator V.25</title>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <script src="https://components.connect.trimble.com/trimble-connect-workspace-api/index.js"></script>
   <style>
@@ -445,8 +445,8 @@
 
 <header>
   <div class="header-title">
-    <h1>E6SO RDS Validator V.24</h1>
-    <p>PropertySet: 2_RDS · 16 felter · VEI V.21 · VVA/VAA V.23 · BYGGTEK V.2 · HHHnnnnn: 3 bokstaver + 1–5 siffer</p>
+    <h1>E6SO RDS Validator V.25</h1>
+    <p>PropertySet: 2_RDS · 16 felter · VEI V.21 · VVA/VAA V.23 · BYGGTEK V.25 · HHHnnnnn: 3 bokstaver + 1–5 siffer</p>
   </div>
   <span class="badge" id="modelBadge">Ikke tilkoblet</span>
   <button class="btn btn-ghost" id="btnLoad" disabled>Hent modeller</button>
@@ -921,14 +921,14 @@ function shouldSkipKnsNoRds(meta, discipline){
 }
 
 // BYGGTEK: objekter uten RDS-krav.
-// Objektklasse = LUKE og Objekttype = UTSPARING skal ikke valideres mot 2_RDS.
+// Dersom 0_Element.Objekttype = Utsparing skal objektet ikke ha RDS-kode
+// og skal ikke valideres mot 2_RDS. Sjekken er ikke avhengig av Objektklasse.
 function shouldSkipByggtekNoRds(meta, discipline){
   if (discipline !== 'BYGGTEK') return false;
 
-  const objectClass = normalizeNoRdsText(meta.objectClass);
   const objectType = normalizeNoRdsText(meta.objectType);
 
-  return objectClass === 'luke' && objectType === 'utsparing';
+  return objectType === 'utsparing';
 }
 
 function getElementMeta(obj){
