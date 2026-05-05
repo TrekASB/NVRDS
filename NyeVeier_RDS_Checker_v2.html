@@ -2,7 +2,7 @@
 <html lang="nb">
 <head>
   <meta charset="UTF-8"/>
-  <title>E6SO RDS Validator V.27</title>
+  <title>E6SO RDS Validator V.28</title>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <script src="https://components.connect.trimble.com/trimble-connect-workspace-api/index.js"></script>
   <style>
@@ -445,8 +445,8 @@
 
 <header>
   <div class="header-title">
-    <h1>E6SO RDS Validator V.27</h1>
-    <p>PropertySet: 2_RDS · 16 felter · VEI V.26 · TUNNEL V.27 · VVA/VAA V.23 · BYGGTEK V.25 · HHHnnnnn: 3 bokstaver + 1–5 siffer</p>
+    <h1>E6SO RDS Validator V.28</h1>
+    <p>PropertySet: 2_RDS · 16 felter · VEI V.26 · TUNNEL V.28 · VVA/VAA V.23 · BYGGTEK V.25 · HHHnnnnn: 3 bokstaver + 1–5 siffer</p>
   </div>
   <span class="badge" id="modelBadge">Ikke tilkoblet</span>
   <button class="btn btn-ghost" id="btnLoad" disabled>Hent modeller</button>
@@ -640,9 +640,9 @@ const ANKER_RX = {
   // - CK1 → B1.CK1
   // - BA1/BA2/CA1/CB1 → ingen Dnn
   VEI_TAG: /^<E6SØ>-(?:(?:(?:(?:A1\.(?:A1|A2|A3|A4))|(?:A2\.(?:A1|A2))|(?:A3\.(?:A1|A2|A4|A5))|(?:D1\.(?:A1|A2)))\.(?:(?:G1\.JD1)|(?:BA1|BA2|CA1|CB1)))|(?:B1\.CK1))\.(?:FSD102|NCA101|NCA103|NCG101|NDA103|RQA101|RQB102|ULA101|UMC101|UTA101|UTA102|UTA103|UTA104|UTA105|UTB101|WMB102)\.(?:FSD101|FSD102|NCA101|NCA102|NCA103|NCA104|NCA105|NCG101|NCG102|NDA101|RQA101|RQB101|ULA107|ULA108|ULA109|ULA110|ULA111|UMC101|UTA101|UTA102|UTA103|UTA105|UTB101|WMB101)\.[A-Za-z]{3}\d{1,5}$/,
-  // TUNNEL 01. RDS-tag – oppdatert V.27.
+  // TUNNEL 01. RDS-tag – oppdatert V.28. Robust gruppert regex for Trimble Connect.
   // Dnn-ledd er ikke aktuelt.
-  TUNNEL_TAG: /^<E6SØ>-D1\.((A1|A2)\.((BA1\.UNA101\.UNA101\.UNA1)|(CD1\.NDA101\.NDA101\.(NDA1|NDA2))|(CG1\.((RQB101\.RQB103\.RQB1)|(UMH101\.UMH101\.UMH1)))))|((B1|B2|D1|D2|D3|D4|D5|D6|D7|D8|D9|D10|D11)\.((BA1\.UNA101\.UNA101\.UNA1)|(CG1\.RQB101\.RQB104\.RQB1)))$/,
+  TUNNEL_TAG: /^<E6SØ>-D1\.(?:(?:A1|A2)\.(?:BA1\.UNA101\.UNA101\.UNA1|CD1\.NDA101\.NDA101\.(?:NDA1|NDA2)|CG1\.(?:RQB101\.RQB103\.RQB1|UMH101\.UMH101\.UMH1))|(?:B1|B2|D1|D2|D3|D4|D5|D6|D7|D8|D9|D10|D11)\.(?:BA1\.UNA101\.UNA101\.UNA1|CG1\.RQB101\.RQB104\.RQB1))$/,
   VAA_TAG: /^<E6SØ>-(?:A1(?:\.(?:A1|A2|A3|A4|A5|A6|A7|B1))?|A2(?:\.(?:A1|A2|A3|A4|A5|A6|A7|B1))?|A3(?:\.(?:A1|A2|A3|A4|A5|A6|A7|B1))?|A4(?:\.(?:A1|A2|A3|A4|A5|A6|A7|B1))?|B1|C1(?:\.(?:A1|B1))?|C2(?:\.(?:A1|B1))?|C3(?:\.(?:A1|B1))?|C4(?:\.(?:A1|B1))?|C5(?:\.(?:A1|B1))?|D1(?:\.(?:A1|A2|B1|B2|C1|C2|C3|C4|D1|D2|D3|D4|D5|D6|D7|D8|D9|D10|D11))?)\.(?:(?:F1\.(?:PB1|JB1))|(?:G1\.(?:JD1|JD2))|(?:K1\.JK1)|BA1)\.(?:RQA102|UCA104|UCA105|UCA106|UCA107|UCA108|UCA109|UCA110|WMB101|WPA102|WPA103|WPA105|WPA107|WPA108|WPA109|WPA110|WPA111|XMA101)\.(?:RQA101|RQA102|UCA101|UCA102|UCA103|UCA104|UCA105|UCA106|UCA107|UCA108|UCA110|UCA111|UCA112|UCA113|WMB101|WPA101|WPA102|WPA103|WPA104|WPA105|WPA106|WPA107|WPA108|WPA109|WPA111|WPA112|WPA113|WPA114|WPA115|WPA116|WPA117|WPA118|WPA119|WPA121|WPA122|WPA123|WPA124|XMA101)\.[A-Za-z]{3}\d+$/,
   SKO_TAG: /^<E6SØ>-(?:A1|A2|A3|A4|D1)\.(?:A1|A2|A6)\.M1\.ME2\.(?:PFA102|UBF101|ULG105|PHA101|PHA102|RUB101|RUB102|ULG106|PHD102|PHD13|PHD103|PHD104)\.(?:PFA101|PFA102|PFA103|UBF101|UBF102|UBF103|ULG101|ULG102|ULG103|ULG104|ULG105|ULG106|ULG107|ULG108|ULG109|PHA101|PHA102|RUB101|PHD101|PHD102|PHD103|PHD104|PHD105|PHD106|PHD107|PHD108|PHD109|PHD110|PHD111|PHD112|PHD113|PHD114|PHD115|PHD116|PHD117|PHD118|PHD119|PHD120|PHD122|PHD123|PHD124|PHD125|PHD126|PHD127|PHD128|PHD129|PHD130|PHD131|PHD132|PHD133|PHD134|PHD135|PHD136|PHD137|PHD138|PHD139|PHD140|PHD141|PHD142|PHD143|PHD144|PHD145|PHD146|PHD147|PHD148|PHD149)\.(?:PFA\d+|UBF\d+|ULG\d+|PHA\d+|RUB\d+|PHD\d+)$/,
   LARK_TAG: /^<E6SØ>-(?:(?:(?:A1|A2|A3)\.(?:A1|A2|A3|A4|A5|A6|A7|B1)\.(?:P1\.CL1|BA1|CJ1|RA1)\.(?:FQD101|FSD102|FSD103|FSD104|TRA101|ULM103|UTA104)\.(?:UTA101|FSD101|FQD107|FSD104|FSD102|FSD106|TRA101|ULM101)\.[A-Z]{3}\d+)|(?:B1\.(?:P1\.CL1|BA1|CJ1|RA1)\.(?:FQD101|FSD102|FSD103|FSD104|TRA101|ULM103|UTA104)\.(?:UTA101|FSD101|FQD107|FSD104|FSD102|FSD106|TRA101|ULM101)\.[A-Z]{3}\d+))$/,
@@ -1271,6 +1271,18 @@ function validateByRule(obj, modelName){
     const value = norm(rds[f.label] || getProp(obj, PSET, f.label));
 
     if (key === '07' || key === '08') {
+      // TUNNEL: Dnn/Dnn navn er ikke aktuelt. Feltet skal være tomt og telles som ikke påkrevd.
+      if (discipline === 'TUNNEL') {
+        if (!value) {
+          fields[key] = { status: 'na', value };
+          naCount++;
+        } else {
+          fields[key] = { status: 'format', value };
+          formatErrorCount++;
+        }
+        continue;
+      }
+
       if (discipline === 'BYGGTEK' && BYGGTEK_NO_DNN_EE.has(ee)) {
         if (!value) {
           fields[key] = { status: 'na', value };
