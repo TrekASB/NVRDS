@@ -2,7 +2,7 @@
 <html lang="nb">
 <head>
   <meta charset="UTF-8"/>
-  <title>E6SO RDS Validator V.29</title>
+  <title>E6SO RDS Validator V.30</title>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <script src="https://components.connect.trimble.com/trimble-connect-workspace-api/index.js"></script>
   <style>
@@ -445,8 +445,8 @@
 
 <header>
   <div class="header-title">
-    <h1>E6SO RDS Validator V.29</h1>
-    <p>PropertySet: 2_RDS · 16 felter · VEI V.26 · TUNNEL V.28 · VVA/VAA V.23 · BYGGTEK V.25 · UTS V.29 · HHHnnnnn: 3 bokstaver + 1–5 siffer</p>
+    <h1>E6SO RDS Validator V.30</h1>
+    <p>PropertySet: 2_RDS · 16 felter · VEI V.26 · TUNNEL V.28 · VVA/VAA V.23 · BYGGTEK V.25 · UTS V.30 · HHHnnnnn: 3 bokstaver + 1–5 siffer</p>
   </div>
   <span class="badge" id="modelBadge">Ikke tilkoblet</span>
   <button class="btn btn-ghost" id="btnLoad" disabled>Hent modeller</button>
@@ -609,7 +609,7 @@ const VAA_GGG_REGEX = /^(?:RQA101|RQA102|UCA101|UCA102|UCA103|UCA104|UCA105|UCA1
 const VAA_GGG_NAME_REGEX = /^(?:110_PVC|BI_1400_BTG|Bekkeinntak|Brannvannsledning\(-uttak\)|DR_100_DV-D ID|DR_110_DVD|DR_150_DV-D ID|DR_150_DVD|DR_200_DV-D ID|DR_32_PE100|GrøftÅpen|HS_650|HS_650_BTG|HY_100_PP|ISO_Leca|ISO_XPS|Nedføringsrenne_Plassbygd|Nøkkelskap for slokkevann|OK_1000_BTG|OK_1200_BTG|OK_1400_BTG|OK_1600_BTG|OK_2000_BTG|OK_400_PP|OK_630_PP|OK_650_BTG|OV_1000_BTG|OV_100_DV-O ID|OV_1200_BTG|OV_1400_BTG|OV_150_DV-O ID|OV_1600_BTG|OV_160_PVC|OV_200_DV-O ID|OV_200_DV-O OD|OV_200_PVC-iso|OV_225_PVC|OV_250_DV-O ID|OV_250_PVC-iso|OV_300_DV-D ID|OV_300_DV-O ID|OV_400_DV-O ID|OV_500_DV-O ID|OV_600_BTG|OV_600_DV-O ID|OV_800_BTG|SFG_1000|SFG_1000_BTG|SFK_1000|SFK_1000_BTG|SFR_1000|SFR_1000_BTG|SK_1400_BTG|SP_160_PVC|SP_250_PVC|SP_315_PVC|ST DV_200|ST DV_400|ST DV_400_PP|ST DV_630|ST_200_PP|ST_400|ST_400_PP|Stengeventil\(brannvannsledninger\)|VK_1600_BTG|VK_2000_BTG|VK_2400_BTG|VK_650_BTG|VL_110_PE 100|VL_110_PVC|VL_160_PE 100|VL_200_PE 100|VL_250_PE100 ISO|VL_250_SJK|VL_280_PE100 RC PP|VL_315_PE100|VL_315_PE100 RC|VR_406_ST|VS_200_DV-O ID|VS_200_DVO|Vannkum)$/;
 const VAA_HHH_REGEX = /^[A-Za-z]{3}\d+$/;
 
-// Gjelder KUN fagregel UTS / Utstyr – basert på uts.csv.
+// Gjelder KUN fagregel UTS / Utstyr – basert på uts.csv. Oppdatert V.30.
 // Dnn-avhengighet: EEnnn CL1 -> Dnn P1, EEnnn ME2 -> Dnn M1.
 const UTS_BNN_REGEX = /^(?:A1|A2|A3)$/;
 const UTS_BNN_NAME_REGEX = /^(?:Dagsone,\ Ensby\ \-\ Midtskog|Dagsone,\ Storhove\ \-\ Ødegården|Dagsone,\ Ødegården\ \-\ Ensby)$/;
@@ -906,7 +906,8 @@ let skippedStats = {
   ignoredIfc: 0,
   missing0Element: 0,
   knsNoRds: 0,
-  byggtekNoRds: 0
+  byggtekNoRds: 0,
+  utsConflictVolume: 0
 };
 
 const $ = id => document.getElementById(id);
@@ -1027,6 +1028,17 @@ function shouldSkipByggtekNoRds(meta, discipline){
   const objectType = normalizeNoRdsText(meta.objectType);
 
   return objectType === 'utsparing';
+}
+
+// UTS/Utstyr: objekter uten RDS-krav.
+// Dersom 0_Element.Objektklasse = Konfliktvolum skal objektet ikke ha RDS-kode
+// og skal ikke valideres mot 2_RDS.
+function shouldSkipUtsConflictVolume(meta, discipline){
+  if (discipline !== 'UTS') return false;
+
+  const objectClass = normalizeNoRdsText(meta.objectClass);
+
+  return objectClass === 'konfliktvolum';
 }
 
 function getElementMeta(obj){
@@ -1599,7 +1611,8 @@ async function validate(){
   ignoredIfc: 0,
   missing0Element: 0,
   knsNoRds: 0,
-  byggtekNoRds: 0
+  byggtekNoRds: 0,
+  utsConflictVolume: 0
 };
 
   try {
@@ -1652,6 +1665,11 @@ async function validate(){
 
         if (shouldSkipByggtekNoRds(meta, discipline)) {
           skippedStats.byggtekNoRds++;
+          continue;
+        }
+
+        if (shouldSkipUtsConflictVolume(meta, discipline)) {
+          skippedStats.utsConflictVolume++;
           continue;
         }
 
@@ -1735,7 +1753,7 @@ function renderDashboard(model){
         <div>
           Ingen relevante objekter funnet.<br>
           <span style="font-size:11px;color:var(--muted)">
-            Hoppet over ${skippedStats.notApplicable} objekt(er) med NotApplicable, ${skippedStats.knsNoRds} KNS/Bru-objekt(er) uten RDS-krav og ${skippedStats.byggtekNoRds} BYGGTEK Luke/Utsparing-objekt(er).
+            Hoppet over ${skippedStats.notApplicable} objekt(er) med NotApplicable, ${skippedStats.knsNoRds} KNS/Bru-objekt(er) uten RDS-krav ${skippedStats.byggtekNoRds} BYGGTEK Luke/Utsparing-objekt(er) og ${skippedStats.utsConflictVolume} UTS Konfliktvolum-objekt(er).
           </span>
         </div>
       </div>`;
@@ -1791,8 +1809,8 @@ function renderDashboard(model){
       </div>
       <div class="card yellow">
         <div class="label">Hoppet over</div>
-        <div class="value">${skippedStats.notApplicable + skippedStats.knsNoRds + skippedStats.byggtekNoRds}</div>
-        <div class="sub">NotApplicable: ${skippedStats.notApplicable} · KNS uten RDS: ${skippedStats.knsNoRds} · BYGGTEK Luke/Utsparing: ${skippedStats.byggtekNoRds}</div>
+        <div class="value">${skippedStats.notApplicable + skippedStats.knsNoRds + skippedStats.byggtekNoRds + skippedStats.utsConflictVolume}</div>
+        <div class="sub">NotApplicable: ${skippedStats.notApplicable} · KNS uten RDS: ${skippedStats.knsNoRds} · BYGGTEK Luke/Utsparing: ${skippedStats.byggtekNoRds} · UTS Konfliktvolum: ${skippedStats.utsConflictVolume}</div>
       </div>
     </div>
 
@@ -2118,7 +2136,8 @@ function reset(){
   ignoredIfc: 0,
   missing0Element: 0,
   knsNoRds: 0,
-  byggtekNoRds: 0
+  byggtekNoRds: 0,
+  utsConflictVolume: 0
 };
 
   if (API) {
