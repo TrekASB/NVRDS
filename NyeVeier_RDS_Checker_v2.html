@@ -2,7 +2,7 @@
 <html lang="nb">
 <head>
   <meta charset="UTF-8"/>
-  <title>E6SO RDS Validator V.34</title>
+  <title>E6SO RDS Validator V.35</title>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <script src="https://components.connect.trimble.com/trimble-connect-workspace-api/index.js"></script>
   <style>
@@ -445,7 +445,7 @@
 
 <header>
   <div class="header-title">
-    <h1>E6SO RDS Validator V.34</h1>
+    <h1>E6SO RDS Validator V.35</h1>
     <p>PropertySet: 2_RDS · 16 felter · VEI V.26 · TUNNEL V.28 · VVA/VAA V.23 · BYGGTEK V.25 · UTS V.32 · SKO V.34 · HHHnnnnn: 3 bokstaver + 1–5 siffer</p>
   </div>
   <span class="badge" id="modelBadge">Ikke tilkoblet</span>
@@ -1340,13 +1340,14 @@ function validateByRule(obj, modelName){
   const larkP1  = discipline === 'LARK' && ee === 'CL1';
 
   /*
-    Vanlig SKO kan fortsatt ha Dnn/Dnn navn tomt når EEnnn = ME2.
+    SKO / Skilt:
+    - ME2 krever Dnn = M1 og Dnn navn = Informasjons- og kommunikasjonssystem.
+      Derfor skal vanlig SKO ikke hoppes over som NA for 07/08.
 
     SKO_TUNNEL:
-    - ME2 krever Dnn = M1 og Dnn navn = Informasjons- og kommunikasjonssystem
-    - BB1 skal ikke ha Dnn/Dnn navn
+    - BB1 skal ikke ha Dnn/Dnn navn.
   */
-  const skoNoD = discipline === 'SKO' && ee === 'ME2';
+  const skoNoD = false;
   const skoTunnelNoD = discipline === 'SKO_TUNNEL' && ee === 'BB1';
 
   for (const f of FIELDS) {
