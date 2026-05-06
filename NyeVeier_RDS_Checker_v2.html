@@ -2,7 +2,7 @@
 <html lang="nb">
 <head>
   <meta charset="UTF-8"/>
-  <title>E6SO RDS Validator V.28</title>
+  <title>E6SO RDS Validator V.29</title>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <script src="https://components.connect.trimble.com/trimble-connect-workspace-api/index.js"></script>
   <style>
@@ -445,8 +445,8 @@
 
 <header>
   <div class="header-title">
-    <h1>E6SO RDS Validator V.28</h1>
-    <p>PropertySet: 2_RDS · 16 felter · VEI V.26 · TUNNEL V.28 · VVA/VAA V.23 · BYGGTEK V.25 · HHHnnnnn: 3 bokstaver + 1–5 siffer</p>
+    <h1>E6SO RDS Validator V.29</h1>
+    <p>PropertySet: 2_RDS · 16 felter · VEI V.26 · TUNNEL V.28 · VVA/VAA V.23 · BYGGTEK V.25 · UTS V.29 · HHHnnnnn: 3 bokstaver + 1–5 siffer</p>
   </div>
   <span class="badge" id="modelBadge">Ikke tilkoblet</span>
   <button class="btn btn-ghost" id="btnLoad" disabled>Hent modeller</button>
@@ -609,6 +609,27 @@ const VAA_GGG_REGEX = /^(?:RQA101|RQA102|UCA101|UCA102|UCA103|UCA104|UCA105|UCA1
 const VAA_GGG_NAME_REGEX = /^(?:110_PVC|BI_1400_BTG|Bekkeinntak|Brannvannsledning\(-uttak\)|DR_100_DV-D ID|DR_110_DVD|DR_150_DV-D ID|DR_150_DVD|DR_200_DV-D ID|DR_32_PE100|GrøftÅpen|HS_650|HS_650_BTG|HY_100_PP|ISO_Leca|ISO_XPS|Nedføringsrenne_Plassbygd|Nøkkelskap for slokkevann|OK_1000_BTG|OK_1200_BTG|OK_1400_BTG|OK_1600_BTG|OK_2000_BTG|OK_400_PP|OK_630_PP|OK_650_BTG|OV_1000_BTG|OV_100_DV-O ID|OV_1200_BTG|OV_1400_BTG|OV_150_DV-O ID|OV_1600_BTG|OV_160_PVC|OV_200_DV-O ID|OV_200_DV-O OD|OV_200_PVC-iso|OV_225_PVC|OV_250_DV-O ID|OV_250_PVC-iso|OV_300_DV-D ID|OV_300_DV-O ID|OV_400_DV-O ID|OV_500_DV-O ID|OV_600_BTG|OV_600_DV-O ID|OV_800_BTG|SFG_1000|SFG_1000_BTG|SFK_1000|SFK_1000_BTG|SFR_1000|SFR_1000_BTG|SK_1400_BTG|SP_160_PVC|SP_250_PVC|SP_315_PVC|ST DV_200|ST DV_400|ST DV_400_PP|ST DV_630|ST_200_PP|ST_400|ST_400_PP|Stengeventil\(brannvannsledninger\)|VK_1600_BTG|VK_2000_BTG|VK_2400_BTG|VK_650_BTG|VL_110_PE 100|VL_110_PVC|VL_160_PE 100|VL_200_PE 100|VL_250_PE100 ISO|VL_250_SJK|VL_280_PE100 RC PP|VL_315_PE100|VL_315_PE100 RC|VR_406_ST|VS_200_DV-O ID|VS_200_DVO|Vannkum)$/;
 const VAA_HHH_REGEX = /^[A-Za-z]{3}\d+$/;
 
+// Gjelder KUN fagregel UTS / Utstyr – basert på uts.csv.
+// Dnn-avhengighet: EEnnn CL1 -> Dnn P1, EEnnn ME2 -> Dnn M1.
+const UTS_BNN_REGEX = /^(?:A1|A2|A3)$/;
+const UTS_BNN_NAME_REGEX = /^(?:Dagsone,\ Ensby\ \-\ Midtskog|Dagsone,\ Storhove\ \-\ Ødegården|Dagsone,\ Ødegården\ \-\ Ensby)$/;
+const UTS_CNN_REGEX = /^(?:A1|A2|A4)$/;
+const UTS_CNN_NAME_REGEX = /^(?:Vei,\ E6\ Hovedvei|Vei,\ Fylkesvei|Vei,\ Øvrig\ vei)$/;
+const UTS_DNN_REGEX = /^(?:M1|P1)$/;
+const UTS_DNN_NAME_REGEX = /^(?:Informasjons\-\ og\ kommunikasjonssystem|Sikkerhetssystem)$/;
+const UTS_EE_REGEX = /^(?:CL1|ME2)$/;
+const UTS_EE_NAME_REGEX = /^(?:Gjerde\-\ og\ rekkverkssystem|Skiltsystem)$/;
+const UTS_FFF_REGEX = /^(?:FQD101|FQD102|RUB101|RUB102|ULG106)$/;
+const UTS_FFF_NAME_REGEX = /^(?:Ledebom|Rekkverk|Rekkverksende|Stengebom|Veibomfundament)$/;
+const UTS_GGG_REGEX = /^(?:FQD101|FQD102|FQD103|FQD104|FQD105|FQD106|FQD107|FQD109|FQD110|FQD111|FQD112|FQD113|FQD114|FQD115|FQD116|FQD121|FQD122|RUB101|ULG101|ULG102)$/;
+const UTS_GGG_NAME_REGEX = /^(?:9717554|Betongrekkverk,\ Styrkeklasse\ H1|Betongrekkverk,\ Styrkeklasse\ L2|Ettergivende\ rekkverksende|Heve\-\/senkebom|Nedføring|Rekkverksskinne,\ Styrkeklasse\ H1|Rekkverksskinne,\ Styrkeklasse\ H2|Rekkverksskinne,\ Styrkeklasse\ L2|Rekkverksskinne,\ Styrkeklasse\ N2|Rekkverksskinne,\ Styrkeklasse\ Overgangsrekkverk\ H1\ stålskinne\ til\ H1\ betong|Rekkverksskinne,\ Styrkeklasse\ Overgangsrekkverk\ H1\ stålskinne\ til\ L2\ stålskinne|Rekkverksskinne,\ Styrkeklasse\ Overgangsrekkverk\ H1\ stålskinne\ til\ Støtpute|Rekkverksskinne,\ Styrkeklasse\ Overgangsrekkverk\ H1\ stålskinne\ til\ ettergivende\ rekkverksende|Rekkverksskinne,\ Styrkeklasse\ Overgangsrekkverk\ L2\ stålskinne\ til\ L2\ betong|Rekkverksskinne,\ Styrkeklasse\ Overgangsrekkverk\ L2\ stålskinne\ til\ Støtpute|Rekkverksskinne,\ Styrkeklasse\ Overgangsrekkverk\ N2\ stålskinne\ til\ H2\ stålskinne|Rekkverksskinne,\ Styrkeklasse\ Overgangsrekkverk\ N2\ stålskinne\ til\ L2\ betong|Rekkverksskinne,\ Styrkeklasse\ Overgangsrekkverk\ N2\ stålskinne\ til\ L2\ stålskinne|Spesialfundament_MCS\ 51_58_61_utvidet|Støtpute)$/;
+const UTS_HHH_REGEX = /^[A-Za-z]{3}\d{1,5}$/;
+const UTS_HHH_NAME_REGEX = /^(?:nr\. \d+|id\. \d+)$/;
+const UTS_REQUIRED_DNN_BY_EE = {
+  CL1: { dnn: 'P1', dnnName: 'Sikkerhetssystem' },
+  ME2: { dnn: 'M1', dnnName: 'Informasjons- og kommunikasjonssystem' }
+};
+
 // Gjelder KUN fagregel BYGGTEK / F-Byggtek – basert på CSV-uttrekk fra Trimble Connect.
 const BYGGTEK_BNN_REGEX = /^D1$/;
 const BYGGTEK_BNN_NAME_REGEX = /^Tunnel, Fåbergtunnelen$/;
@@ -647,6 +668,7 @@ const ANKER_RX = {
   SKO_TAG: /^<E6SØ>-(?:A1|A2|A3|A4|D1)\.(?:A1|A2|A6)\.M1\.ME2\.(?:PFA102|UBF101|ULG105|PHA101|PHA102|RUB101|RUB102|ULG106|PHD102|PHD13|PHD103|PHD104)\.(?:PFA101|PFA102|PFA103|UBF101|UBF102|UBF103|ULG101|ULG102|ULG103|ULG104|ULG105|ULG106|ULG107|ULG108|ULG109|PHA101|PHA102|RUB101|PHD101|PHD102|PHD103|PHD104|PHD105|PHD106|PHD107|PHD108|PHD109|PHD110|PHD111|PHD112|PHD113|PHD114|PHD115|PHD116|PHD117|PHD118|PHD119|PHD120|PHD122|PHD123|PHD124|PHD125|PHD126|PHD127|PHD128|PHD129|PHD130|PHD131|PHD132|PHD133|PHD134|PHD135|PHD136|PHD137|PHD138|PHD139|PHD140|PHD141|PHD142|PHD143|PHD144|PHD145|PHD146|PHD147|PHD148|PHD149)\.(?:PFA\d+|UBF\d+|ULG\d+|PHA\d+|RUB\d+|PHD\d+)$/,
   LARK_TAG: /^<E6SØ>-(?:(?:(?:A1|A2|A3)\.(?:A1|A2|A3|A4|A5|A6|A7|B1)\.(?:P1\.CL1|BA1|CJ1|RA1)\.(?:FQD101|FSD102|FSD103|FSD104|TRA101|ULM103|UTA104)\.(?:UTA101|FSD101|FQD107|FSD104|FSD102|FSD106|TRA101|ULM101)\.[A-Z]{3}\d+)|(?:B1\.(?:P1\.CL1|BA1|CJ1|RA1)\.(?:FQD101|FSD102|FSD103|FSD104|TRA101|ULM103|UTA104)\.(?:UTA101|FSD101|FQD107|FSD104|FSD102|FSD106|TRA101|ULM101)\.[A-Z]{3}\d+))$/,
   BRU_TAG: /^<E6SØ>-(?:(?:C4\.(?:(?:P1\.CL1)|(?:K1\.(?:JK1|PC1))|(?:BA1|BC1|BD1|CG1)))|(?:D1\.(?:C3|C4)\.(?:(?:P1\.CL1)|(?:K1\.(?:JK1|PC1))|(?:BA1|BC1|BD1|CG1))))\.(?:RQB101|UTA105|UMA102|ULK101|ULH101|ULK102|RQB102|UPC101|ULG101|ULH102|ULK103|UQA101|QCA101|ULF101|UAH101|ULM101|RQB103|FSG101|UTA102|FQD101|UTA103|UMA101|XNF101)\.(?:FQD101|FSG101|QCA101|RQB101|RQB102|RQB103|RQB104|UAH101|ULF101|ULG101|ULH101|ULK101|ULM101|UMA101|UPC101|UQA101|UTA101|UMA102|UMA103|UMA104|UMA105|UMA106|UMA107|UMA108|UMA109|UMA110|UMA111|UMA112|UMA113|UMA114|UMA115|UMA116|XNF104|XNF115)\.[A-Z]{3}\d{1,5}$/,
+  UTS_TAG: /^(?:<E6SØ>\-A1\.A1\.M1\.ME2\.RUB101\.RUB101\.RUB1|<E6SØ>\-A1\.A1\.M1\.ME2\.RUB101\.RUB101\.RUB2|<E6SØ>\-A1\.A1\.M1\.ME2\.RUB102\.RUB101\.RUB1|<E6SØ>\-A1\.A1\.M1\.ME2\.RUB102\.RUB101\.RUB2|<E6SØ>\-A1\.A1\.M1\.ME2\.RUB102\.RUB101\.RUB3|<E6SØ>\-A1\.A1\.M1\.ME2\.RUB102\.RUB101\.RUB4|<E6SØ>\-A1\.A1\.M1\.ME2\.RUB102\.RUB101\.RUB5|<E6SØ>\-A1\.A1\.M1\.ME2\.ULG106\.ULG101\.ULG1|<E6SØ>\-A1\.A1\.M1\.ME2\.ULG106\.ULG101\.ULG2|<E6SØ>\-A1\.A1\.M1\.ME2\.ULG106\.ULG102\.ULG1|<E6SØ>\-A1\.A1\.M1\.ME2\.ULG106\.ULG102\.ULG2|<E6SØ>\-A1\.A1\.M1\.ME2\.ULG106\.ULG102\.ULG3|<E6SØ>\-A1\.A1\.M1\.ME2\.ULG106\.ULG102\.ULG4|<E6SØ>\-A1\.A1\.M1\.ME2\.ULG106\.ULG102\.ULG5|<E6SØ>\-A1\.A1\.P1\.CL1\.FQD101\.FQD103\.FQD100|<E6SØ>\-A1\.A1\.P1\.CL1\.FQD101\.FQD103\.FQD101|<E6SØ>\-A1\.A1\.P1\.CL1\.FQD101\.FQD103\.FQD102|<E6SØ>\-A1\.A1\.P1\.CL1\.FQD101\.FQD103\.FQD97|<E6SØ>\-A1\.A1\.P1\.CL1\.FQD101\.FQD103\.FQD98|<E6SØ>\-A1\.A1\.P1\.CL1\.FQD101\.FQD103\.FQD99|<E6SØ>\-A1\.A1\.P1\.CL1\.FQD101\.FQD113\.FQD87|<E6SØ>\-A1\.A1\.P1\.CL1\.FQD101\.FQD113\.FQD88|<E6SØ>\-A1\.A1\.P1\.CL1\.FQD101\.FQD113\.FQD89|<E6SØ>\-A1\.A1\.P1\.CL1\.FQD101\.FQD113\.FQD90|<E6SØ>\-A1\.A1\.P1\.CL1\.FQD101\.FQD113\.FQD91|<E6SØ>\-A1\.A1\.P1\.CL1\.FQD101\.FQD113\.FQD92|<E6SØ>\-A1\.A1\.P1\.CL1\.FQD101\.FQD114\.FQD93|<E6SØ>\-A1\.A1\.P1\.CL1\.FQD101\.FQD114\.FQD94|<E6SØ>\-A1\.A1\.P1\.CL1\.FQD101\.FQD114\.FQD95|<E6SØ>\-A1\.A1\.P1\.CL1\.FQD101\.FQD114\.FQD96|<E6SØ>\-A1\.A1\.P1\.CL1\.FQD101\.FQD122\.FQD103|<E6SØ>\-A1\.A1\.P1\.CL1\.FQD101\.FQD122\.FQD104|<E6SØ>\-A1\.A1\.P1\.CL1\.FQD101\.FQD122\.FQD105|<E6SØ>\-A1\.A1\.P1\.CL1\.FQD101\.FQD122\.FQD106|<E6SØ>\-A1\.A1\.P1\.CL1\.FQD101\.FQD122\.FQD107|<E6SØ>\-A1\.A1\.P1\.CL1\.FQD101\.FQD122\.FQD108|<E6SØ>\-A1\.A1\.P1\.CL1\.FQD102\.FQD103\.FQD83|<E6SØ>\-A1\.A1\.P1\.CL1\.FQD102\.FQD103\.FQD84|<E6SØ>\-A1\.A1\.P1\.CL1\.FQD102\.FQD103\.FQD85|<E6SØ>\-A1\.A1\.P1\.CL1\.FQD102\.FQD103\.FQD86|<E6SØ>\-A1\.A2\.P1\.CL1\.FQD101\.FQD102\.FQD25|<E6SØ>\-A1\.A2\.P1\.CL1\.FQD101\.FQD102\.FQD26|<E6SØ>\-A1\.A4\.P1\.CL1\.FQD101\.FQD102\.FQD24|<E6SØ>\-A1\.A4\.P1\.CL1\.FQD101\.FQD102\.FQD27|<E6SØ>\-A1\.A4\.P1\.CL1\.FQD101\.FQD104\.FQD17|<E6SØ>\-A1\.A4\.P1\.CL1\.FQD101\.FQD104\.FQD18|<E6SØ>\-A1\.A4\.P1\.CL1\.FQD101\.FQD104\.FQD19|<E6SØ>\-A1\.A4\.P1\.CL1\.FQD101\.FQD104\.FQD20|<E6SØ>\-A1\.A4\.P1\.CL1\.FQD101\.FQD104\.FQD21|<E6SØ>\-A1\.A4\.P1\.CL1\.FQD101\.FQD104\.FQD22|<E6SØ>\-A1\.A4\.P1\.CL1\.FQD101\.FQD107\.FQD23|<E6SØ>\-A1\.A4\.P1\.CL1\.FQD102\.FQD106\.FQD10|<E6SØ>\-A1\.A4\.P1\.CL1\.FQD102\.FQD106\.FQD11|<E6SØ>\-A1\.A4\.P1\.CL1\.FQD102\.FQD106\.FQD12|<E6SØ>\-A1\.A4\.P1\.CL1\.FQD102\.FQD106\.FQD13|<E6SØ>\-A1\.A4\.P1\.CL1\.FQD102\.FQD106\.FQD14|<E6SØ>\-A1\.A4\.P1\.CL1\.FQD102\.FQD106\.FQD15|<E6SØ>\-A1\.A4\.P1\.CL1\.FQD102\.FQD106\.FQD9|<E6SØ>\-A2\.A1\.P1\.CL1\.FQD101\.FQD101\.FQD|<E6SØ>\-A2\.A1\.P1\.CL1\.FQD101\.FQD103\.FQD135|<E6SØ>\-A2\.A1\.P1\.CL1\.FQD101\.FQD103\.FQD136|<E6SØ>\-A2\.A1\.P1\.CL1\.FQD101\.FQD103\.FQD137|<E6SØ>\-A2\.A1\.P1\.CL1\.FQD101\.FQD103\.FQD138|<E6SØ>\-A2\.A1\.P1\.CL1\.FQD101\.FQD103\.FQD139|<E6SØ>\-A2\.A1\.P1\.CL1\.FQD101\.FQD103\.FQD140|<E6SØ>\-A2\.A1\.P1\.CL1\.FQD101\.FQD103\.FQD141|<E6SØ>\-A2\.A1\.P1\.CL1\.FQD101\.FQD104\.FQD130|<E6SØ>\-A2\.A1\.P1\.CL1\.FQD101\.FQD104\.FQD131|<E6SØ>\-A2\.A1\.P1\.CL1\.FQD101\.FQD104\.FQD132|<E6SØ>\-A2\.A1\.P1\.CL1\.FQD101\.FQD104\.FQD133|<E6SØ>\-A2\.A1\.P1\.CL1\.FQD101\.FQD109\.FQD117|<E6SØ>\-A2\.A1\.P1\.CL1\.FQD101\.FQD109\.FQD118|<E6SØ>\-A2\.A1\.P1\.CL1\.FQD101\.FQD110\.FQD116|<E6SØ>\-A2\.A1\.P1\.CL1\.FQD101\.FQD113\.FQD119|<E6SØ>\-A2\.A1\.P1\.CL1\.FQD101\.FQD113\.FQD120|<E6SØ>\-A2\.A1\.P1\.CL1\.FQD101\.FQD113\.FQD121|<E6SØ>\-A2\.A1\.P1\.CL1\.FQD101\.FQD113\.FQD122|<E6SØ>\-A2\.A1\.P1\.CL1\.FQD101\.FQD113\.FQD123|<E6SØ>\-A2\.A1\.P1\.CL1\.FQD101\.FQD113\.FQD124|<E6SØ>\-A2\.A1\.P1\.CL1\.FQD101\.FQD113\.FQD125|<E6SØ>\-A2\.A1\.P1\.CL1\.FQD101\.FQD114\.FQD126|<E6SØ>\-A2\.A1\.P1\.CL1\.FQD101\.FQD114\.FQD127|<E6SØ>\-A2\.A1\.P1\.CL1\.FQD101\.FQD115\.FQD115|<E6SØ>\-A2\.A1\.P1\.CL1\.FQD101\.FQD116\.FQD128|<E6SØ>\-A2\.A1\.P1\.CL1\.FQD101\.FQD116\.FQD129|<E6SØ>\-A2\.A1\.P1\.CL1\.FQD101\.FQD122\.FQD142|<E6SØ>\-A2\.A1\.P1\.CL1\.FQD101\.FQD122\.FQD143|<E6SØ>\-A2\.A1\.P1\.CL1\.FQD101\.FQD122\.FQD144|<E6SØ>\-A2\.A1\.P1\.CL1\.FQD101\.FQD122\.FQD145|<E6SØ>\-A2\.A1\.P1\.CL1\.FQD102\.FQD103\.FQD109|<E6SØ>\-A2\.A1\.P1\.CL1\.FQD102\.FQD103\.FQD110|<E6SØ>\-A2\.A1\.P1\.CL1\.FQD102\.FQD103\.FQD111|<E6SØ>\-A2\.A1\.P1\.CL1\.FQD102\.FQD103\.FQD112|<E6SØ>\-A2\.A1\.P1\.CL1\.FQD102\.FQD105\.FQD113|<E6SØ>\-A2\.A1\.P1\.CL1\.FQD102\.FQD106\.FQD114|<E6SØ>\-A2\.A2\.P1\.CL1\.FQD101\.FQD104\.FQD8|<E6SØ>\-A2\.A2\.P1\.CL1\.FQD101\.FQD107\.FQD7|<E6SØ>\-A2\.A2\.P1\.CL1\.FQD102\.FQD106\.FQD9|<E6SØ>\-A3\.A1\.P1\.CL1\.FQD101\.FQD\.106\.FQD32|<E6SØ>\-A3\.A1\.P1\.CL1\.FQD101\.FQD\.106\.FQD35|<E6SØ>\-A3\.A1\.P1\.CL1\.FQD101\.FQD\.106\.FQD37|<E6SØ>\-A3\.A1\.P1\.CL1\.FQD101\.FQD101\.FQD79|<E6SØ>\-A3\.A1\.P1\.CL1\.FQD101\.FQD101\.FQD80|<E6SØ>\-A3\.A1\.P1\.CL1\.FQD101\.FQD101\.FQD81|<E6SØ>\-A3\.A1\.P1\.CL1\.FQD101\.FQD102\.FQD70|<E6SØ>\-A3\.A1\.P1\.CL1\.FQD101\.FQD102\.FQD71|<E6SØ>\-A3\.A1\.P1\.CL1\.FQD101\.FQD102\.FQD72|<E6SØ>\-A3\.A1\.P1\.CL1\.FQD101\.FQD102\.FQD73|<E6SØ>\-A3\.A1\.P1\.CL1\.FQD101\.FQD102\.FQD74|<E6SØ>\-A3\.A1\.P1\.CL1\.FQD101\.FQD102\.FQD75|<E6SØ>\-A3\.A1\.P1\.CL1\.FQD101\.FQD102\.FQD76|<E6SØ>\-A3\.A1\.P1\.CL1\.FQD101\.FQD102\.FQD77|<E6SØ>\-A3\.A1\.P1\.CL1\.FQD101\.FQD102\.FQD78|<E6SØ>\-A3\.A1\.P1\.CL1\.FQD101\.FQD104\.FQD60|<E6SØ>\-A3\.A1\.P1\.CL1\.FQD101\.FQD104\.FQD61|<E6SØ>\-A3\.A1\.P1\.CL1\.FQD101\.FQD104\.FQD62|<E6SØ>\-A3\.A1\.P1\.CL1\.FQD101\.FQD104\.FQD63|<E6SØ>\-A3\.A1\.P1\.CL1\.FQD101\.FQD104\.FQD64|<E6SØ>\-A3\.A1\.P1\.CL1\.FQD101\.FQD104\.FQD65|<E6SØ>\-A3\.A1\.P1\.CL1\.FQD101\.FQD104\.FQD66|<E6SØ>\-A3\.A1\.P1\.CL1\.FQD101\.FQD104\.FQD67|<E6SØ>\-A3\.A1\.P1\.CL1\.FQD101\.FQD104\.FQD68|<E6SØ>\-A3\.A1\.P1\.CL1\.FQD101\.FQD104\.FQD69|<E6SØ>\-A3\.A1\.P1\.CL1\.FQD101\.FQD105\.FQD40|<E6SØ>\-A3\.A1\.P1\.CL1\.FQD101\.FQD105\.FQD49|<E6SØ>\-A3\.A1\.P1\.CL1\.FQD101\.FQD105\.FQD58|<E6SØ>\-A3\.A1\.P1\.CL1\.FQD101\.FQD105\.FQD59|<E6SØ>\-A3\.A1\.P1\.CL1\.FQD101\.FQD106\.FQD31|<E6SØ>\-A3\.A1\.P1\.CL1\.FQD101\.FQD106\.FQD39|<E6SØ>\-A3\.A1\.P1\.CL1\.FQD101\.FQD107\.FQD41|<E6SØ>\-A3\.A1\.P1\.CL1\.FQD101\.FQD107\.FQD42|<E6SØ>\-A3\.A1\.P1\.CL1\.FQD101\.FQD107\.FQD45|<E6SØ>\-A3\.A1\.P1\.CL1\.FQD101\.FQD107\.FQD46|<E6SØ>\-A3\.A1\.P1\.CL1\.FQD101\.FQD107\.FQD47|<E6SØ>\-A3\.A1\.P1\.CL1\.FQD101\.FQD107\.FQD48|<E6SØ>\-A3\.A1\.P1\.CL1\.FQD101\.FQD107\.FQD52|<E6SØ>\-A3\.A1\.P1\.CL1\.FQD101\.FQD107\.FQD53|<E6SØ>\-A3\.A1\.P1\.CL1\.FQD101\.FQD107\.FQD56|<E6SØ>\-A3\.A1\.P1\.CL1\.FQD101\.FQD107\.FQD57|<E6SØ>\-A3\.A1\.P1\.CL1\.FQD101\.FQD111\.FQD43|<E6SØ>\-A3\.A1\.P1\.CL1\.FQD101\.FQD111\.FQD44|<E6SØ>\-A3\.A1\.P1\.CL1\.FQD101\.FQD111\.FQD54|<E6SØ>\-A3\.A1\.P1\.CL1\.FQD101\.FQD111\.FQD55|<E6SØ>\-A3\.A1\.P1\.CL1\.FQD101\.FQD112\.FQD50|<E6SØ>\-A3\.A1\.P1\.CL1\.FQD101\.FQD112\.FQD51|<E6SØ>\-A3\.A1\.P1\.CL1\.FQD101\.FQD121\.FQD28|<E6SØ>\-A3\.A1\.P1\.CL1\.FQD101\.FQD121\.FQD29|<E6SØ>\-A3\.A1\.P1\.CL1\.FQD102\.FQD\.106\.FQD33|<E6SØ>\-A3\.A1\.P1\.CL1\.FQD102\.FQD\.106\.FQD34|<E6SØ>\-A3\.A1\.P1\.CL1\.FQD102\.FQD\.106\.FQD36|<E6SØ>\-A3\.A1\.P1\.CL1\.FQD102\.FQD\.106\.FQD38|<E6SØ>\-A3\.A1\.P1\.CL1\.FQD102\.FQD103\.FQD82|<E6SØ>\-A3\.A1\.P1\.CL1\.FQD102\.FQD106\.FQD39|<E6SØ>\-A3\.A4\.P1\.CL1\.FQD101\.FQD104\.FQD2|<E6SØ>\-A3\.A4\.P1\.CL1\.FQD102\.FQD106\.FQD1|<E6SØ>\-A3\.A4\.P1\.CL1\.FQD102\.FQD106\.FQD3|<E6SØ>A1\.A4\.P1\.CL1\.FQD102\.FQD106\.FQD16|>E6SØ>\-A2\.A2\.P1\.CL1\.FQD101\.FQD102\.FQD6|>E6SØ>\-A2\.A2\.P1\.CL1\.FQD101\.FQD107\.FQD4|>E6SØ>\-A2\.A2\.P1\.CL1\.FQD106\.FQD102\.FQD6|>E6SØ>\-A3\.A1\.P1\.CL1\.FQD101\.FQD106\.FQD30)$/,
   BYGGTEK_TAG: /^<E6SØ>-D1\.(?:A1|A2|B1|B2|D1|D2|D3|D4|D5|D6|D7|D8|D9|D10|D11)\.(?:(?:K1\.(?:JK1|PC1))|(?:F1\.PB1)|(?:BB1|BC1|BD1|BD2|BE1|BF1|CG1))\.(?:FMH101|FRB101|HQB101|QQC101|QQD101|RQB101|UBA101|UCA101|ULE101|ULG101|ULK101|ULK102|ULK103|ULM101|UMA101|UQB101|UQB102|UTA101|XEE101)\.(?:FMH101|FRB101|HQB101|HQB102|QQC110|QQC111|QQC112|QQD110|QQD111|RQB101|UBA101|UCA101|ULE101|ULE102|ULE103|ULE104|ULE105|ULE106|ULE107|ULE108|ULE109|ULG101|ULG102|ULG104|ULK101|ULK102|ULM101|ULM102|ULM103|UMA101|UMA103|UQB101|UQB102|UQB103|UQB104|UQB105|UQB107|UQB108|UTA101|UTA102|UTA103|XEE101)\.[A-Za-z]{3}\d{1,5}>?$/
 };
 
@@ -766,6 +788,29 @@ const DISCIPLINE_RULES = {
       '16': RX.anyText
     }
   },
+  UTS: {
+    label: 'Utstyr',
+    required: ['01','02','03','04','05','06','07','08','09','10','11','12','13','14','15','16'],
+    optional: [],
+    regex: {
+      '01': ANKER_RX.UTS_TAG,
+      '02': /^<E6SØ>$/,
+      '03': UTS_BNN_REGEX,
+      '04': UTS_BNN_NAME_REGEX,
+      '05': UTS_CNN_REGEX,
+      '06': UTS_CNN_NAME_REGEX,
+      '07': UTS_DNN_REGEX,
+      '08': UTS_DNN_NAME_REGEX,
+      '09': UTS_EE_REGEX,
+      '10': UTS_EE_NAME_REGEX,
+      '11': UTS_FFF_REGEX,
+      '12': UTS_FFF_NAME_REGEX,
+      '13': UTS_GGG_REGEX,
+      '14': UTS_GGG_NAME_REGEX,
+      '15': UTS_HHH_REGEX,
+      '16': UTS_HHH_NAME_REGEX
+    }
+  },
   BYGGTEK: {
     label: 'Byggteknikk',
     required: ['01','02','03','04','05','06','09','10','11','12','13','14','15','16'],
@@ -846,6 +891,7 @@ const DISCIPLINE_OPTIONS = [
   ['LARK', 'LARK / Landskap'],
   ['KNS', 'KNS / Bru'],
   ['BYGGTEK', 'BYGGTEK / Byggteknikk'],
+  ['UTS', 'UTS / Utstyr'],
   ['VAA', 'VAA']
 ];
 
@@ -1131,6 +1177,7 @@ function explainRdsTagIssue(discipline, tag, row){
   if (discipline === 'BYGGTEK') return '01. RDS-tag: ugyldig BYGGTEK-struktur eller Dnn/EEnnn-avhengighet';
   if (discipline === 'KNS') return '01. RDS-tag: ugyldig KNS/BRU-struktur eller Dnn/EEnnn-avhengighet';
   if (discipline === 'VAA') return '01. RDS-tag: ugyldig VAA-struktur eller FFF/GGG/HHH-verdi';
+  if (discipline === 'UTS') return '01. RDS-tag: ugyldig UTS-struktur eller Dnn/EEnnn-avhengighet. CL1 krever P1, ME2 krever M1.';
   if (discipline === 'LARK') return '01. RDS-tag: ugyldig LARK-struktur eller Dnn/EEnnn-avhengighet';
   if (discipline === 'SKO_TUNNEL') return '01. RDS-tag: ugyldig SKO tunnel-struktur';
   if (discipline === 'SKO') return '01. RDS-tag: ugyldig SKO-struktur';
@@ -1182,6 +1229,7 @@ function resolveDisciplineFromValue(raw){
   if (v.includes('BYGGTEK') || v.includes('BYGG') || v === 'BYG') return 'BYGGTEK';
   if (v.includes('VANN') || v.includes('AVL') || v === 'VAA' || v.includes('VAA')) return 'VAA';
   if (v.includes('VEI') || v.includes('VEG')) return 'VEI';
+  if (v.includes('UTSTYR') || v === 'UTS' || v.includes('VEGUTSTYR') || v.includes('VEIUTSTYR')) return 'UTS';
   if (v.includes('SKILT')) return 'SKO';
   if (v.includes('TUNNEL')) return 'TUNNEL';
   if (v.includes('BRU')) return 'KNS';
@@ -1194,6 +1242,7 @@ function inferDisciplineFromNames(modelName=''){
   const m = modelName.toUpperCase();
   if (m.includes('BYGGTEK') || m.includes('F-BYGGTEK') || m.includes('_BYGG')) return 'BYGGTEK';
   if (m.includes('LARK')) return 'LARK';
+  if (m.includes('UTSTYR') || m.includes('VEGUTSTYR') || m.includes('VEIUTSTYR') || m.includes('F-UTS') || m.includes('_UTS')) return 'UTS';
   if (m.includes('SKILT') || m.includes('OPPMERK')) return 'SKO';
   if (m.includes('TUNNEL') || m.includes('F-TUNNEL')) return 'TUNNEL';
   if (m.includes('BRU') || m.includes('KONSTR') || m.includes('_K_')) return 'KNS';
@@ -1334,6 +1383,31 @@ function validateByRule(obj, modelName){
         const expected = key === '07'
           ? KNS_REQUIRED_DNN_BY_EE[ee].dnn
           : KNS_REQUIRED_DNN_BY_EE[ee].dnnName;
+
+        reqTotal++;
+        if (!value) {
+          fields[key] = { status: 'missing', value };
+          missingCount++;
+        } else if (value !== expected) {
+          fields[key] = { status: 'format', value };
+          formatErrorCount++;
+        } else {
+          fields[key] = { status: 'ok', value };
+          reqOk++;
+        }
+        continue;
+      }
+
+
+      /*
+        UTS/Utstyr:
+        - EEnnn CL1: Dnn = P1 og Dnn navn = Sikkerhetssystem.
+        - EEnnn ME2: Dnn = M1 og Dnn navn = Informasjons- og kommunikasjonssystem.
+      */
+      if (discipline === 'UTS' && UTS_REQUIRED_DNN_BY_EE[ee]) {
+        const expected = key === '07'
+          ? UTS_REQUIRED_DNN_BY_EE[ee].dnn
+          : UTS_REQUIRED_DNN_BY_EE[ee].dnnName;
 
         reqTotal++;
         if (!value) {
