@@ -2,7 +2,7 @@
 <html lang="nb">
 <head>
   <meta charset="UTF-8"/>
-  <title>E6SO RDS Validator V.33</title>
+  <title>E6SO RDS Validator V.40</title>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <script src="https://components.connect.trimble.com/trimble-connect-workspace-api/index.js"></script>
   <style>
@@ -445,8 +445,8 @@
 
 <header>
   <div class="header-title">
-    <h1>E6SO RDS Validator V.33</h1>
-    <p>PropertySet: 2_RDS · 16 felter · VEI V.26 · TUNNEL V.28 · VVA/VAA V.23 · BYGGTEK V.25 · UTS V.32 · SKO V.33 · HHHnnnnn: 3 bokstaver + 1–5 siffer</p>
+    <h1>E6SO RDS Validator V.40</h1>
+    <p>PropertySet: 2_RDS · 16 felter · VEI V.26 · TUNNEL V.28 · VVA/VAA V.23 · BYGGTEK V.25 · UTS V.32 · SKO V.34 · KNS/Bru-Kulvert V.38 · LARK V.40 · HHHnnnnn: 3 bokstaver + 1–5 siffer</p>
   </div>
   <span class="badge" id="modelBadge">Ikke tilkoblet</span>
   <button class="btn btn-ghost" id="btnLoad" disabled>Hent modeller</button>
@@ -559,6 +559,32 @@ const KNS_REQUIRED_DNN_BY_EE = {
 };
 
 
+// Gjelder KUN fagregel KNS / Bru-Kulvert – basert på RDS-Bru.csv.
+// Objektklasse Informasjonsobjekt/Informasjonsobjekter hoppes over før RDS-validering.
+// 05. Cnn og 06. Cnn navn finnes ikke i CSV for kulvert og er derfor valgfrie/tomme.
+const KNS_KULVERT_RDS_REGEX = new RegExp(String.raw`^(?:<E6SØ>\-C4\.BA1\.ULK101\.ULK101\.ULK101|<E6SØ>\-C4\.BA1\.ULK101\.ULK101\.ULK102|<E6SØ>\-C4\.BA1\.ULK101\.ULK101\.ULK103|<E6SØ>\-C4\.BA1\.ULK101\.ULK101\.ULK104|<E6SØ>\-C4\.BA1\.ULK101\.ULK101\.ULK105|<E6SØ>\-C4\.BA1\.ULK101\.ULK101\.ULK106|<E6SØ>\-C4\.BA1\.UTA103\.UTA101\.UTA101|<E6SØ>\-C4\.BA1\.UTA103\.UTA101\.UTA102|<E6SØ>\-C4\.BA1\.UTA105\.UTA101\.UTA101|<E6SØ>\-C4\.BA1\.UTA105\.UTA101\.UTA102|<E6SØ>\-C4\.BA1\.UTA105\.UTA101\.UTA103|<E6SØ>\-C4\.BA1\.UTA105\.UTA101\.UTA104|<E6SØ>\-C4\.BA1\.UTB101\.UTB101\.UTB101|<E6SØ>\-C4\.BC1\.RQB101\.RQB101\.RQB101|<E6SØ>\-C4\.BC1\.RQB101\.RQB101\.RQB102|<E6SØ>\-C4\.BC1\.RQB101\.RQB101\.RQB103|<E6SØ>\-C4\.BC1\.RQB101\.RQB101\.RQB104|<E6SØ>\-C4\.BC1\.RQB107\.RQB101\.RQB101|<E6SØ>\-C4\.BC1\.RQB107\.RQB101\.RQB102|<E6SØ>\-C4\.BC1\.RQB107\.RQB101\.RQB103|<E6SØ>\-C4\.BC1\.ULB101\.ULB101\.ULB101|<E6SØ>\-C4\.BC1\.ULB101\.ULB101\.ULB102|<E6SØ>\-C4\.BC1\.ULB101\.ULB101\.ULB103|<E6SØ>\-C4\.BC1\.ULB101\.ULB101\.ULB104|<E6SØ>\-C4\.BC1\.ULE101\.ULE101\.ULE101|<E6SØ>\-C4\.BC1\.ULE101\.ULE101\.ULE102|<E6SØ>\-C4\.BC1\.ULK105\.ULK101\.ULK101|<E6SØ>\-C4\.BC1\.ULK105\.ULK101\.ULK102|<E6SØ>\-C4\.BC1\.ULK105\.ULK101\.ULK103|<E6SØ>\-C4\.BC1\.ULK105\.ULK101\.ULK104|<E6SØ>\-C4\.BC1\.ULK106\.ULK101\.ULK101|<E6SØ>\-C4\.BC1\.ULM102\.ULM101\.ULM101|<E6SØ>\-C4\.BC1\.ULM102\.ULM101\.ULM102|<E6SØ>\-C4\.BC1\.ULM103\.ULM101\.ULM101|<E6SØ>\-C4\.BC1\.ULM103\.ULM101\.ULM102|<E6SØ>\-C4\.BC1\.ULM103\.ULM101\.ULM103|<E6SØ>\-C4\.BC1\.ULM103\.ULM101\.ULM104|<E6SØ>\-C4\.BC1\.UQB101\.UQB101\.UQB101|<E6SØ>\-C4\.BC1\.UQB101\.UQB101\.UQB102|<E6SØ>\-C4\.BC1\.UQB102\.UQB101\.UQB101|<E6SØ>\-C4\.BC1\.UQB102\.UQB101\.UQB102|<E6SØ>\-C4\.BC1\.UQB102\.UQB101\.UQB103|<E6SØ>\-C4\.BC1\.UQB102\.UQB101\.UQB104|<E6SØ>\-C4\.BC1\.UQB102\.UQB101\.UQB105|<E6SØ>\-C4\.BC1\.UQB102\.UQB101\.UQB106|<E6SØ>\-C4\.BC1\.UTA101\.UTA101\.UTA101|<E6SØ>\-C4\.BC1\.UTA101\.UTA101\.UTA102|<E6SØ>\-C4\.BC1\.UTA101\.UTA101\.UTA103|<E6SØ>\-C4\.BC1\.UTA101\.UTA101\.UTA104|<E6SØ>\-C4\.BD1\.ULG101\.ULG101\.ULG101|<E6SØ>\-C4\.BD1\.ULG101\.ULG101\.ULG102|<E6SØ>\-C4\.CG1\.FSG101\.FSG101\.FSG101|<E6SØ>\-C4\.CG1\.FSG101\.FSG101\.FSG102|<E6SØ>\-C4\.CG1\.RQB102\.RQB102\.RQB101|<E6SØ>\-C4\.CG1\.RQB102\.RQB102\.RQB102|<E6SØ>\-C4\.CG1\.RQB107\.RQB101\.RQB101|<E6SØ>\-C4\.CG1\.RQB107\.RQB101\.RQB102|<E6SØ>\-C4\.CG1\.UTA101\.UTA101\.UTA101|<E6SØ>\-C4\.CG1\.UTA101\.UTA101\.UTA102|<E6SØ>\-C4\.CG1\.UTA101\.UTA101\.UTA103|<E6SØ>\-C4\.CG1\.UTA101\.UTA101\.UTA104|<E6SØ>\-C4\.JK1\.WPA110\.WPA103\.WPA101|<E6SØ>\-C4\.JK1\.WPA110\.WPA104\.WPA101|<E6SØ>\-C4\.JK1\.WPA110\.WPA104\.WPA102|<E6SØ>\-C4\.JK1\.WPA110\.WPA104\.WPA103|<E6SØ>\-C4\.JK1\.WPA110\.WPA104\.WPA104|<E6SØ>\-C4\.JK1\.WPA110\.WPA104\.WPA105|<E6SØ>\-C4\.K1\.BC1\.QCA101\.QCA101\.QCA101|<E6SØ>\-C4\.P1\.CL1\.FQD101\.FQD103\.FQD101|<E6SØ>\-C4\.P1\.CL1\.FQD101\.FQD103\.FQD102|<E6SØ>\-C4\.P1\.CL1\.FQD101\.FQD103\.FQD103|<E6SØ>\-C4\.P1\.CL1\.FQD101\.FQD103\.FQD104)$`);
+const KNS_KULVERT_AAAAAA_REGEX = new RegExp(String.raw`^(?:<E6SØ>)$`);
+const KNS_KULVERT_BNN_REGEX = new RegExp(String.raw`^(?:C4)$`);
+const KNS_KULVERT_BNN_NAME_REGEX = new RegExp(String.raw`^(?:Bru/kulvert,\ K921)$`);
+const KNS_KULVERT_DNN_REGEX = new RegExp(String.raw`^(?:K1|P1)$`);
+const KNS_KULVERT_DNN_NAME_REGEX = new RegExp(String.raw`^(?:Elkraftsystem|Sikkerhetssystem)$`);
+const KNS_KULVERT_EE_REGEX = new RegExp(String.raw`^(?:BA1|BC1|BD1|CG1|CL1|JK1|PC1)$`);
+const KNS_KULVERT_EE_NAME_REGEX = new RegExp(String.raw`^(?:Gjerde\-\ og\ rekkverkssystem|Grunnarbeid,\ terreng|Jordingssytem|Kabelføringssystem|Overbygning|Underbygning|Vann\-\ og\ fuktforebyggende\ system)$`);
+const KNS_KULVERT_FFF_REGEX = new RegExp(String.raw`^(?:FQD101|FSG101|QCA101|RQB101|RQB102|RQB107|ULB101|ULE101|ULG101|ULK101|ULK105|ULK106|ULM102|ULM103|UQB101|UQB102|UTA101|UTA103|UTA105|UTB101|WPA110)$`);
+const KNS_KULVERT_FFF_NAME_REGEX = new RegExp(String.raw`^(?:Asfaltmembran|Avrettingslag|Betongavretting|Boltegruppe|Brudekke|Fiberduk|Fuktisolering|Fundament|Jording|Kantbjelke|Konsoll|Membranbeskyttelse|Nivelleringsbolt|Overgangsplate|Rekkverk|Sprengningsflate|Tilbakefylling|Trekantprofil|Trekkerør|Vegg|Vingemur)$`);
+const KNS_KULVERT_GGG_REGEX = new RegExp(String.raw`^(?:FQD103|FSG101|QCA101|RQB101|RQB102|ULB101|ULE101|ULG101|ULK101|ULM101|UQB101|UTA101|UTB101|WPA103|WPA104)$`);
+const KNS_KULVERT_GGG_NAME_REGEX = new RegExp(String.raw`^(?:Asfaltmembran|Avrettingslag|Betongavretting|Boltegruppe|Brudekke|Bruksklasse\ 4|Fraksjon\ 0/8|Fraksjon\ 22/120|Fuktisolering|Fundament|H2|Jording|Kantbjelke|Konsoll|Nivelleringsbolt|Overgangsplate|Sprengningsflate|Trekantprofil|Vegg|Vingemur|ø110|ø75)$`);
+const KNS_KULVERT_HHH_REGEX = new RegExp(String.raw`^(?:FQD101|FQD102|FQD103|FQD104|FSG101|FSG102|QCA101|RQB101|RQB102|RQB103|RQB104|ULB101|ULB102|ULB103|ULB104|ULE101|ULE102|ULG101|ULG102|ULK101|ULK102|ULK103|ULK104|ULK105|ULK106|ULM101|ULM102|ULM103|ULM104|UQB101|UQB102|UQB103|UQB104|UQB105|UQB106|UTA101|UTA102|UTA103|UTA104|UTB101|WPA101|WPA102|WPA103|WPA104|WPA105)$`);
+const KNS_KULVERT_HHH_NAME_REGEX = new RegExp(String.raw`^(?:nr\.\ 101|nr\.\ 102|nr\.\ 103|nr\.\ 104|nr\.\ 105|nr\.\ 106)$`);
+
+const KNS_KULVERT_NO_DNN_EE = new Set(['BA1','BC1','BD1','CG1']);
+const KNS_KULVERT_REQUIRED_DNN_BY_EE = {
+  PC1: { dnn: 'K1', dnnName: 'Elkraftsystem' },
+  JK1: { dnn: 'K1', dnnName: 'Elkraftsystem' },
+  CL1: { dnn: 'P1', dnnName: 'Sikkerhetssystem' }
+};
+
+
 // Gjelder KUN fagregel VEI – oppdatert V.26 basert på CSV-uttrekk fra Trimble Connect.
 const VEI_BNN_REGEX = /^(?:A1|A2|A3|B1|D1)$/;
 const VEI_BNN_NAME_REGEX = /^(?:Dagsone, Storhove - Ødegården|Dagsone, Ødegården - Ensby|Dagsone, Ensby - Midtskog|Skjæring\/Mur|Tunnel, Fåbergtunnelen)$/;
@@ -655,46 +681,24 @@ const BYGGTEK_REQUIRED_DNN_BY_EE = {
 };
 
 
-// Gjelder KUN fagregel SKO / Skilt – basert på RDS_SKilt.csv. Oppdatert V.33.
-// 01. RDS-tag er feltbasert med fast avhengighet M1.ME2 og HHHnnnnn = 3 bokstaver + 1–5 siffer.
+// Gjelder KUN fagregel SKO / Skilt – basert på RDS_SKilt.csv. Oppdatert V.34.
+// 01. RDS-tag er feltbasert med fast avhengighet M1.ME2.
+// 13. GGGnnn og 14. GGGnnn navn er oppdatert fra CSV.
+// 15. HHHnnnnn er eksplisitt avgrenset til gyldige PFA/PHA/PHD/UBF/ULG-verdier fra CSV.
 const SKO_BNN_REGEX = new RegExp(String.raw`^(?:A1|A2|A3|A4)$`);
-const SKO_BNN_NAME_REGEX = new RegExp(String.raw`^(?:Dagsone, Ensby \- Midtskog|Dagsone, Midtskog \- Øyer|Dagsone, Storhove \- Ødegården|Dagsone, Ødegården \- Ensby)$`);
+const SKO_BNN_NAME_REGEX = new RegExp(String.raw`^(?:Dagsone,\ Ensby\ \-\ Midtskog|Dagsone,\ Midtskog\ \-\ Øyer|Dagsone,\ Storhove\ \-\ Ødegården|Dagsone,\ Ødegården\ \-\ Ensby)$`);
 const SKO_CNN_REGEX = new RegExp(String.raw`^(?:A1|A2|A6)$`);
-const SKO_CNN_NAME_REGEX = new RegExp(String.raw`^(?:Gang og sykkelvei|Parkeringsplass|Vei, E6 Hovedvei|Vei, Fylkesvei)$`);
+const SKO_CNN_NAME_REGEX = new RegExp(String.raw`^(?:Gang\ og\ sykkelvei|Parkeringsplass|Vei,\ E6\ Hovedvei|Vei,\ Fylkesvei)$`);
 const SKO_DNN_REGEX = new RegExp(String.raw`^(?:M1)$`);
-const SKO_DNN_NAME_REGEX = new RegExp(String.raw`^(?:Informasjons\- og kommunikasjonssystem)$`);
+const SKO_DNN_NAME_REGEX = new RegExp(String.raw`^(?:Informasjons\-\ og\ kommunikasjonssystem)$`);
 const SKO_EE_REGEX = new RegExp(String.raw`^(?:ME2)$`);
 const SKO_EE_NAME_REGEX = new RegExp(String.raw`^(?:Skiltsystem)$`);
 const SKO_FFF_REGEX = new RegExp(String.raw`^(?:PFA102|PHA101|PHA102|PHD102|PHD103|PHD13|UBF101|ULG105)$`);
 const SKO_FFF_NAME_REGEX = new RegExp(String.raw`^(?:Signalhode|Skilt|Skiltfundament|Skiltmast|Skiltplate|Skiltportal|Skiltportalfundament|VariabeltSkilt)$`);
 const SKO_GGG_REGEX = new RegExp(String.raw`^(?:PFA101|PFA102|PFA103|PHA101|PHA102|PHD101|PHD102|PHD103|PHD105|PHD106|PHD107|PHD108|PHD109|PHD110|PHD111|PHD112|PHD113|PHD114|PHD115|PHD116|PHD117|PHD118|PHD119|PHD120|PHD122|PHD123|PHD124|PHD125|PHD126|PHD127|PHD128|PHD129|PHD130|PHD131|PHD132|PHD133|PHD134|PHD135|PHD136|PHD137|PHD138|PHD139|PHD140|PHD141|PHD142|PHD143|PHD144|PHD145|PHD146|PHD147|PHD148|PHD149|UBF101|UBF102|UBF103|ULG101|ULG102|ULG103|ULG104|ULG105|ULG106|ULG107|ULG108|ULG109)$`);
-const SKO_GGG_NAME_REGEX = new RegExp(String.raw`^(?:9717749_K115_B|9717749_K115_F|9717752_K117_B|9720093 Skiltfundament BGS med skruelås|9720094 skiltfundament BGL 25kg mplastkilelås|9720094 skiltfundament BGL med plastkilelås|9720548_Lattix 4425|9720973 Fundament SH4 T|9720974 Fundament SH4|9720975 Fundament SH3 T|9720977 Fundament SH2 T|9720977 Fundament SH2 trekkerør cc175x175 M20|9720978 Fundament SH2|9720979 Fundament SH1 T|9720981 Fundament SH1|9720981 Fundament SH1 cc120x120 M20|9721432_K130_B|99720093 Ø89_skiltfundament BGS 50kg med skruelås|Avkjøringsmarkering|Avkjøringstavle: 1000 m\-tavle|Avkjøringstavle: 500 m\-tavle|Avkjøringsvegviser|Avstandsskilt|Bomstasjon: Taksttavle|Fartsgrense: 60km/t|Fartsgrense: 90km/t|Feil kjøreretning|Felt for fartsøkning|Forbudt for gående og syklende på motorveg og motrotrafikkveg|Forkjørsveg|Fullgrafisk|Fundament SH1 H=800mm|Gang\- og sykkelveg|Gittermast \(520mm\)|Gult blinksignal|Halvportal|Havarilomme|Helportal|Hindermarkering|Høydegrense|Innkjøring forbudt|K115_Telia|K135_B|K137_B|K137_B_2|K137_F|Kjørefelt begynner|Kjørefeltsignal|Kjøring til eiendommene tillatt|Lattix Large \- 4425 \(250mm\)|Mekanisk|Motortrafikkveg|Motorveg|Nødstasjon|Parkering|Påbudt kjørerefelt: Høyre|Påbudt rundkjøring|Påkjøring fortsetter i eget kjørefelt|Rødt stoppblinksignal|STOPP ved rødt blink Vegen stengt|Samleskilt for vegvisning|Sammenfletting|Skiltpunkt|Skiltstolpe ø60mm|Skiltstolpe ø89mm|Slutt på motorveg|Standard betongfundament H=500mm|Standard betongfundament H=650mm|Stedsnavskilt: Kommune\- og fylkeskommunegrenseskilt|Stedsnavskilt: Tunnelnavnskilt|Tabellvegviser|Trafikkforbud: Forbudt for alle traktorer og for motorredskap konstruert for fart mindre enn 40 km/t|Traftech SafeHit SH1 NE mast \(90mm\)|Traftech SafeHit SH2 NE mast \(145mm\)|Traftech SafeHit SH3 NE mast \(155mm\)|Traftech SafeHit SH4 NE mast \(165mm\)|Underskilt \(Symbol\): Forflytningshemmede med parkeringstillatelse|Underskilt: Avstand|Vanlig vegviser|Vegruteskilt: Vegnummer for europaveg|Vikeplikt)$`);
-const SKO_HHH_REGEX = new RegExp(String.raw`^[A-Za-z]{3}\d{1,5}$`);
+const SKO_GGG_NAME_REGEX = new RegExp(String.raw`^(?:9717749_K115_B|9717749_K115_F|9717752_K117_B|9720093\ Skiltfundament\ BGS\ med\ skruelås|9720094\ skiltfundament\ BGL\ 25kg\ mplastkilelås|9720094\ skiltfundament\ BGL\ med\ plastkilelås|9720548_Lattix\ 4425|9720973\ Fundament\ SH4\ T|9720974\ Fundament\ SH4|9720975\ Fundament\ SH3\ T|9720977\ Fundament\ SH2\ T|9720977\ Fundament\ SH2\ trekkerør\ cc175x175\ M20|9720978\ Fundament\ SH2|9720979\ Fundament\ SH1\ T|9720981\ Fundament\ SH1|9720981\ Fundament\ SH1\ cc120x120\ M20|9721432_K130_B|99720093\ Ø89_skiltfundament\ BGS\ 50kg\ med\ skruelås|Avkjøringsmarkering|Avkjøringstavle:\ 1000\ m\-tavle|Avkjøringstavle:\ 500\ m\-tavle|Avkjøringsvegviser|Avstandsskilt|Bomstasjon:\ Taksttavle|Fartsgrense:\ 60km/t|Fartsgrense:\ 90km/t|Feil\ kjøreretning|Felt\ for\ fartsøkning|Forbudt\ for\ gående\ og\ syklende\ på\ motorveg\ og\ motrotrafikkveg|Forkjørsveg|Fullgrafisk|Fundament\ SH1\ H=800mm|Gang\-\ og\ sykkelveg|Gittermast\ \(520mm\)|Gult\ blinksignal|Halvportal|Havarilomme|Helportal|Hindermarkering|Høydegrense|Innkjøring\ forbudt|K115_Telia|K135_B|K137_B|K137_B_2|K137_F|Kjørefelt\ begynner|Kjørefeltsignal|Kjøring\ til\ eiendommene\ tillatt|Lattix\ Large\ \-\ 4425\ \(250mm\)|Mekanisk|Motortrafikkveg|Motorveg|Nødstasjon|Parkering|Påbudt\ kjørerefelt:\ Høyre|Påbudt\ rundkjøring|Påkjøring\ fortsetter\ i\ eget\ kjørefelt|Rødt\ stoppblinksignal|STOPP\ ved\ rødt\ blink\ Vegen\ stengt|Samleskilt\ for\ vegvisning|Sammenfletting|Skiltpunkt|Skiltstolpe\ ø60mm|Skiltstolpe\ ø89mm|Slutt\ på\ motorveg|Standard\ betongfundament\ H=500mm|Standard\ betongfundament\ H=650mm|Stedsnavskilt:\ Kommune\-\ og\ fylkeskommunegrenseskilt|Stedsnavskilt:\ Tunnelnavnskilt|Tabellvegviser|Trafikkforbud:\ Forbudt\ for\ alle\ traktorer\ og\ for\ motorredskap\ konstruert\ for\ fart\ mindre\ enn\ 40\ km/t|Traftech\ SafeHit\ SH1\ NE\ mast\ \(90mm\)|Traftech\ SafeHit\ SH2\ NE\ mast\ \(145mm\)|Traftech\ SafeHit\ SH3\ NE\ mast\ \(155mm\)|Traftech\ SafeHit\ SH4\ NE\ mast\ \(165mm\)|Underskilt\ \(Symbol\):\ Forflytningshemmede\ med\ parkeringstillatelse|Underskilt:\ Avstand|Vanlig\ vegviser|Vegruteskilt:\ Vegnummer\ for\ europaveg|Vikeplikt)$`);
+const SKO_HHH_REGEX = new RegExp(String.raw`^(?:PFA(?:[1-9]|1[0-9]|2[01])|PHA(?:[1-9]|[1-6][0-9]|7[0-3])|PHD(?:[1-9]|1[0-9]|25|31|37|43|49|55|61|67|73)|UBF(?:1|3|4|5|7|8|9)|ULG[1-4])$`);
 const SKO_HHH_NAME_REGEX = new RegExp(String.raw`^id\. .+$`);
-
-// Gjelder KUN fagregel LARK / Landskap – basert på RDS_LARK.csv. Oppdatert V.39.
-// Avhengighet: CL1 -> Dnn P1. BA1/CB1/CJ1/RA1 -> Dnn ikke påkrevd i 01. RDS-tag. CB1/CJ1 støttes også uten Cnn-ledd.
-const LARK_RDS_REGEX = new RegExp(String.raw`^<E6SØ>-(?:(?:(?:A1|A2|A3|A4|B1)\.(?:A1)\.(?:BA1|RA1))|(?:(?:A1|A2|A3|A4|B1)(?:\.(?:A1))?\.(?:CB1|CJ1))|(?:(?:A1|A2|A3|A4|B1)(?:\.(?:A1))?\.P1\.CL1))\.(?:FQD101|FSD102|NCA103|RUA101|TRA101|ULM103|UTA101)\.(?:FQD107|FSD101|FSD103|FSD104|FSD106|NCA103|RUA101|RUA102|RUA103|TRA101|ULM101|UTA102)\.(?:FQD1|FQD10|FQD11|FQD12|FQD13|FQD14|FQD15|FQD16|FQD17|FQD18|FQD19|FQD2|FQD20|FQD21|FQD22|FQD3|FQD4|FQD5|FQD6|FQD7|FQD8|FQD9|FSD1|FSD10|FSD2|FSD3|FSD4|FSD5|FSD6|FSD7|FSD8|FSD9|NCA1|NCA2|RUA1|RUA10|RUA11|RUA12|RUA2|RUA3|RUA4|RUA5|RUA6|RUA7|RUA8|RUA9|TRA1|TRA10|TRA11|TRA12|TRA13|TRA14|TRA15|TRA16|TRA17|TRA18|TRA19|TRA2|TRA20|TRA21|TRA22|TRA23|TRA24|TRA25|TRA26|TRA27|TRA28|TRA29|TRA3|TRA30|TRA31|TRA32|TRA33|TRA4|TRA5|TRA6|TRA7|TRA8|TRA9|ULM10|ULM11|ULM5|ULM6|ULM7|ULM8|ULM9|UTA1|UTA2)$`);
-const LARK_AAAAAA_REGEX = new RegExp(String.raw`^(?:<E6SØ>)$`);
-const LARK_BNN_REGEX = new RegExp(String.raw`^(?:A1|A2|A3|A4|B1)$`);
-const LARK_BNN_NAME_REGEX = new RegExp(String.raw`^(?:Dagsone, Ensby \- Midtskog|Dagsone, Midtskog \- Øyer|Dagsone, Storhove \- Ødegården|Dagsone, Ødegården \- Ensby|Skjæring/mur)$`);
-const LARK_CNN_REGEX = new RegExp(String.raw`^(?:A1)$`);
-const LARK_CNN_NAME_REGEX = new RegExp(String.raw`^(?:Vei, E6 Hovedvei)$`);
-const LARK_DNN_REGEX = new RegExp(String.raw`^(?:P1)$`);
-const LARK_DNN_NAME_REGEX = new RegExp(String.raw`^(?:Sikkerhetssystem)$`);
-const LARK_EE_REGEX = new RegExp(String.raw`^(?:BA1|CB1|CJ1|CL1|RA1)$`);
-const LARK_EE_NAME_REGEX = new RegExp(String.raw`^(?:Gjerde\- og rekkverkssystem|Grunnarbeid, terreng|Støttemur|Vegetasjonssystem|Veioverbygning)$`);
-const LARK_FFF_REGEX = new RegExp(String.raw`^(?:FQD101|FSD102|NCA103|RUA101|TRA101|ULM103|UTA101)$`);
-const LARK_FFF_NAME_REGEX = new RegExp(String.raw`^(?:Fylling|Gjerde|Rekkverk|Slitelag|Støttekonstruksjon|Terrengforming|Vegetasjon)$`);
-const LARK_GGG_REGEX = new RegExp(String.raw`^(?:FQD107|FSD101|FSD103|FSD104|FSD106|NCA103|RUA101|RUA102|RUA103|TRA101|ULM101|UTA102)$`);
-const LARK_GGG_NAME_REGEX = new RegExp(String.raw`^(?:Gjerdeport|Natursteinsblokk|Oppfylling|Plastring bekk|Revegetering|Sikringsgjerde|Slitelag, Ska16|Steinmaterialer|Tilsåing|Tre|Tørrsteinsmur|Viltgjerde)$`);
-const LARK_HHH_REGEX = new RegExp(String.raw`^(?:FQD1|FQD10|FQD11|FQD12|FQD13|FQD14|FQD15|FQD16|FQD17|FQD18|FQD19|FQD2|FQD20|FQD21|FQD22|FQD3|FQD4|FQD5|FQD6|FQD7|FQD8|FQD9|FSD1|FSD10|FSD2|FSD3|FSD4|FSD5|FSD6|FSD7|FSD8|FSD9|NCA1|NCA2|RUA1|RUA10|RUA11|RUA12|RUA2|RUA3|RUA4|RUA5|RUA6|RUA7|RUA8|RUA9|TRA1|TRA10|TRA11|TRA12|TRA13|TRA14|TRA15|TRA16|TRA17|TRA18|TRA19|TRA2|TRA20|TRA21|TRA22|TRA23|TRA24|TRA25|TRA26|TRA27|TRA28|TRA29|TRA3|TRA30|TRA31|TRA32|TRA33|TRA4|TRA5|TRA6|TRA7|TRA8|TRA9|ULM10|ULM11|ULM5|ULM6|ULM7|ULM8|ULM9|UTA1|UTA2)$`);
-const LARK_HHH_NAME_REGEX = new RegExp(String.raw`^id\. .+$`);
-
-const LARK_NO_DNN_EE = new Set(['BA1','CB1','CJ1','RA1']);
-const LARK_REQUIRED_DNN_BY_EE = {
-  CL1: { dnn: 'P1', dnnName: 'Sikkerhetssystem' }
-};
 
 const ANKER_RX = {
   // VEI 01. RDS-tag – oppdatert V.26.
@@ -707,9 +711,9 @@ const ANKER_RX = {
   // Dnn-ledd er ikke aktuelt.
   TUNNEL_TAG: /^<E6SØ>-D1\.(?:(?:A1|A2)\.(?:BA1\.UNA101\.UNA101\.UNA1|CD1\.NDA101\.NDA101\.(?:NDA1|NDA2)|CG1\.(?:RQB101\.RQB103\.RQB1|UMH101\.UMH101\.UMH1))|(?:B1|B2|D1|D2|D3|D4|D5|D6|D7|D8|D9|D10|D11)\.(?:BA1\.UNA101\.UNA101\.UNA1|CG1\.RQB101\.RQB104\.RQB1))$/,
   VAA_TAG: /^<E6SØ>-(?:A1(?:\.(?:A1|A2|A3|A4|A5|A6|A7|B1))?|A2(?:\.(?:A1|A2|A3|A4|A5|A6|A7|B1))?|A3(?:\.(?:A1|A2|A3|A4|A5|A6|A7|B1))?|A4(?:\.(?:A1|A2|A3|A4|A5|A6|A7|B1))?|B1|C1(?:\.(?:A1|B1))?|C2(?:\.(?:A1|B1))?|C3(?:\.(?:A1|B1))?|C4(?:\.(?:A1|B1))?|C5(?:\.(?:A1|B1))?|D1(?:\.(?:A1|A2|B1|B2|C1|C2|C3|C4|D1|D2|D3|D4|D5|D6|D7|D8|D9|D10|D11))?)\.(?:(?:F1\.(?:PB1|JB1))|(?:G1\.(?:JD1|JD2))|(?:K1\.JK1)|BA1)\.(?:RQA102|UCA104|UCA105|UCA106|UCA107|UCA108|UCA109|UCA110|WMB101|WPA102|WPA103|WPA105|WPA107|WPA108|WPA109|WPA110|WPA111|XMA101)\.(?:RQA101|RQA102|UCA101|UCA102|UCA103|UCA104|UCA105|UCA106|UCA107|UCA108|UCA110|UCA111|UCA112|UCA113|WMB101|WPA101|WPA102|WPA103|WPA104|WPA105|WPA106|WPA107|WPA108|WPA109|WPA111|WPA112|WPA113|WPA114|WPA115|WPA116|WPA117|WPA118|WPA119|WPA121|WPA122|WPA123|WPA124|XMA101)\.[A-Za-z]{3}\d+$/,
-  // SKO 01. RDS-tag – V.33: feltbasert regex fra RDS_SKilt.csv med M1.ME2 og HHHnnnnn = 3 bokstaver + 1–5 siffer.
-  SKO_TAG: /^<E6SØ>-(?:A1|A2|A3|A4)\.(?:A1|A2|A6)\.M1\.ME2\.(?:PFA102|PHA101|PHA102|PHD102|PHD103|PHD13|UBF101|ULG105)\.(?:PFA101|PFA102|PFA103|PHA101|PHA102|PHD101|PHD102|PHD103|PHD105|PHD106|PHD107|PHD108|PHD109|PHD110|PHD111|PHD112|PHD113|PHD114|PHD115|PHD116|PHD117|PHD118|PHD119|PHD120|PHD122|PHD123|PHD124|PHD125|PHD126|PHD127|PHD128|PHD129|PHD130|PHD131|PHD132|PHD133|PHD134|PHD135|PHD136|PHD137|PHD138|PHD139|PHD140|PHD141|PHD142|PHD143|PHD144|PHD145|PHD146|PHD147|PHD148|PHD149|UBF101|UBF102|UBF103|ULG101|ULG102|ULG103|ULG104|ULG105|ULG106|ULG107|ULG108|ULG109)\.[A-Za-z]{3}\d{1,5}$/,
-  LARK_TAG: LARK_RDS_REGEX,
+  // SKO 01. RDS-tag – V.34: feltbasert regex fra RDS_SKilt.csv med M1.ME2 og HHHnnnnn = 3 bokstaver + 1–5 siffer.
+  SKO_TAG: new RegExp(String.raw`^<E6SØ>-(?:A1|A2|A3|A4)\.(?:A1|A2|A6)\.M1\.ME2\.(?:PFA102|PHA101|PHA102|PHD102|PHD103|PHD13|UBF101|ULG105)\.(?:PFA101|PFA102|PFA103|PHA101|PHA102|PHD101|PHD102|PHD103|PHD105|PHD106|PHD107|PHD108|PHD109|PHD110|PHD111|PHD112|PHD113|PHD114|PHD115|PHD116|PHD117|PHD118|PHD119|PHD120|PHD122|PHD123|PHD124|PHD125|PHD126|PHD127|PHD128|PHD129|PHD130|PHD131|PHD132|PHD133|PHD134|PHD135|PHD136|PHD137|PHD138|PHD139|PHD140|PHD141|PHD142|PHD143|PHD144|PHD145|PHD146|PHD147|PHD148|PHD149|UBF101|UBF102|UBF103|ULG101|ULG102|ULG103|ULG104|ULG105|ULG106|ULG107|ULG108|ULG109)\.(?:PFA(?:[1-9]|1[0-9]|2[01])|PHA(?:[1-9]|[1-6][0-9]|7[0-3])|PHD(?:[1-9]|1[0-9]|25|31|37|43|49|55|61|67|73)|UBF(?:1|3|4|5|7|8|9)|ULG[1-4])$`),
+  LARK_TAG: /^<E6SØ>-(?:(?:(?:A1|A2|A3)\.(?:A1|A2|A3|A4|A5|A6|A7|B1)\.(?:P1\.CL1|BA1|CJ1|RA1)\.(?:FQD101|FSD102|FSD103|FSD104|TRA101|ULM103|UTA104)\.(?:UTA101|FSD101|FQD107|FSD104|FSD102|FSD106|TRA101|ULM101)\.[A-Z]{3}\d+)|(?:B1\.(?:P1\.CL1|BA1|CJ1|RA1)\.(?:FQD101|FSD102|FSD103|FSD104|TRA101|ULM103|UTA104)\.(?:UTA101|FSD101|FQD107|FSD104|FSD102|FSD106|TRA101|ULM101)\.[A-Z]{3}\d+))$/,
   BRU_TAG: /^<E6SØ>-(?:(?:C4\.(?:(?:P1\.CL1)|(?:K1\.(?:JK1|PC1))|(?:BA1|BC1|BD1|CG1)))|(?:D1\.(?:C3|C4)\.(?:(?:P1\.CL1)|(?:K1\.(?:JK1|PC1))|(?:BA1|BC1|BD1|CG1))))\.(?:RQB101|UTA105|UMA102|ULK101|ULH101|ULK102|RQB102|UPC101|ULG101|ULH102|ULK103|UQA101|QCA101|ULF101|UAH101|ULM101|RQB103|FSG101|UTA102|FQD101|UTA103|UMA101|XNF101)\.(?:FQD101|FSG101|QCA101|RQB101|RQB102|RQB103|RQB104|UAH101|ULF101|ULG101|ULH101|ULK101|ULM101|UMA101|UPC101|UQA101|UTA101|UMA102|UMA103|UMA104|UMA105|UMA106|UMA107|UMA108|UMA109|UMA110|UMA111|UMA112|UMA113|UMA114|UMA115|UMA116|XNF104|XNF115)\.[A-Z]{3}\d{1,5}$/,
 // UTS 01. RDS-tag – V.32: validerer gyldige feltverdier og Dnn-avhengighet (CL1 -> P1, ME2 -> M1), ikke eksakte CSV-kombinasjoner. HHHnnnnn = 3 bokstaver + 1–5 siffer.
   UTS_TAG: /^<E6SØ>-(?:A1|A2|A3)\.(?:A1|A2|A4)\.(?:(?:P1\.CL1)|(?:M1\.ME2))\.(?:FQD101|FQD102|RUB101|RUB102|ULG106)\.(?:FQD101|FQD102|FQD103|FQD104|FQD105|FQD106|FQD107|FQD109|FQD110|FQD111|FQD112|FQD113|FQD114|FQD115|FQD116|FQD121|FQD122|RUB101|ULG101|ULG102)\.[A-Za-z]{3}\d{1,5}$/,
@@ -741,7 +745,7 @@ const DISCIPLINE_RULES = {
     }
   },
   KNS: {
-    label: 'Konstruksjon / bru',
+    label: 'KNS / Bru-Tunnelportaler',
     required: ['01','02','03','04','09','10','11','12','13','14','15','16'],
     optional: ['05','06','07','08'],
     regex: {
@@ -761,6 +765,30 @@ const DISCIPLINE_RULES = {
       '14': KNS_GGG_NAME_REGEX,
       '15': RX.hhh,
       '16': RX.anyText
+    }
+  },
+
+  KNS_KULVERT: {
+    label: 'KNS / Bru-Kulvert',
+    required: ['01','02','03','04','09','10','11','12','13','14','15','16'],
+    optional: ['05','06','07','08'],
+    regex: {
+      '01': KNS_KULVERT_RDS_REGEX,
+      '02': KNS_KULVERT_AAAAAA_REGEX,
+      '03': KNS_KULVERT_BNN_REGEX,
+      '04': KNS_KULVERT_BNN_NAME_REGEX,
+      '05': /^$/,
+      '06': /^$/,
+      '07': KNS_KULVERT_DNN_REGEX,
+      '08': KNS_KULVERT_DNN_NAME_REGEX,
+      '09': KNS_KULVERT_EE_REGEX,
+      '10': KNS_KULVERT_EE_NAME_REGEX,
+      '11': KNS_KULVERT_FFF_REGEX,
+      '12': KNS_KULVERT_FFF_NAME_REGEX,
+      '13': KNS_KULVERT_GGG_REGEX,
+      '14': KNS_KULVERT_GGG_NAME_REGEX,
+      '15': KNS_KULVERT_HHH_REGEX,
+      '16': KNS_KULVERT_HHH_NAME_REGEX
     }
   },
   VEI: {
@@ -879,26 +907,26 @@ const DISCIPLINE_RULES = {
     }
   },
   LARK: {
-    label: 'LARK / Landskap',
+    label: 'Landskap',
     required: ['01','02','03','04','09','10','11','12','13','14','15','16'],
     optional: ['05','06','07','08'],
     regex: {
-      '01': LARK_RDS_REGEX,
-      '02': LARK_AAAAAA_REGEX,
-      '03': LARK_BNN_REGEX,
-      '04': LARK_BNN_NAME_REGEX,
-      '05': LARK_CNN_REGEX,
-      '06': LARK_CNN_NAME_REGEX,
-      '07': LARK_DNN_REGEX,
-      '08': LARK_DNN_NAME_REGEX,
-      '09': LARK_EE_REGEX,
-      '10': LARK_EE_NAME_REGEX,
-      '11': LARK_FFF_REGEX,
-      '12': LARK_FFF_NAME_REGEX,
-      '13': LARK_GGG_REGEX,
-      '14': LARK_GGG_NAME_REGEX,
-      '15': LARK_HHH_REGEX,
-      '16': LARK_HHH_NAME_REGEX
+      '01': ANKER_RX.LARK_TAG,
+      '02': RX.aaaaaa,
+      '03': RX.bcd,
+      '04': RX.anyText,
+      '05': RX.bcd,
+      '06': RX.anyText,
+      '07': RX.bcd,
+      '08': RX.anyText,
+      '09': RX.ee,
+      '10': RX.anyText,
+      '11': RX.fff,
+      '12': RX.anyText,
+      '13': RX.ggg,
+      '14': RX.anyText,
+      '15': RX.hhh,
+      '16': RX.anyText
     }
   },
   SKO_TUNNEL: {
@@ -933,7 +961,8 @@ const DISCIPLINE_OPTIONS = [
   ['SKO', 'SKO / Skilt'],
   ['SKO_TUNNEL', 'SKO / Skilt i tunnel'],
   ['LARK', 'LARK / Landskap'],
-  ['KNS', 'KNS / Bru'],
+  ['KNS', 'KNS / Bru-Tunnelportaler'],
+  ['KNS_KULVERT', 'KNS / Bru-Kulvert'],
   ['BYGGTEK', 'BYGGTEK / Byggteknikk'],
   ['UTS', 'UTS / Utstyr'],
   ['VAA', 'VAA']
@@ -1046,12 +1075,14 @@ function normalizeNoRdsText(v){
 }
 
 function shouldSkipKnsNoRds(meta, discipline){
-  if (discipline !== 'KNS') return false;
+  if (discipline !== 'KNS' && discipline !== 'KNS_KULVERT') return false;
 
   const objectClass = normalizeNoRdsText(meta.objectClass);
   const objectType = normalizeNoRdsText(meta.objectType);
 
-  if (objectClass !== 'informasjonsobjekt') return false;
+  if (objectClass !== 'informasjonsobjekt' && objectClass !== 'informasjonsobjekter') return false;
+
+  if (discipline === 'KNS_KULVERT') return true;
 
   return (
     KNS_NO_RDS_OBJECT_TYPES.has(objectType) ||
@@ -1231,7 +1262,8 @@ function explainRdsTagIssue(discipline, tag, row){
 
   if (discipline === 'TUNNEL') return '01. RDS-tag: ugyldig TUNNEL-struktur. Kontroller Cnn/EEnnn/FFFnnn/GGGnnn/HHHnnnnn. Dnn skal ikke være med.';
   if (discipline === 'BYGGTEK') return '01. RDS-tag: ugyldig BYGGTEK-struktur eller Dnn/EEnnn-avhengighet';
-  if (discipline === 'KNS') return '01. RDS-tag: ugyldig KNS/BRU-struktur eller Dnn/EEnnn-avhengighet';
+  if (discipline === 'KNS') return '01. RDS-tag: ugyldig KNS/BRU-Tunnelportaler-struktur eller Dnn/EEnnn-avhengighet';
+  if (discipline === 'KNS_KULVERT') return '01. RDS-tag: ugyldig KNS/BRU-Kulvert-struktur basert på CSV-regel';
   if (discipline === 'VAA') return '01. RDS-tag: ugyldig VAA-struktur eller FFF/GGG/HHH-verdi';
   if (discipline === 'UTS') return '01. RDS-tag: ugyldig UTS-struktur eller Dnn/EEnnn-avhengighet. CL1 krever P1, ME2 krever M1.';
   if (discipline === 'LARK') return '01. RDS-tag: ugyldig LARK-struktur eller Dnn/EEnnn-avhengighet';
@@ -1288,6 +1320,8 @@ function resolveDisciplineFromValue(raw){
   if (v.includes('UTSTYR') || v === 'UTS' || v.includes('VEGUTSTYR') || v.includes('VEIUTSTYR')) return 'UTS';
   if (v.includes('SKILT')) return 'SKO';
   if (v.includes('TUNNEL')) return 'TUNNEL';
+  if (v.includes('BRU') && v.includes('KULVERT')) return 'KNS_KULVERT';
+  if (v.includes('KULVERT')) return 'KNS_KULVERT';
   if (v.includes('BRU')) return 'KNS';
   if (v.includes('KONSTR')) return 'KNS';
   if (DISCIPLINE_RULES[v]) return v;
@@ -1301,6 +1335,7 @@ function inferDisciplineFromNames(modelName=''){
   if (m.includes('UTSTYR') || m.includes('VEGUTSTYR') || m.includes('VEIUTSTYR') || m.includes('F-UTS') || m.includes('_UTS')) return 'UTS';
   if (m.includes('SKILT') || m.includes('OPPMERK')) return 'SKO';
   if (m.includes('TUNNEL') || m.includes('F-TUNNEL')) return 'TUNNEL';
+  if (m.includes('KULVERT') || m.includes('K921') || m.includes('K710') || m.includes('K711') || m.includes('K911') || m.includes('K931')) return 'KNS_KULVERT';
   if (m.includes('BRU') || m.includes('KONSTR') || m.includes('_K_')) return 'KNS';
   if (m.includes('VAA') || m.includes('VAA_') || m.includes('VA ')) return 'VAA';
   if (m.includes('VEG') || m.includes('VEI') || m.includes('_V_')) return 'VEI';
@@ -1349,6 +1384,10 @@ function validateKnsRdsTagDependency(tag){
   return false;
 }
 
+function validateKnsKulvertRdsTag(tag){
+  return !!tag && KNS_KULVERT_RDS_REGEX.test(norm(tag));
+}
+
 function validateByRule(obj, modelName){
   const discipline = resolveDiscipline(obj, modelName);
   const rules = DISCIPLINE_RULES[discipline];
@@ -1356,24 +1395,28 @@ function validateByRule(obj, modelName){
   const fields = {};
   let reqOk = 0, reqTotal = 0, missingCount = 0, formatErrorCount = 0, naCount = 0;
 
-  const ee = norm(rds['09. EEnnn'] || getProp(obj, PSET, '09. EEnnn')).toUpperCase();
-  const dnn = norm(rds['07. Dnn'] || getProp(obj, PSET, '07. Dnn')).toUpperCase();
-  const larkNoD = discipline === 'LARK' && LARK_NO_DNN_EE.has(ee);
-  const larkP1  = discipline === 'LARK' && LARK_REQUIRED_DNN_BY_EE[ee];
+  let ee = norm(rds['09. EEnnn'] || getProp(obj, PSET, '09. EEnnn')).toUpperCase();
+  let dnn = norm(rds['07. Dnn'] || getProp(obj, PSET, '07. Dnn')).toUpperCase();
+  if (ee === '--') ee = '';
+  if (dnn === '--') dnn = '';
+  const larkNoD = discipline === 'LARK' && ['BA1','CJ1','RA1'].includes(ee);
+  const larkP1  = discipline === 'LARK' && ee === 'CL1';
 
   /*
-    Vanlig SKO kan fortsatt ha Dnn/Dnn navn tomt når EEnnn = ME2.
+    SKO / Skilt:
+    - ME2 krever Dnn = M1 og Dnn navn = Informasjons- og kommunikasjonssystem.
+      Derfor skal vanlig SKO ikke hoppes over som NA for 07/08.
 
     SKO_TUNNEL:
-    - ME2 krever Dnn = M1 og Dnn navn = Informasjons- og kommunikasjonssystem
-    - BB1 skal ikke ha Dnn/Dnn navn
+    - BB1 skal ikke ha Dnn/Dnn navn.
   */
-  const skoNoD = discipline === 'SKO' && ee === 'ME2';
+  const skoNoD = false;
   const skoTunnelNoD = discipline === 'SKO_TUNNEL' && ee === 'BB1';
 
   for (const f of FIELDS) {
     const key = f.key;
-    const value = norm(rds[f.label] || getProp(obj, PSET, f.label));
+    let value = norm(rds[f.label] || getProp(obj, PSET, f.label));
+    if (value === '--') value = '';
 
     if (key === '07' || key === '08') {
       // TUNNEL: Dnn/Dnn navn er ikke aktuelt. Feltet skal være tomt og telles som ikke påkrevd.
@@ -1403,6 +1446,42 @@ function validateByRule(obj, modelName){
         const expected = key === '07'
           ? BYGGTEK_REQUIRED_DNN_BY_EE[ee].dnn
           : BYGGTEK_REQUIRED_DNN_BY_EE[ee].dnnName;
+
+        reqTotal++;
+        if (!value) {
+          fields[key] = { status: 'missing', value };
+          missingCount++;
+        } else if (value !== expected) {
+          fields[key] = { status: 'format', value };
+          formatErrorCount++;
+        } else {
+          fields[key] = { status: 'ok', value };
+          reqOk++;
+        }
+        continue;
+      }
+
+      /*
+        KNS/Bru-Kulvert:
+        - EEnnn BA1/BC1/BD1/CG1: Dnn/Dnn navn skal være tomt.
+        - EEnnn PC1/JK1: Dnn = K1 og Dnn navn = Elkraftsystem.
+        - EEnnn CL1: Dnn = P1 og Dnn navn = Sikkerhetssystem.
+      */
+      if (discipline === 'KNS_KULVERT' && KNS_KULVERT_NO_DNN_EE.has(ee)) {
+        if (!value) {
+          fields[key] = { status: 'na', value };
+          naCount++;
+        } else {
+          fields[key] = { status: 'format', value };
+          formatErrorCount++;
+        }
+        continue;
+      }
+
+      if (discipline === 'KNS_KULVERT' && KNS_KULVERT_REQUIRED_DNN_BY_EE[ee]) {
+        const expected = key === '07'
+          ? KNS_KULVERT_REQUIRED_DNN_BY_EE[ee].dnn
+          : KNS_KULVERT_REQUIRED_DNN_BY_EE[ee].dnnName;
 
         reqTotal++;
         if (!value) {
@@ -1490,16 +1569,12 @@ function validateByRule(obj, modelName){
         continue;
       }
 
-      if (larkP1 && (key === '07' || key === '08')) {
-        const expected = key === '07'
-          ? LARK_REQUIRED_DNN_BY_EE[ee].dnn
-          : LARK_REQUIRED_DNN_BY_EE[ee].dnnName;
-
+      if (larkP1 && key === '07') {
         reqTotal++;
         if (!value) {
           fields[key] = { status: 'missing', value };
           missingCount++;
-        } else if (value !== expected) {
+        } else if (value !== 'P1') {
           fields[key] = { status: 'format', value };
           formatErrorCount++;
         } else {
@@ -1508,14 +1583,29 @@ function validateByRule(obj, modelName){
         }
         continue;
       }
+
+      if (larkP1 && key === '08') {
+        reqTotal++;
+        if (!value) {
+          fields[key] = { status: 'missing', value };
+          missingCount++;
+        } else {
+          fields[key] = { status: 'ok', value };
+          reqOk++;
+        }
+        continue;
+      }
     }
 
-    if (discipline === 'KNS' && key === '01') {
+    if ((discipline === 'KNS' || discipline === 'KNS_KULVERT') && key === '01') {
       reqTotal++;
       if (!value) {
         fields[key] = { status: 'missing', value };
         missingCount++;
-      } else if (!validateKnsRdsTagDependency(value)) {
+      } else if (discipline === 'KNS' && !validateKnsRdsTagDependency(value)) {
+        fields[key] = { status: 'format', value };
+        formatErrorCount++;
+      } else if (discipline === 'KNS_KULVERT' && !validateKnsKulvertRdsTag(value)) {
         fields[key] = { status: 'format', value };
         formatErrorCount++;
       } else {
