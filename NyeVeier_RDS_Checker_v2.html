@@ -2,7 +2,7 @@
 <html lang="nb">
 <head>
   <meta charset="UTF-8"/>
-  <title>E6SO RDS Validator V.43</title>
+  <title>E6SO RDS Validator V.44</title>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <script src="https://components.connect.trimble.com/trimble-connect-workspace-api/index.js"></script>
   <style>
@@ -445,8 +445,8 @@
 
 <header>
   <div class="header-title">
-    <h1>E6SO RDS Validator V.43</h1>
-    <p>PropertySet: 2_RDS · 16 felter · VEI V.26 · TUNNEL V.28 · VVA/VAA V.23 · BYGGTEK V.25 · UTS V.32 · SKO V.42 · KNS/Bru-Kulvert V.38 · HHHnnnnn: 3 bokstaver + 1–5 siffer</p>
+    <h1>E6SO RDS Validator V.44</h1>
+    <p>PropertySet: 2_RDS · 16 felter · VEI V.44 · TUNNEL V.28 · VVA/VAA V.23 · BYGGTEK V.25 · UTS V.32 · SKO V.42 · KNS/Bru-Kulvert V.38 · HHHnnnnn: 3 bokstaver + 1–5 siffer</p>
   </div>
   <span class="badge" id="modelBadge">Ikke tilkoblet</span>
   <button class="btn btn-ghost" id="btnLoad" disabled>Hent modeller</button>
@@ -587,7 +587,7 @@ const KNS_KULVERT_REQUIRED_DNN_BY_EE = {
 
 // Gjelder KUN fagregel VEI – oppdatert V.26 basert på CSV-uttrekk fra Trimble Connect.
 const VEI_BNN_REGEX = /^(?:A1|A2|A3|B1|D1)$/;
-const VEI_BNN_NAME_REGEX = /^(?:Dagsone, Storhove - Ødegården|Dagsone, Ødegården - Ensby|Dagsone, Ensby - Midtskog|Skjæring\/Mur|Tunnel, Fåbergtunnelen)$/;
+const VEI_BNN_NAME_REGEX = /^(?:Dagsone, Storhove - Ødegården|Dagsone, Ødegården - Ensby|Dagsone, Ensby - Midtskog|Skjæring\/mur|Tunnel, Fåbergtunnelen)$/;
 const VEI_CNN_REGEX = /^(?:A1|A2|A3|A4|A5)$/;
 const VEI_CNN_NAME_REGEX = /^(?:Vei, E6 Hovedvei|Vei, Fylkesvei|Vei, Kommunal vei|Vei, Øvrig vei|Udefinerte øvrige tiltak|Vei i tunnel, Nordgående|Vei i tunnel, Sørgående)$/;
 const VEI_DNN_REGEX = /^G1$/;
