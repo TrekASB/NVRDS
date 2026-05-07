@@ -2,7 +2,7 @@
 <html lang="nb">
 <head>
   <meta charset="UTF-8"/>
-  <title>E6SO RDS Validator V.45</title>
+  <title>E6SO RDS Validator V.47</title>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <script src="https://components.connect.trimble.com/trimble-connect-workspace-api/index.js"></script>
   <style>
@@ -445,8 +445,8 @@
 
 <header>
   <div class="header-title">
-    <h1>E6SO RDS Validator V.45</h1>
-    <p>PropertySet: 2_RDS · 16 felter · VEI V.26 · TUNNEL V.28 · VVA/VAA V.23 · BYGGTEK V.25 · UTS V.32 · SKO V.33 · HHHnnnnn: 3 bokstaver + 1–5 siffer</p>
+    <h1>E6SO RDS Validator V.47</h1>
+    <p>PropertySet: 2_RDS · 16 felter · VEI V.26 · TUNNEL V.28 · VVA/VAA V.23 · BYGGTEK V.25 · UTS V.32 · SKO V.33 · LARK V.47 · HHHnnnnn: 3 bokstaver + 1–5 siffer</p>
   </div>
   <span class="badge" id="modelBadge">Ikke tilkoblet</span>
   <button class="btn btn-ghost" id="btnLoad" disabled>Hent modeller</button>
@@ -675,6 +675,11 @@ const SKO_HHH_NAME_REGEX = new RegExp(String.raw`^id\. .+$`);
 const LARK_GGG_REGEX = /^(?:FQD107|FSD101|FSD103|FSD104|FSD106|FSD107|NCA103|RUA101|RUA102|RUA103|TRA101|ULM101|UTA101|UTA102)$/;
 const LARK_GGG_NAME_REGEX = /^(?:Fyllingsskråning|Gjerdeport|Matjord|Natursteinsblokk|Oppfylling|Plastring bekk|Revegetering|Sikringsgjerde|Slitelag, Ska16|Steinmaterialer|Tilsåing|Tre|Tørrsteinsmur|Viltgjerde)$/;
 
+const LARK_FFF_REGEX = /^(?:FQD101|FSD102|NCA103|RUA101|TRA101|ULM103|UTA101|UTA104)$/;
+const LARK_FFF_NAME_REGEX = /^(?:Fylling|Fyllingsskråning|Gjerde|Rekkverk|Slitelag|Støttekonstruksjon|Terrengforming|Vegetasjon)$/;
+const LARK_HHH_REGEX = /^(?:FQD1|FQD10|FQD11|FQD12|FQD13|FQD14|FQD15|FQD16|FQD17|FQD18|FQD19|FQD2|FQD20|FQD21|FQD22|FQD3|FQD4|FQD5|FQD6|FQD7|FQD8|FQD9|FSD1|FSD10|FSD2|FSD3|FSD4|FSD5|FSD6|FSD7|FSD8|FSD9|NCA1|NCA2|RUA1|RUA10|RUA11|RUA12|RUA2|RUA3|RUA4|RUA5|RUA6|RUA7|RUA8|RUA9|TRA1|TRA10|TRA11|TRA12|TRA13|TRA14|TRA15|TRA16|TRA17|TRA18|TRA19|TRA2|TRA20|TRA21|TRA22|TRA23|TRA24|TRA25|TRA26|TRA27|TRA28|TRA29|TRA3|TRA30|TRA31|TRA32|TRA33|TRA4|TRA5|TRA6|TRA7|TRA8|TRA9|ULM1|ULM10|ULM11|ULM2|ULM3|ULM4|ULM5|ULM6|ULM7|ULM8|ULM9|UTA1|UTA2)$/;
+const LARK_HHH_NAME_REGEX = /^.+$/;
+
 const ANKER_RX = {
   // VEI 01. RDS-tag – oppdatert V.26.
   // Avhengighet:
@@ -872,12 +877,12 @@ const DISCIPLINE_RULES = {
       '08': RX.anyText,
       '09': RX.ee,
       '10': RX.anyText,
-      '11': RX.fff,
-      '12': RX.anyText,
+      '11': LARK_FFF_REGEX,
+      '12': LARK_FFF_NAME_REGEX,
       '13': LARK_GGG_REGEX,
       '14': LARK_GGG_NAME_REGEX,
-      '15': RX.hhh,
-      '16': RX.anyText
+      '15': LARK_HHH_REGEX,
+      '16': LARK_HHH_NAME_REGEX
     }
   },
   SKO_TUNNEL: {
