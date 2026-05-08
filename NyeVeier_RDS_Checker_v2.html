@@ -2,7 +2,7 @@
 <html lang="nb">
 <head>
   <meta charset="UTF-8"/>
-  <title>E6SO RDS Validator V.59</title>
+  <title>E6SO RDS Validator V.60</title>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <script src="https://components.connect.trimble.com/trimble-connect-workspace-api/index.js"></script>
   <style>
@@ -445,8 +445,8 @@
 
 <header>
   <div class="header-title">
-    <h1>E6SO RDS Validator V.59</h1>
-    <p>PropertySet: 2_RDS · 16 felter · VEI V.26 · TUNNEL V.28 · VVA/VAA V.23 · BYGGTEK V.25 · UTS V.58 · SKO V.51 · JBT V.52 · MERKING V.53 · LARG V.59 · HHHnnnnn: 3 bokstaver + 1–5 siffer</p>
+    <h1>E6SO RDS Validator V.60</h1>
+    <p>PropertySet: 2_RDS · 16 felter · VEI V.26 · TUNNEL V.28 · VVA/VAA V.23 · BYGGTEK V.25 · UTS V.58 · SKO V.51 · JBT V.52 · MERKING V.53 · LARG V.60 · HHHnnnnn: 3 bokstaver + 1–5 siffer</p>
   </div>
   <span class="badge" id="modelBadge">Ikke tilkoblet</span>
   <button class="btn btn-ghost" id="btnLoad" disabled>Hent modeller</button>
@@ -2307,4 +2307,33 @@ function reset(){
       <div class="icon">🔍</div>
       <div>
         Velg en modell og trykk <strong>Valider</strong> for å starte.<br>
-        <span style="font-size:11px;
+        <span style="font-size:11px;color:var(--muted)">
+          Fagregler kan settes til Auto eller overstyres manuelt. Elementer med NotApplicable filtreres bort.
+        </span>
+      </div>
+    </div>`;
+  btnReset.disabled = true;
+  btnColorize.disabled = true;
+  btnUncolor.disabled = true;
+  btnExport.disabled = true;
+  setStatus('↺ Nullstilt.', '');
+}
+
+btnLoad.addEventListener('click', loadModels);
+btnValidate.addEventListener('click', validate);
+btnColorize.addEventListener('click', colorizeModel);
+btnUncolor.addEventListener('click', removeColors);
+btnExport.addEventListener('click', exportCsv);
+btnReset.addEventListener('click', reset);
+modelSelect.addEventListener('change', () => { btnValidate.disabled = !modelSelect.value; });
+
+window.addEventListener('error', e => {
+  setStatus('❌ JS-feil: ' + e.message, 'error');
+  console.error(e.error || e.message);
+});
+
+populateDisciplineDropdown();
+connect();
+</script>
+</body>
+</html>
