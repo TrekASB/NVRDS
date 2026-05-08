@@ -2,7 +2,7 @@
 <html lang="nb">
 <head>
   <meta charset="UTF-8"/>
-  <title>E6SO RDS Validator V.57</title>
+  <title>E6SO RDS Validator V.58</title>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <script src="https://components.connect.trimble.com/trimble-connect-workspace-api/index.js"></script>
   <style>
@@ -445,8 +445,8 @@
 
 <header>
   <div class="header-title">
-    <h1>E6SO RDS Validator V.57</h1>
-    <p>PropertySet: 2_RDS · 16 felter · VEI V.26 · TUNNEL V.28 · VVA/VAA V.23 · BYGGTEK V.25 · UTS V.57 · SKO V.51 · JBT V.52 · MERKING V.53 · LARK V.47 · HHHnnnnn: 3 bokstaver + 1–5 siffer</p>
+    <h1>E6SO RDS Validator V.58</h1>
+    <p>PropertySet: 2_RDS · 16 felter · VEI V.26 · TUNNEL V.28 · VVA/VAA V.23 · BYGGTEK V.25 · UTS V.58 · SKO V.51 · JBT V.52 · MERKING V.53 · LARK V.47 · HHHnnnnn: 3 bokstaver + 1–5 siffer</p>
   </div>
   <span class="badge" id="modelBadge">Ikke tilkoblet</span>
   <button class="btn btn-ghost" id="btnLoad" disabled>Hent modeller</button>
@@ -622,7 +622,7 @@ const UTS_EE_NAME_REGEX = /^(?:Gjerde\-\ og\ rekkverkssystem)$/;
 const UTS_FFF_REGEX = /^(?:RQC101)$/;
 const UTS_FFF_NAME_REGEX = /^Støyskjerm$/;
 const UTS_GGG_REGEX = /^(?:FQD101|FQD102|FQD103|FQD104|FQD105|FQD106|FQD107|FQD109|FQD110|FQD111|FQD112|FQD113|FQD114|FQD115|FQD116|FQD121|FQD122|RQC101|RQC102|RQC103|RUB101|ULG101|ULG102)$/;
-const UTS_GGG_NAME_REGEX = /^(?:9717554|Betongrekkverk,\ Styrkeklasse\ H1|Betongrekkverk,\ Styrkeklasse\ L2|Ettergivende\ rekkverksende|Heve\-\/senkebom|Nedføring|Rekkverksskinne,\ Styrkeklasse\ H1|Rekkverksskinne,\ Styrkeklasse\ H2|Rekkverksskinne,\ Styrkeklasse\ L2|Rekkverksskinne,\ Styrkeklasse\ N2|Rekkverksskinne,\ Styrkeklasse\ Overgangsrekkverk\ H1\ stålskinne\ til\ H1\ betong|Rekkverksskinne,\ Styrkeklasse\ Overgangsrekkverk\ H1\ stålskinne\ til\ L2\ stålskinne|Rekkverksskinne,\ Styrkeklasse\ Overgangsrekkverk\ H1\ stålskinne\ til\ Støtpute|Rekkverksskinne,\ Styrkeklasse\ Overgangsrekkverk\ H1\ stålskinne\ til\ ettergivende\ rekkverksende|Rekkverksskinne,\ Styrkeklasse\ Overgangsrekkverk\ L2\ stålskinne\ til\ L2\ betong|Rekkverksskinne,\ Styrkeklasse\ Overgangsrekkverk\ L2\ stålskinne\ til\ Støtpute|Rekkverksskinne,\ Styrkeklasse\ Overgangsrekkverk\ N2\ stålskinne\ til\ H2\ stålskinne|Rekkverksskinne,\ Styrkeklasse\ Overgangsrekkverk\ N2\ stålskinne\ til\ L2\ betong|Rekkverksskinne,\ Styrkeklasse\ Overgangsrekkverk\ N2\ stålskinne\ til\ L2\ stålskinne|Spesialfundament_MCS\ 51_58_61_utvidet|Støtpute|Støyskjerm,\ Dim\ 1000,200,8000|Støyskjerm,\ Dim\ 1000,200,150000)$/;
+const UTS_GGG_NAME_REGEX = /^(?:9717554|Betongrekkverk,\ Styrkeklasse\ H1|Betongrekkverk,\ Styrkeklasse\ L2|Ettergivende\ rekkverksende|Heve\-\/senkebom|Nedføring|Rekkverksskinne,\ Styrkeklasse\ H1|Rekkverksskinne,\ Styrkeklasse\ H2|Rekkverksskinne,\ Styrkeklasse\ L2|Rekkverksskinne,\ Styrkeklasse\ N2|Rekkverksskinne,\ Styrkeklasse\ Overgangsrekkverk\ H1\ stålskinne\ til\ H1\ betong|Rekkverksskinne,\ Styrkeklasse\ Overgangsrekkverk\ H1\ stålskinne\ til\ L2\ stålskinne|Rekkverksskinne,\ Styrkeklasse\ Overgangsrekkverk\ H1\ stålskinne\ til\ Støtpute|Rekkverksskinne,\ Styrkeklasse\ Overgangsrekkverk\ H1\ stålskinne\ til\ ettergivende\ rekkverksende|Rekkverksskinne,\ Styrkeklasse\ Overgangsrekkverk\ L2\ stålskinne\ til\ L2\ betong|Rekkverksskinne,\ Styrkeklasse\ Overgangsrekkverk\ L2\ stålskinne\ til\ Støtpute|Rekkverksskinne,\ Styrkeklasse\ Overgangsrekkverk\ N2\ stålskinne\ til\ H2\ stålskinne|Rekkverksskinne,\ Styrkeklasse\ Overgangsrekkverk\ N2\ stålskinne\ til\ L2\ betong|Rekkverksskinne,\ Styrkeklasse\ Overgangsrekkverk\ N2\ stålskinne\ til\ L2\ stålskinne|Spesialfundament_MCS\ 51_58_61_utvidet|Støtpute|Støyskjerm,\ Dim\ 1000,200,8000|Støyskjerm,\ Dim\ 1000,200,150000|Støyskjerm,\ Dim\ 2000,200,140000)$/;
 const UTS_HHH_REGEX = /^(?:RQC1)$/;
 const UTS_HHH_NAME_REGEX = /^id\. .+$/;
 const UTS_REQUIRED_DNN_BY_EE = {
