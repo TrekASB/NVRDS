@@ -446,7 +446,7 @@
 <header>
   <div class="header-title">
     <h1>E6SO RDS Validator V.73</h1>
-    <p>PropertySet: 2_RDS · 16 felter · VEI V.28 · TUNNEL V.28 · VVA/VAA V.23 · BYGGTEK V.25 · UTS V.58 · SKO V.51 · JBT V.52 · MERKING V.53 · LARK V.65 · KNS V.72 · KNS Tunnelportaler V.73 · KNS Tunnelportaler V.73 · KNS/TP V.70 · HHHnnnnn: 3 bokstaver + 1–5 siffer</p>
+    <p>PropertySet: 2_RDS · 16 felter · VEI V.28 · TUNNEL V.28 · VVA/VAA V.23 · BYGGTEK V.25 · UTS V.58 · SKO V.51 · JBT V.52 · MERKING V.53 · LARK V.65 · KNS V.74 · KNS Tunnelportaler V.73 · KNS/TP V.70 · HHHnnnnn: 3 bokstaver + 1–5 siffer</p>
   </div>
   <span class="badge" id="modelBadge">Ikke tilkoblet</span>
   <button class="btn btn-ghost" id="btnLoad" disabled>Hent modeller</button>
@@ -531,14 +531,14 @@ const SKILT_TUNNEL_RDS_REGEX = /^<E6SØ>-D1\.(?:A1|A2|B1|B2|C1|C2|C3|C4|D(?:[1-9
 const SKO_TUNNEL_FFF_REGEX = /^(PFA102|UBF101|ULG105|PHA101|PHA102|RUB101|RUB102|ULG106|PHD102|PHD13|PHD103|PHD104|UQB101|UQB102|PHD30|PHD101|PHA30|PHD105|UQB103)$/;
 const SKO_TUNNEL_FFF_NAME_REGEX = /^(Signalhode|Skiltportal|Skiltportalfundament|Skilt|VariabeltSkilt|Ledebom|Stengebom|Veibomfundament|Skiltfundament|Skiltmast|Skiltplate|Skiltholder|Festbolt|Mutter|Sanntidsinfo Leskur|Skilt fast|Skiltoppheng|Skjøtehylse|Festebolt)$/;
 
-// Gjelder KUN fagregel KNS / Bru – oppdatert V.72.
+// Gjelder KUN fagregel KNS / Bru – oppdatert V.74.
 const KNS_FFF_REGEX = /^(?:FQD101|FSA102|FSG101|QCA101|RQA101|RQB101|RQB102|RQB105|RQB106|RQB107|UAH101|ULB101|ULE101|ULE102|ULF101|ULG101|ULH101|ULK101|ULK104|ULK105|ULK106|ULM102|ULM103|UMA101|UQA101|UQB101|UQB102|UTA101|UTA102|UTA103|UTA105|UTB101|WPA110)$/;
 const KNS_FFF_NAME_REGEX = /^(?:Armering|Asfaltmembran|Asfaltpapp|Avrettingslag|Betongavretting|Boltegruppe|Brem|Brudekke|Fiberduk|Fuktisolering|Fundament|Hulkil|Innstøpt gjengestag|Isolasjon|Jording|Kantbjelke|Kjemisk anker|Klemlist|Knotteplate|Konsoll|Krympeplast|Membranbeskyttelse|Mørtel|Nivelleringsbolt|Oppfylling|Overgangsplate|Rekkverk|Sikringsgjerde|Sprengningsflate|Stålbjelke HUP|Takplate|Tilbakefylling|Trekantprofil|Trekkerør|Vegg|Vingemur)$/;
 
 const KNS_GGG_REGEX = /^(?:FQD103|FQD104|FSA101|FSG101|FSG102|QCA101|RQA101|RQB101|RQB102|UAH101|ULB101|ULE101|ULF101|ULG101|ULH101|ULK101|ULM101|UMA101|UMA102|UMA103|UMA104|UMA105|UMA106|UMA107|UMA108|UMA109|UMA110|UMA111|UMA112|UMA113|UMA114|UMA115|UMA116|UMA117|UMA118|UMA119|UMA120|UMA121|UMA122|UMA123|UMA124|UMA125|UMA126|UMA127|UMA128|UMA129|UMA130|UQA101|UQB101|UTA101|UTB101|WPA102|WPA103|WPA104)$/;
 const KNS_GGG_NAME_REGEX = /^(?:Asfaltmembran|Asfaltpapp|Avrettingslag|B30|Betongavretting|Boltegruppe|Brem|Brudekke|Bruksklasse 4|Byggeetappe B10|Byggeetappe B11|Byggeetappe F10|Byggeetappe F11|Byggeetappe F12|Byggeetappe KBE|Byggeetappe KBW|Byggeetappe OB|Byggeetappe OBV10E|Byggeetappe OBV10W|Byggeetappe OBV11E|Byggeetappe OBV11W|Byggeetappe OV|Byggeetappe OV10E|Byggeetappe OV10W|Byggeetappe OV11E|Byggeetappe OV11W|Byggeetappe T10|Byggeetappe T11|Byggeetappe T12|Byggeetappe T13|Byggeetappe T14|Byggeetappe T15|Byggeetappe T16|Byggeetappe T17|Byggeetappe V10|Byggeetappe V11|Byggeetappe V12|Byggeetappe V13|Byggeetappe V14|Byggeetappe V15|Byggeetappe V16|Byggeetappe V17|Byggeetappe V18|Byggeetappe V19|Byggeetappe V20|Byggeetappe V21|Byggeetappe V22|Byggeetappe V23|Byggeetappe V24|Byggeetappe V25|Fraksjon 0\/8|Fraksjon 22\/120|Fuktisolering|Fundament|H2|Hulkil|Innstøpt gjengestag|Jording|Kantbjelke|Kjemisk anker|Klemlist|Knotteplate|Konsoll|Krympeplast|Mørtel|Nivelleringsbolt|Oppfylling|Overgangsplate|Sikringsgjerde|Sprengningsflate|Stålbjelke HUP|Takplate|Trekantprofil|Vegg|Vingemur|XPS|ø110|ø50|ø75)$/;
 
-// KNS/Bru 01. RDS-tag – V.72. Cnn er ikke påkrevd som eget felt; 01-regex beholdes uten Cnn-ledd.
+// KNS/Bru 01. RDS-tag – V.74. Cnn er ikke påkrevd som eget felt; 01-regex beholdes uten Cnn-ledd.
 const KNS_BRU_RDS_REGEX = /^<E6SØ>-(?:C2|C4)\.(?:(?:(?:K1\.)?(?:JK1|BC1|PC1))|(?:(?:P1\.)?CL1)|(?:BA1|BB1|BD1|BD2|CG1))\.(?:FQD101|FSA102|FSG101|QCA101|RQA101|RQB101|RQB102|RQB105|RQB106|RQB107|UAH101|ULB101|ULE101|ULE102|ULF101|ULG101|ULH101|ULK101|ULK104|ULK105|ULK106|ULM102|ULM103|UMA101|UQA101|UQB101|UQB102|UTA101|UTA102|UTA103|UTA105|UTB101|WPA110)\.(?:FQD103|FQD104|FSA101|FSG101|FSG102|QCA101|RQA101|RQB101|RQB102|UAH101|ULB101|ULE101|ULF101|ULG101|ULH101|ULK101|ULM101|UMA101|UMA102|UMA103|UMA104|UMA105|UMA106|UMA107|UMA108|UMA109|UMA110|UMA111|UMA112|UMA113|UMA114|UMA115|UMA116|UMA117|UMA118|UMA119|UMA120|UMA121|UMA122|UMA123|UMA124|UMA125|UMA126|UMA127|UMA128|UMA129|UMA130|UQA101|UQB101|UTA101|UTB101|WPA102|WPA103|WPA104)\.[A-Z]{3}\d{1,5}$/;
 
 // KNS/Tunnelportaler – oppdatert V.73.
@@ -838,10 +838,10 @@ const DISCIPLINE_RULES = {
       '08': RX.anyText,
       '09': /^(?:BA1|BB1|BC1|BD1|BD2|CG1|CL1|JK1|PC1)$/,
       '10': /^(?:Fundamentering\ i\ bakke|Gjerde\-\ og\ rekkverkssystem|Grunnarbeid,\ terreng|Jordingssytem|Kabelføringssystem|Overbygning|Underbygning|Vann\-\ og\ fuktforebyggende\ system|Veggsystem)$/,
-      '11': KNS_TP_FFF_REGEX,
-      '12': KNS_TP_FFF_NAME_REGEX,
-      '13': KNS_TP_GGG_REGEX,
-      '14': KNS_TP_GGG_NAME_REGEX,
+      '11': KNS_FFF_REGEX,
+      '12': KNS_FFF_NAME_REGEX,
+      '13': KNS_GGG_REGEX,
+      '14': KNS_GGG_NAME_REGEX,
       '15': /^[A-Za-z]{3}\d{1,5}$/,
       '16': RX.anyText
     }
